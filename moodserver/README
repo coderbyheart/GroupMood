@@ -4,7 +4,7 @@ Der Server ist als Django-Projekt [1] angelegt.
 
 Django muss auf dem lokalen System installiert sein [2].
 
-Wichtig: Django erforder Python 2!
+Wichtig: Django erfordert Python 2!
 
 ## Setup der Anwendung
 
