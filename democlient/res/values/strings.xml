@@ -13,5 +13,6 @@
         <item>Client</item>
         <item>Master</item>
     </string-array>
+    <string name="switch_orientation">Bildschirm drehen</string>
 
 </resources>

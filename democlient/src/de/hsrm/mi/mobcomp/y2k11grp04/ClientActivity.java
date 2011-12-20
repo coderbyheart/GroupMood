@@ -1,5 +1,6 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
+import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -7,6 +8,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -19,11 +21,10 @@ import de.hsrm.mi.mobcomp.y2k11grp04.service.DemoServerService;
  * @author Coralie Reuter <coralie.reuter@hrcom.de>
  * @author Markus Tacker <m@tacker.org>
  */
-public class ClientActivity extends ServiceActivity implements
-		SensorEventListener {
+public class ClientActivity extends ServiceActivity implements SensorEventListener {
 	private TextView percentTextView;
-	private Integer defaultVote = 50;
-	private Meeting meeting = new Meeting(1, "Demo-Meeting");
+	private final Integer defaultVote = 50;
+	private final Meeting meeting = new Meeting(1, "Demo-Meeting");
 	private TextView avgVoteTextView;
 	private TextView numVotesTextView;
 
@@ -50,11 +51,9 @@ public class ClientActivity extends ServiceActivity implements
 
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-				Log.v(getClass().getCanonicalName(),
-						"Neue Mood:" + seekBar.getProgress());
+				Log.v(getClass().getCanonicalName(), "Neue Mood:" + seekBar.getProgress());
 				sendVoteMessage();
-				sensorManager.registerListener(ClientActivity.this, sensor,
-						SensorManager.SENSOR_DELAY_NORMAL);
+				sensorManager.registerListener(ClientActivity.this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 			}
 
 			@Override
@@ -63,8 +62,7 @@ public class ClientActivity extends ServiceActivity implements
 			}
 
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				percentTextView.setText("" + progress + "%");
 			}
 		});
@@ -80,8 +78,7 @@ public class ClientActivity extends ServiceActivity implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		sensorManager.registerListener(this, sensor,
-				SensorManager.SENSOR_DELAY_NORMAL);
+		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	@Override
@@ -91,15 +88,11 @@ public class ClientActivity extends ServiceActivity implements
 			return new ServiceMessageRunnable(message) {
 				@Override
 				public void run() {
-					Toast.makeText(ClientActivity.this, "Vote bestätigt",
-							Toast.LENGTH_LONG).show();
+					Toast.makeText(ClientActivity.this, "Vote bestätigt", Toast.LENGTH_LONG).show();
 					avgVoteTextView.setText(""
-							+ serviceMessage.getData().getInt(
-									DemoServerService.KEY_MEETING_AVG_VOTE)
-							+ "%");
+							+ serviceMessage.getData().getInt(DemoServerService.KEY_MEETING_AVG_VOTE) + "%");
 					numVotesTextView.setText(""
-							+ serviceMessage.getData().getInt(
-									DemoServerService.KEY_MEETING_NUM_VOTES));
+							+ serviceMessage.getData().getInt(DemoServerService.KEY_MEETING_NUM_VOTES));
 				}
 			};
 		default:
@@ -117,8 +110,7 @@ public class ClientActivity extends ServiceActivity implements
 	 * Bereitet die "Vote"-Nachricht vor
 	 */
 	public void sendVoteMessage() {
-		Log.v(getClass().getCanonicalName(),
-				"Neue Mood:" + seekBar.getProgress());
+		Log.v(getClass().getCanonicalName(), "Neue Mood:" + seekBar.getProgress());
 		Message m = Message.obtain(null, DemoServerService.MSG_VOTE);
 		Bundle data = new Bundle();
 		data.putInt(DemoServerService.KEY_MEETING_ID, meeting.getId());
@@ -136,19 +128,22 @@ public class ClientActivity extends ServiceActivity implements
 	public void onSensorChanged(SensorEvent event) {
 		switch (event.sensor.getType()) {
 		case Sensor.TYPE_ACCELEROMETER:
-			handleXMotion(event.values[0] * -1);
+			if (getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+				handleMotion(event.values[0] * -1);
+			else
+				handleMotion(event.values[1]);
 		}
 	}
 
 	/**
-	 * Verarbeitet X-Achsen-Bewegungen
+	 * Verarbeitet Achsen-Bewegungen
 	 * */
-	private void handleXMotion(float dif) {
+	private void handleMotion(float dif) {
 		long curTime = System.currentTimeMillis();
 
 		// Schwelle für Erkennung
 		if (dif < -1 || dif > 1) {
-			Log.v(getClass().getCanonicalName(), "X-Achsen-Bewegung: " + dif);
+			Log.v(getClass().getCanonicalName(), "Achsen-Bewegung: " + dif);
 			seekBar.setProgress(seekBar.getProgress() + Math.round(dif));
 			// Systemzeit merken
 			lastChange = System.currentTimeMillis();
@@ -158,9 +153,16 @@ public class ClientActivity extends ServiceActivity implements
 		// auseinander liegen..
 		if (lastChange != 0 && (curTime - lastChange > 1000)) {
 			sendVoteMessage();
-			Log.v(getClass().getCanonicalName(),
-					"Bewegung erkannt; neuer Wert gesendet..");
+			Log.v(getClass().getCanonicalName(), "Bewegung erkannt; neuer Wert gesendet..");
 			lastChange = 0;
+		}
+	}
+
+	public void changeScreenOrientation(View v) {
+		if (getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		} else {
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
 	}
 }

@@ -52,4 +52,10 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp" />
 
+    <Button
+        android:text="@string/switch_orientation"
+        android:onClick="changeScreenOrientation"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>
