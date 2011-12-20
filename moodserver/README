@@ -53,4 +53,7 @@ oder zum Testen aus dem WLAN mit einem echten Device:
 
 $ python2 manage.py runserver <ip>:<port>
 
+[1] https://www.djangoproject.com/
+[2] https://docs.djangoproject.com/en/1.3/intro/install/
+
 EOF: README
