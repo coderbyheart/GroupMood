@@ -1,0 +1,13 @@
+{% extends "demoserver/base.html" %}
+{% block content %}
+<h1>Meetings</h1>
+{% if latest_meeting_list %}
+    <ul>
+    {% for meeting in latest_meeting_list %}
+        <li><a href="/demoserver/meeting/{{ meeting.id }}">{{ meeting.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No meetings are available.</p>
+{% endif %}
+{% endblock %}

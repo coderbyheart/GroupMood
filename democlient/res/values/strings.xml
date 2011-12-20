@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GroupMood</string>
+    <string name="intro">Dies ist der GroupMood Demo-Client.</string>
+    <string name="select">Bitte wähle eine Aktion:</string>
+	<string name="key_api_url">API-URL</string>
+	<string name="label_settings">Einstellungen</string>
+	<string name="please_configure">Bitte die Einstellungen überprüfen!</string>
+	
+
+    <string-array name="tasks">
+        <item>Client</item>
+        <item>Master</item>
+    </string-array>
+
+</resources>

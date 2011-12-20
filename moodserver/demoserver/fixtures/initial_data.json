@@ -1,0 +1,9 @@
+[
+  {
+    "model": "demoserver.meeting",
+    "pk": 1,
+    "fields": {
+      "name": "Demo-Meeting"
+    }
+  }
+]
