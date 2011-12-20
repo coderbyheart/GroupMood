@@ -3,7 +3,8 @@
     "model": "demoserver.meeting",
     "pk": 1,
     "fields": {
-      "name": "Demo-Meeting"
+      "name": "Demo-Meeting",
+      "creation_date": "2011-12-01 00:00"
     }
   }
 ]
