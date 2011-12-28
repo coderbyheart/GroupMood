@@ -1,23 +1,70 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
+import java.util.ArrayList;
+
+import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Message;
-import android.widget.TextView;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+import android.widget.Gallery;
+import android.widget.ImageSwitcher;
+import android.widget.ImageView;
+import android.widget.ViewSwitcher.ViewFactory;
 
 /**
  * @author Coralie Reuter <coralie.reuter@hrcom.de>
  * @author Markus Tacker <m@tacker.org>
  */
-public class ClientActivity extends ServiceActivity {
+public class ClientActivity extends ServiceActivity implements ViewFactory {
+	private final ArrayList<Integer> slideIDs = new ArrayList<Integer>();
+	private ImageSwitcher iswitch;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.client);
 
-		TextView tv = (TextView) findViewById(R.id.tv);
-		tv.setText("BLAAAA");
+		getSlides();
 
+		iswitch = (ImageSwitcher) findViewById(R.id.image_switcher);
+		iswitch.setFactory(this);
+		iswitch.setInAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
+		iswitch.setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out));
+
+		for (int i = 0; i < slideIDs.size(); i++) {
+			System.out.println(slideIDs.get(i));
+		}
+		Gallery gallery = (Gallery) findViewById(R.id.slide_gallery);
+		gallery.setAdapter(new ImageAdapter(this));
+
+		// Erste Folie anzeigen
+		iswitch.setImageResource(slideIDs.get(0));
+		gallery.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				iswitch.setImageResource(slideIDs.get(arg2));
+			}
+
+		});
+	}
+
+	/**
+	 * 
+	 */
+	private void getSlides() {
+
+		slideIDs.add(R.drawable.v1_f1);
+		slideIDs.add(R.drawable.v1_f2);
+		slideIDs.add(R.drawable.v1_f3);
 	}
 
 	@Override
@@ -36,5 +83,62 @@ public class ClientActivity extends ServiceActivity {
 	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public View makeView() {
+		ImageView imageView = new ImageView(this);
+		imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		imageView.setLayoutParams(new ImageSwitcher.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		imageView.setBackgroundColor(0xFF000000);
+		return imageView;
+	}
+
+	/**
+	 * @author Coralie Reuter
+	 * 
+	 */
+	public class ImageAdapter extends BaseAdapter {
+
+		private final Context context;
+		private final int galleryItemBackground;
+
+		/**
+		 * @param _context
+		 */
+		public ImageAdapter(Context _context) {
+			context = _context;
+			TypedArray ta = obtainStyledAttributes(R.styleable.Gallery);
+			galleryItemBackground = ta.getResourceId(R.styleable.Gallery_android_galleryItemBackground, 0);
+			ta.recycle();
+
+		}
+
+		@Override
+		public int getCount() {
+			return slideIDs.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			return slideIDs.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			return position;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			ImageView imageView = new ImageView(context);
+			imageView.setImageResource(slideIDs.get(position));
+			imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+			imageView.setLayoutParams(new Gallery.LayoutParams(150, 150));
+			imageView.setBackgroundResource(galleryItemBackground);
+			return imageView;
+
+		}
+
 	}
 }
