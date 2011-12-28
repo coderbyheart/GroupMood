@@ -2,4 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:id="@+id/menu_settings" android:title="@string/label_settings"
 		android:icon="@android:drawable/ic_menu_preferences" />
+	<item android:id="@+id/menu_overall_rating" android:title="@string/label_overall_rating"
+		android:icon="@android:drawable/ic_menu_preferences" />
 </menu>

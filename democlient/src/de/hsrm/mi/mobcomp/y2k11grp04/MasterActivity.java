@@ -6,6 +6,10 @@ import android.widget.TextView;
 import de.hsrm.mi.mobcomp.y2k11grp04.extra.ColoringTextWatcher;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.DemoServerService;
 
+/**
+ * @author Coralie Reuter <coralie.reuter@hrcom.de>
+ * @author Markus Tacker <m@tacker.org>
+ */
 public class MasterActivity extends ServiceActivity {
 
 	private TextView percentTextView;
@@ -23,8 +27,7 @@ public class MasterActivity extends ServiceActivity {
 	@Override
 	public void onConnect() {
 		super.onConnect();
-		Message m = Message.obtain(null,
-				DemoServerService.MSG_MEETING_SUBSCRIBE);
+		Message m = Message.obtain(null, DemoServerService.MSG_MEETING_SUBSCRIBE);
 		Bundle data = new Bundle();
 		// TODO: Hart kodierte Meeting-ID
 		data.putInt(DemoServerService.KEY_MEETING_ID, 1);
@@ -35,8 +38,7 @@ public class MasterActivity extends ServiceActivity {
 	@Override
 	public void onPause() {
 		super.onPause();
-		Message m = Message.obtain(null,
-				DemoServerService.MSG_MEETING_UNSUBSCRIBE);
+		Message m = Message.obtain(null, DemoServerService.MSG_MEETING_UNSUBSCRIBE);
 		Bundle data = new Bundle();
 		// TODO: Hart kodierte Meeting-ID
 		data.putInt(DemoServerService.KEY_MEETING_ID, 1);
@@ -52,9 +54,7 @@ public class MasterActivity extends ServiceActivity {
 				@Override
 				public void run() {
 					percentTextView.setText(""
-							+ serviceMessage.getData().getInt(
-									DemoServerService.KEY_MEETING_AVG_VOTE)
-							+ "%");
+							+ serviceMessage.getData().getInt(DemoServerService.KEY_MEETING_AVG_VOTE) + "%");
 				}
 			};
 		default:

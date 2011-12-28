@@ -6,6 +6,7 @@
     <string name="select">Bitte wähle eine Aktion:</string>
 	<string name="key_api_url">API-URL</string>
 	<string name="label_settings">Einstellungen</string>
+	<string name="label_overall_rating">Gesamtbewertung</string>
 	<string name="please_configure">Bitte die Einstellungen überprüfen!</string>
 	
 

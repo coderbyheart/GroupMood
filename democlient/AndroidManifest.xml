@@ -19,11 +19,12 @@
             </intent-filter>
         </activity>
         <activity android:name="PrefsActivity" />
+        <activity android:name="ClientActivity" />
+        <activity android:name="MasterActivity" />
         <activity
-            android:name=".ClientActivity"
+            android:name=".MasterRatingActivity"
             android:screenOrientation="portrait" >
         </activity>
-        <activity android:name=".MasterActivity" />
 
         <service
             android:name=".service.DemoServerService"

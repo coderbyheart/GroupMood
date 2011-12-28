@@ -1,6 +1,5 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
-import de.hsrm.mi.mobcomp.y2k11grp04.service.DemoServerService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -11,7 +10,12 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+import de.hsrm.mi.mobcomp.y2k11grp04.service.DemoServerService;
 
+/**
+ * @author Coralie Reuter <coralie.reuter@hrcom.de>
+ * @author Markus Tacker <m@tacker.org>
+ */
 public class MainActivity extends MenuActivity {
 	/** Called when the activity is first created. */
 	@Override
@@ -20,39 +24,33 @@ public class MainActivity extends MenuActivity {
 		setContentView(R.layout.main);
 
 		ListView tasks = (ListView) findViewById(R.id.taskListView);
-		tasks.setAdapter(new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, getResources()
-						.getStringArray(R.array.tasks)));
+		tasks.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getResources()
+				.getStringArray(R.array.tasks)));
 		tasks.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				switch (position) {
 				case 0:
-					startActivity(new Intent(getApplicationContext(),
-							ClientActivity.class));
+					startActivity(new Intent(getApplicationContext(), ClientActivity.class));
 					break;
 				case 1:
-					startActivity(new Intent(getApplicationContext(),
-							MasterActivity.class));
+					startActivity(new Intent(getApplicationContext(), MasterActivity.class));
 					break;
 				}
 			}
 		});
 	}
 
+	@Override
 	public void onResume() {
 		super.onResume();
-		String apiUrl = PreferenceManager.getDefaultSharedPreferences(this)
-				.getString(DemoServerService.PREFS_KEY_API_URL, null);
+		String apiUrl = PreferenceManager.getDefaultSharedPreferences(this).getString(
+				DemoServerService.PREFS_KEY_API_URL, null);
 
 		// Keine Einstellung vorhanden? Dann Konfigurieren.
-		if (apiUrl == null || apiUrl.length() <= 0
-				|| !URLUtil.isValidUrl(apiUrl)) {
-			startActivity(new Intent(getApplicationContext(),
-					PrefsActivity.class));
-			Toast.makeText(getApplicationContext(), R.string.please_configure,
-					Toast.LENGTH_LONG).show();
+		if (apiUrl == null || apiUrl.length() <= 0 || !URLUtil.isValidUrl(apiUrl)) {
+			startActivity(new Intent(getApplicationContext(), PrefsActivity.class));
+			Toast.makeText(getApplicationContext(), R.string.please_configure, Toast.LENGTH_LONG).show();
 			return;
 		}
 	}
