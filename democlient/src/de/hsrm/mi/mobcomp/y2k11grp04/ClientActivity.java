@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -16,7 +17,12 @@ import android.widget.BaseAdapter;
 import android.widget.Gallery;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 import android.widget.ViewSwitcher.ViewFactory;
+import de.hsrm.mi.mobcomp.y2k11grp04.extra.ColoringTextWatcher;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 
 /**
  * @author Coralie Reuter <coralie.reuter@hrcom.de>
@@ -24,13 +30,46 @@ import android.widget.ViewSwitcher.ViewFactory;
  */
 public class ClientActivity extends ServiceActivity implements ViewFactory {
 	private final ArrayList<Integer> slideIDs = new ArrayList<Integer>();
+	private final Meeting meeting = new Meeting(1, "Demo-Meeting");
+
 	private ImageSwitcher iswitch;
+	private TextView percentTextView;
+	private final int defaultVote = 50;
+	private SeekBar seekBar;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.client);
+
+		percentTextView = (TextView) findViewById(R.id.percentTextView);
+		new ColoringTextWatcher(percentTextView);
+		percentTextView.setText("50 %");
+
+		seekBar = (SeekBar) findViewById(R.id.slide_seekBar);
+		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				Log.v(getClass().getCanonicalName(), "Neue Mood:" + seekBar.getProgress());
+
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				percentTextView.setText("" + progress + "%");
+			}
+		});
+
+		new ColoringTextWatcher(percentTextView);
+
+		seekBar.setProgress(defaultVote);
+		percentTextView.setText(defaultVote + " %");
 
 		getSlides();
 

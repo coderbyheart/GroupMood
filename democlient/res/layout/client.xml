@@ -28,6 +28,14 @@
         android:layout_weight="1"
         android:orientation="vertical" >
 
+        <TextView
+            android:id="@+id/percentTextView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="24dp"
+            android:gravity="center"/>
+
         <SeekBar
             android:id="@+id/slide_seekBar"
             android:layout_width="fill_parent"
