@@ -1,5 +1,6 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
+import de.hsrm.mi.mobcomp.y2k11grp04.functions.MasterRatingActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;

@@ -1,4 +1,4 @@
-package de.hsrm.mi.mobcomp.y2k11grp04;
+package de.hsrm.mi.mobcomp.y2k11grp04.functions;
 
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
@@ -13,6 +13,8 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+import de.hsrm.mi.mobcomp.y2k11grp04.R;
+import de.hsrm.mi.mobcomp.y2k11grp04.ServiceActivity;
 import de.hsrm.mi.mobcomp.y2k11grp04.extra.ColoringTextWatcher;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.DemoServerService;

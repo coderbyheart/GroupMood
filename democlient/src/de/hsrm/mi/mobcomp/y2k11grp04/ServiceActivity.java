@@ -16,21 +16,23 @@ abstract public class ServiceActivity extends MenuActivity {
 
 	private boolean serviceBound = false;
 	private Messenger messengerSend;
-	private Messenger messengerReceive = new Messenger(new IncomingHandler());
-	private ServiceConnection sConn = new ServiceConnection() {
+	private final Messenger messengerReceive = new Messenger(new IncomingHandler());
+	private final ServiceConnection sConn = new ServiceConnection() {
+		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			Log.v(getClass().getCanonicalName(), "... verbunden.");
 			messengerSend = new Messenger(service);
 			onConnect();
 		}
 
+		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			messengerSend = null;
 			onDisconnect();
 		}
 	};
 
-	abstract protected class ServiceMessageRunnable implements Runnable {
+	public abstract class ServiceMessageRunnable implements Runnable {
 		protected Message serviceMessage;
 
 		public ServiceMessageRunnable(Message serviceMessage) {
@@ -100,12 +102,10 @@ abstract public class ServiceActivity extends MenuActivity {
 			Log.v(getClass().getCanonicalName(), "Sending message failed.");
 		}
 	}
-	
-	protected void onConnect()
-	{
+
+	protected void onConnect() {
 	}
-	
-	protected void onDisconnect()
-	{
+
+	protected void onDisconnect() {
 	}
 }

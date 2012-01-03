@@ -22,8 +22,10 @@
         <activity android:name="ClientActivity" />
         <activity android:name="MasterActivity" />
         <activity
-            android:name=".MasterRatingActivity"
+            android:name=".functions.MasterRatingActivity"
             android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name=".functions.SlideRatingActivity" >
         </activity>
 
         <service

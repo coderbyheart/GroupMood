@@ -11,6 +11,7 @@
         android:text="@string/intro" />
 
     <TextView
+        android:id="@+id/tv_select"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"

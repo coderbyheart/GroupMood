@@ -1,183 +1,46 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
-import java.util.ArrayList;
-
-import android.content.Context;
-import android.content.res.TypedArray;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Message;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
-import android.widget.Gallery;
-import android.widget.ImageSwitcher;
-import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.ViewSwitcher.ViewFactory;
-import de.hsrm.mi.mobcomp.y2k11grp04.extra.ColoringTextWatcher;
-import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
+import de.hsrm.mi.mobcomp.y2k11grp04.functions.MasterRatingActivity;
+import de.hsrm.mi.mobcomp.y2k11grp04.functions.SlideRatingActivity;
 
 /**
  * @author Coralie Reuter <coralie.reuter@hrcom.de>
  * @author Markus Tacker <m@tacker.org>
  */
-public class ClientActivity extends ServiceActivity implements ViewFactory {
-	private final ArrayList<Integer> slideIDs = new ArrayList<Integer>();
-	private final Meeting meeting = new Meeting(1, "Demo-Meeting");
-
-	private ImageSwitcher iswitch;
-	private TextView percentTextView;
-	private final int defaultVote = 50;
-	private SeekBar seekBar;
-
+public class ClientActivity extends Activity {
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.client);
+		setContentView(R.layout.main);
 
-		percentTextView = (TextView) findViewById(R.id.percentTextView);
-		new ColoringTextWatcher(percentTextView);
-		percentTextView.setText("50 %");
+		TextView txt = (TextView) findViewById(R.id.tv_select);
+		txt.setText(R.string.client_intro);
 
-		seekBar = (SeekBar) findViewById(R.id.slide_seekBar);
-		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-
+		ListView clientTasks = (ListView) findViewById(R.id.taskListView);
+		clientTasks.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getResources()
+				.getStringArray(R.array.client_tasks)));
+		clientTasks.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-				Log.v(getClass().getCanonicalName(), "Neue Mood:" + seekBar.getProgress());
-
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
-
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				percentTextView.setText("" + progress + "%");
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				switch (position) {
+				case 0:
+					startActivity(new Intent(getApplicationContext(), SlideRatingActivity.class));
+					break;
+				case 1:
+					startActivity(new Intent(getApplicationContext(), MasterRatingActivity.class));
+					break;
+				}
 			}
 		});
-
-		new ColoringTextWatcher(percentTextView);
-
-		seekBar.setProgress(defaultVote);
-		percentTextView.setText(defaultVote + " %");
-
-		getSlides();
-
-		iswitch = (ImageSwitcher) findViewById(R.id.image_switcher);
-		iswitch.setFactory(this);
-		iswitch.setInAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
-		iswitch.setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out));
-
-		for (int i = 0; i < slideIDs.size(); i++) {
-			System.out.println(slideIDs.get(i));
-		}
-		Gallery gallery = (Gallery) findViewById(R.id.slide_gallery);
-		gallery.setAdapter(new ImageAdapter(this));
-
-		// Erste Folie anzeigen
-		iswitch.setImageResource(slideIDs.get(0));
-		gallery.setOnItemClickListener(new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				iswitch.setImageResource(slideIDs.get(arg2));
-			}
-
-		});
-	}
-
-	/**
-	 * 
-	 */
-	private void getSlides() {
-
-		slideIDs.add(R.drawable.v1_f1);
-		slideIDs.add(R.drawable.v1_f2);
-		slideIDs.add(R.drawable.v1_f3);
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * de.hsrm.mi.mobcomp.y2k11grp04.ServiceActivity#getServiceMessageRunnable
-	 * (android.os.Message)
-	 */
-	@Override
-	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public View makeView() {
-		ImageView imageView = new ImageView(this);
-		imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-		imageView.setLayoutParams(new ImageSwitcher.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		imageView.setBackgroundColor(0xFF000000);
-		return imageView;
-	}
-
-	/**
-	 * @author Coralie Reuter
-	 * 
-	 */
-	public class ImageAdapter extends BaseAdapter {
-
-		private final Context context;
-		private final int galleryItemBackground;
-
-		/**
-		 * @param _context
-		 */
-		public ImageAdapter(Context _context) {
-			context = _context;
-			TypedArray ta = obtainStyledAttributes(R.styleable.Gallery);
-			galleryItemBackground = ta.getResourceId(R.styleable.Gallery_android_galleryItemBackground, 0);
-			ta.recycle();
-
-		}
-
-		@Override
-		public int getCount() {
-			return slideIDs.size();
-		}
-
-		@Override
-		public Object getItem(int position) {
-			return slideIDs.get(position);
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			ImageView imageView = new ImageView(context);
-			imageView.setImageResource(slideIDs.get(position));
-			imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-			imageView.setLayoutParams(new Gallery.LayoutParams(150, 150));
-			imageView.setBackgroundResource(galleryItemBackground);
-			return imageView;
-
-		}
-
 	}
 }

@@ -9,10 +9,16 @@
     <string name="label_overall_rating">Gesamtbewertung</string>
     <string name="please_configure">Bitte die Einstellungen überprüfen!</string>
     <string name="switch_orientation">Bildschirm drehen</string>
+    <string name="client_intro">Hier das Client Menü</string>
 
     <string-array name="tasks">
         <item>Client</item>
         <item>Master</item>
     </string-array>
 
+    <string-array name="client_tasks">
+        <item>Folien bewerten</item>
+        <item>Vortrag bewerten</item>
+    </string-array>
+        
 </resources>
