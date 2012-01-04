@@ -1,11 +1,17 @@
 from django.db import models
 from validators import validate_percent
 
-class Meeting(models.Model):
+class BaseModel(models.Model):
+    'Abstrakte Basisklasse fuer alle Models der Anwendung.'
+    creation_date = models.DateTimeField('date created', auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+class Meeting(BaseModel):
     'Meetings sind das uebergeordnete Model'
     context = 'meeting'
     name = models.CharField(max_length=200)
-    creation_date = models.DateTimeField('date created', auto_now_add=True)
     votesList = None
     
     def numVotes(self):
@@ -24,12 +30,11 @@ class Meeting(models.Model):
     def toJsonDict(self):
         return {'id': self.id, 'name': self.name, 'date': str(self.creation_date), 'avgVote': self.avgVote(), 'numVotes': self.numVotes()}
     
-class MoodVote(models.Model):
+class MoodVote(BaseModel):
     'Abstimmungen zur Stimmung eines Meetings'
     context = 'vote'
     meeting = models.ForeignKey(Meeting)
     vote = models.PositiveIntegerField(validators=[validate_percent])
-    creation_date = models.DateTimeField('date created', auto_now_add=True)
     
     def toJsonDict(self):
         return {'id': self.id, 'vote': self.vote, 'date': str(self.creation_date)}
