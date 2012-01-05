@@ -4,7 +4,7 @@ from django.template import RequestContext
 from django.shortcuts import get_object_or_404, render_to_response
 from django.utils import simplejson
 from django.views.decorators.csrf import *
-from models import Meeting, MoodVote
+from models import Meeting, Vote
 
 def getBaseHref(request):
     return 'http%s://%s%s' % (('s' if request.is_secure() else ''), request.META['HTTP_HOST'], '') 
@@ -53,7 +53,7 @@ def meeting_vote(request, meeting_id):
         data = request.POST
     if not 'vote' in data:
         return HttpResponseBadRequest("Missing vote")
-    v = MoodVote()
+    v = Vote()
     v.vote = int(data['vote'])
     v.meeting = meeting
     v.save()
