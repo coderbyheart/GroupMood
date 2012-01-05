@@ -1,10 +1,10 @@
-{% extends "demoserver/base.html" %}
+{% extends "groupmood/base.html" %}
 {% block content %}
 <h1>Meetings</h1>
 {% if latest_meeting_list %}
     <ul>
     {% for meeting in latest_meeting_list %}
-        <li><a href="/demoserver/meeting/{{ meeting.id }}">{{ meeting.name }}</a></li>
+        <li><a href="/groupmood/meeting/{{ meeting.id }}">{{ meeting.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

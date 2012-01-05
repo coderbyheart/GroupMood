@@ -11,7 +11,7 @@ class Base(unittest.TestCase):
 class MeetingTest(Base):
     
     def test_create(self):
-        response = self.client.post('/demoserver/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
+        response = self.client.post('/groupmood/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue('Location' in response)
         info = simplejson.loads(response.content)
@@ -22,7 +22,7 @@ class MeetingTest(Base):
         self.assertEquals(1, info['result']['numTopics'])
         
     def test_default_vote(self):
-        response = self.client.post('/demoserver/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
+        response = self.client.post('/groupmood/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
         info = simplejson.loads(response.content)
         question_url = info['result']['topics'][0]['questions'][0]['@id']
 

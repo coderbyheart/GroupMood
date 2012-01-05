@@ -1,4 +1,4 @@
-# Django settings for moodserver project.
+# Django settings for groupmood project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -120,7 +120,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'demoserver',
+    'groupmood',
 )
 
 # A sample logging configuration. The only tangible logging

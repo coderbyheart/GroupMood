@@ -1,4 +1,4 @@
-{% extends "demoserver/base.html" %}
+{% extends "groupmood/base.html" %}
 {% block content %}
 <h1>Question #{{ question.id }}</h1>
 <dl>
@@ -32,7 +32,7 @@
 	{% endif %}
 </dl>
 {% if question.type == "range" %}
-<form method="POST" action="/demoserver/question/{{ question.id }}/answer">
+<form method="POST" action="/groupmood/question/{{ question.id }}/answer">
     <input type="range" min="{{ question.getMin }}" max="{{ question.getMax }}" name="answer" />
     <button type="submit">absenden</button>
 </form>

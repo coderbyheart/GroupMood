@@ -1,6 +1,6 @@
 [
   {
-    "model": "demoserver.meeting",
+    "model": "groupmood.meeting",
     "pk": 1,
     "fields": {
       "name": "Demo-Meeting",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "model": "demoserver.topic",
+    "model": "groupmood.topic",
     "pk": 1,
     "fields": {
       "meeting": 1,
@@ -17,7 +17,7 @@
     }
     },
     {
-"model": "demoserver.question",
+"model": "groupmood.question",
     "pk": 1,
     "fields": {
       "topic": 1,
@@ -28,7 +28,7 @@
     }
     },
     {
-"model": "demoserver.questionoption",
+"model": "groupmood.questionoption",
     "pk": 1,
     "fields": {
       "question": 1,
@@ -38,7 +38,7 @@
       }
     },
     {
-"model": "demoserver.questionoption",
+"model": "groupmood.questionoption",
     "pk": 2,
     "fields": {
       "question": 1,

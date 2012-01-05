@@ -1,4 +1,4 @@
-{% extends "demoserver/base.html" %}
+{% extends "groupmood/base.html" %}
 {% block content %}
 <h1>Topic #{{ topic.id }}</h1>
 <dl>
@@ -12,7 +12,7 @@
 	<ul>
 	{% endif %}
 		<li>
-			<a href="/demoserver/question/{{ question.id }}">{{ question.name }}</a>
+			<a href="/groupmood/question/{{ question.id }}">{{ question.name }}</a>
 		</li>
 	{% if forloop.last %}
 	</ul>

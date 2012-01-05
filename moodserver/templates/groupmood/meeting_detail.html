@@ -1,4 +1,4 @@
-{% extends "demoserver/base.html" %}
+{% extends "groupmood/base.html" %}
 {% block content %}
 <h1>Meeting #{{ meeting.id }}</h1>
 {{ request.meta.HTTP_HOST }}
@@ -16,7 +16,7 @@
 	<ul>
 	{% endif %}
 		<li>
-			<a href="/demoserver/topic/{{ topic.id}}">{{ topic.name }}</a>
+			<a href="/groupmood/topic/{{ topic.id}}">{{ topic.name }}</a>
 		</li>
 	{% if forloop.last %}
 	</ul>

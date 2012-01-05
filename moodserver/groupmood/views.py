@@ -20,7 +20,7 @@ def getBaseHref(request):
     return 'http%s://%s' % (('s' if request.is_secure() else ''), hostname)
 
 def getModelUrl(request, model):
-    return '%s/demoserver/%s/%d' % (getBaseHref(request), model.context, model.id)
+    return '%s/groupmood/%s/%d' % (getBaseHref(request), model.context, model.id)
 
 def modelToJson(request, model):
     data = model.toJsonDict()
@@ -49,7 +49,7 @@ def jsonRequest(request):
 
 def meeting_list(request):
     if request.method == 'GET':
-        return render_to_response('demoserver/meeting_list.html', {'latest_meeting_list': Meeting.objects.order_by('-creation_date')[:25]})
+        return render_to_response('groupmood/meeting_list.html', {'latest_meeting_list': Meeting.objects.order_by('-creation_date')[:25]})
     elif request.method == 'POST':
         # Meeting anlegen
         meeting = Meeting.objects.create(name=request.POST['name'])
@@ -86,8 +86,8 @@ def meeting_entry(request, id):
     if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
         return jsonResponse(request, modelToJson(request, meeting))
     else:
-        appURL = 'groupmood://%s/demoserver/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
-        return render_to_response('demoserver/meeting_detail.html', {'meeting': meeting, 'appURL': appURL})
+        appURL = 'groupmood://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
+        return render_to_response('groupmood/meeting_detail.html', {'meeting': meeting, 'appURL': appURL})
 
 def question_entry(request, id):
     if request.method == 'GET':
@@ -95,7 +95,7 @@ def question_entry(request, id):
         if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
             return jsonResponse(request, modelToJson(request, question))
         else:
-            return render_to_response('demoserver/question_detail.html', {'question': question})    
+            return render_to_response('groupmood/question_detail.html', {'question': question})    
     else:
         return HttpResponseBadRequest()
     
@@ -130,4 +130,4 @@ def meeting_vote(request, id):
     if 'json' in request.META['CONTENT_TYPE']:
         return jsonResponse(request, meeting)
     else:
-        return HttpResponseRedirect("/demoserver/meeting/%s" % id)
+        return HttpResponseRedirect("/groupmood/meeting/%s" % id)
