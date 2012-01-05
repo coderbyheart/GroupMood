@@ -4,6 +4,7 @@ from demoserver.models import Meeting
 
 urlpatterns = patterns('',
    url(r'^meeting$', 'demoserver.views.meeting_list'),
-   url(r'^meeting/(?P<meeting_id>\d+)$', 'demoserver.views.meeting_view'),
-   url(r'^meeting/(?P<meeting_id>\d+)/vote$', 'demoserver.views.meeting_vote'),
+   url(r'^meeting/(?P<id>\d+)$', 'demoserver.views.meeting_entry'),
+   url(r'^question/(?P<id>\d+)$', 'demoserver.views.question_entry'),
+   url(r'^question/(?P<question_id>\d+)/answer$', 'demoserver.views.answer_create'),
 )
