@@ -40,8 +40,15 @@ def meeting_list(request):
     if request.method == 'GET':
         pass
     elif request.method == 'POST':
+        # Meeting anlegen
         meeting = Meeting.objects.create(name=request.POST['name'])
         meeting.save()
+        # Standard-Topic zum Bewerten des Meetings anlegen
+        voteTopic = Topic.objects.create(meeting=meeting, identifier="vote", name="Wie bewerten Sie dieses Meeting?")
+        question = Question.objects.create(topic=voteTopic, identifier="overall", name="Allgemeine Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
+        questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
+        questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
+        
         resp = jsonResponse(request, meeting)
         resp['Location'] = getModelUrl(request, meeting)
         resp.status_code = 201;
