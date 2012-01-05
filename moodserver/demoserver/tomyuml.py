@@ -20,7 +20,7 @@ for line in open("models.py").readlines():
     if classres != None:
         currentModel = Model()
         currentModel.name = classres.group(1)
-        currentModel.extends = classres.group(2) if classres.group(2) != 'models.Model' else "object"
+        currentModel.extends = classres.group(2) if classres.group(2) not in ('models.Model', 'BaseModel') else "object"
         currentModel.props = []
         currentModel.refs = [] 
         models.append(currentModel)
@@ -36,19 +36,26 @@ for line in open("models.py").readlines():
     if refres != None:
         currentModel.refs.append(refres.group(1))
 
-def renderModel(model):
-    modeldef = model.name
-    if len(model.props) > 0:
-        modeldef = "%s;--------------------;%s" % (modeldef, ";".join(map(lambda x: "+" + x, model.props)))
-    return modeldef
+print "digraph G {"
+print "    graph [ rankdir=BT ]"
+print "    node [ shape=record ]"
 
 for model in models:
-    extendsdef = "" if model.extends == "object" else "^-[%s]" % renderModel(classtomodel[model.extends]) 
-    print "[%s]%s" % (renderModel(model), extendsdef)
+    if model.name == "BaseModel":
+        continue
+    print '    %s [label="{%s%s}"]' % (model.name, model.name, "" if len(model.props) == 0 else "|" + "".join(map(lambda x: "+%s\\l" % (x), model.props)))   
 
+print "    edge [ arrowhead=onormal weight=2 ]"    
+for model in models:
+    if model.extends == "object":
+        continue
+    print "    %s -> %s " % (model.name, model.extends)
+
+print '    edge [ arrowhead=none headlabel="1" taillabel="0..n" fontsize=10 ]'
 for model in models:
     if len(model.refs) == 0:
         continue
     for ref in model.refs:
-        pass
-        #print "[%s]1-0..n[%s]" % (renderModel(model), renderModel(classtomodel[ref]) )  
+        print "    %s -> %s " % (model.name, ref)  
+
+print "}"
