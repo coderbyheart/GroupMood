@@ -20,13 +20,13 @@ for line in open("models.py").readlines():
     if classres != None:
         currentModel = Model()
         currentModel.name = classres.group(1)
-        currentModel.extends = classres.group(2) if classres.group(2) not in ('models.Model', 'BaseModel') else "object"
+        currentModel.extends = classres.group(2) if classres.group(2) not in ('models.Model') else "object"
         currentModel.props = []
         currentModel.refs = [] 
         models.append(currentModel)
         classtomodel[currentModel.name] = currentModel
     
-    propmatch = re.compile(r"^([a-z]+) *= model")
+    propmatch = re.compile(r"^([a-z_]+) *= model")
     propres = propmatch.match(line)
     if propres != None:
         currentModel.props.append(propres.group(1))
@@ -43,13 +43,12 @@ print "    node [ shape=record ]"
 for model in models:
     if model.name == "BaseModel":
         continue
-    print '    %s [label="{%s%s}"]' % (model.name, model.name, "" if len(model.props) == 0 else "|" + "".join(map(lambda x: "+%s\\l" % (x), model.props)))   
-
-print "    edge [ arrowhead=onormal weight=2 ]"    
-for model in models:
-    if model.extends == "object":
-        continue
-    print "    %s -> %s " % (model.name, model.extends)
+    props = model.props
+    if model.extends != 'object':
+        for prop in classtomodel[model.extends].props:
+            props.append(prop)
+        
+    print '    %s [label="{%s%s}"]' % (model.name, model.name, "" if len(model.props) == 0 else "|" + "".join(map(lambda x: "+%s\\l" % (x), props)))   
 
 print '    edge [ arrowhead=none headlabel="1" taillabel="0..n" fontsize=10 ]'
 for model in models:

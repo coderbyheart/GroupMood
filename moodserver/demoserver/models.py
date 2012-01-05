@@ -25,11 +25,8 @@ class Meeting(BaseModel):
     name = models.CharField(max_length=200)
     
     def __unicode__(self):
-        return "Meeting #%d: " % (self.id, self.name)
+        return "Meeting #%d: %s" % (self.id, self.name)
       
-    def votes(self):
-        return Vote.objects.filter(meeting=self.id)
-    
     def topics(self):
         return Topic.objects.filter(meeting=self.id)
     
@@ -37,7 +34,7 @@ class Meeting(BaseModel):
         return len(self.topics())
         
     def toJsonDict(self):
-        return {'id': self.id, 'name': self.name, 'date': str(self.creation_date), 'avgVote': self.avgVote(), 'numVotes': self.numVotes()}
+        return {'id': self.id, 'name': self.name, 'date': str(self.creation_date), 'numTopics': self.numTopics()}
     
 class User(BaseModel):
     """
@@ -118,7 +115,7 @@ class Comment(BaseModel):
     >>> comment = Comment.objects.create(topic=voteTopic, user=user, comment="Kommentar zum Text.")
     >>> comment.comment
     'Kommentar zum Text.'
-    >>> comment.date != None
+    >>> comment.creation_date != None
     True
     >>> comment = Comment.objects.create(topic=voteTopic, user=user, comment="Noch ein Kommentar zum Text.")
     >>> voteTopic.numComments()
@@ -129,7 +126,6 @@ class Comment(BaseModel):
     topic = models.ForeignKey(Topic)
     user = models.ForeignKey(User)
     comment = models.CharField(max_length=200)
-    date = models.DateTimeField(auto_now=True)
     
     def __unicode__(self):
         return "Comment #%d: %s on %s" % (self.id, self.comment, unicode(self.slide))
@@ -238,7 +234,6 @@ class Answer(BaseModel):
     question = models.ForeignKey(Question)
     user = models.ForeignKey(User)
     answer = models.CharField(max_length=200)
-    date = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return "Answer #%d: %s on %s" % (self.id, self.answer, unicode(self.slide))

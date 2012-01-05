@@ -4,13 +4,16 @@ from django.template import RequestContext
 from django.shortcuts import get_object_or_404, render_to_response
 from django.utils import simplejson
 from django.views.decorators.csrf import *
-from models import Meeting, Vote
+from models import *
 
 def getBaseHref(request):
-    return 'http%s://%s%s' % (('s' if request.is_secure() else ''), request.META['HTTP_HOST'], '') 
+    hostname = request.META['HTTP_HOST'] if 'HTTP_HOST' in request.META else 'localhost'
+    return 'http%s://%s' % (('s' if request.is_secure() else ''), hostname)
+
+def getModelUrl(request, model):
+    return '%s/demoserver/%s/%d' % (getBaseHref(request), model.context, model.id) 
 
 def jsonResponse(request, model):
-    basehref = getBaseHref(request)
     context = model.context
     contexthref = 'http://groupmood.net/jsonld'
     resp = {}
@@ -20,7 +23,7 @@ def jsonResponse(request, model):
         'message': 'ok'}
     resp['result'] = {
         '@context': '%s/%s' % (contexthref, context),
-        '@subject': '%s/demoserver/%s/%d' % (basehref, context, model.id)
+        '@subject': getModelUrl(request, model)
     }
     data = model.toJsonDict()
     for k in data:
@@ -33,7 +36,20 @@ def jsonRequest(request):
         return {}
     return simplejson.loads(jsondata)
 
-def meeting_view(request, meeting_id):
+def meeting_list(request):
+    if request.method == 'GET':
+        pass
+    elif request.method == 'POST':
+        meeting = Meeting.objects.create(name=request.POST['name'])
+        meeting.save()
+        resp = jsonResponse(request, meeting)
+        resp['Location'] = getModelUrl(request, meeting)
+        resp.status_code = 201;
+        return resp        
+    else:
+        return HttpResponseBadRequest()
+
+def meeting_entry(request, meeting_id):
     if request.method != 'GET':
         return HttpResponseBadRequest()
     meeting = get_object_or_404(Meeting, pk=meeting_id)
