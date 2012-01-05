@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GroupMood</string>
+    <string name="scan">QR-Code scannen</string>
+    <string name="client_button">Ich bin Teilnehmer!</string>
+    <string name="master_button">Ich bin Master!</string>
+    <string name="open_meeting">Öffne Meeting ...</string>
+    <string name="label_settings">Einstellungen</string>
+    
+    
+    
+</resources>
