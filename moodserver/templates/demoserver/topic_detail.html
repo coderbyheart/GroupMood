@@ -1,0 +1,26 @@
+{% extends "demoserver/base.html" %}
+{% block content %}
+<h1>Topic #{{ topic.id }}</h1>
+<dl>
+	<dt>Name</dt>
+	<dd>{{ topic.name }}</dd>
+	<dt>Questions</dt>
+	<dd>
+	{% if topic.question_set %}
+	{% for question in topic.question_set.all %}
+	{% if forloop.first %}
+	<ul>
+	{% endif %}
+		<li>
+			<a href="/demoserver/question/{{ question.id }}">{{ question.name }}</a>
+		</li>
+	{% if forloop.last %}
+	</ul>
+	{% endif %}
+	{% endfor %}
+	{% else %}
+	No Questions, yet.
+	{% endif %}
+	</dd>
+</dl>
+{% endblock %}

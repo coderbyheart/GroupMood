@@ -1,34 +1,30 @@
 {% extends "demoserver/base.html" %}
 {% block content %}
 <h1>Meeting #{{ meeting.id }}</h1>
+{{ request.meta.HTTP_HOST }}
+<img src="http://chart.apis.google.com/chart?chs=450x450&amp;chld=H&amp;cht=qr&amp;chl={{ appURL|iriencode }}" alt="qrcode"  />
 <dl>
 	<dt>Name</dt>
 	<dd>{{ meeting.name }}</dd>
-	<dt>Number of Votes</dt>
-	<dd>{{ meeting.numVotes }}</dd>
-	<dt>Average Vote</dt>
-	<dd>{{ meeting.avgVote }}</dd>
-	<dt>Votes</dt>
+	<dt>AppURL</dt>
+	<dd>{{ appURL|iriencode }}</dd>
+	<dt>Topics</dt>
 	<dd>
-	{% if meeting.moodvote_set %}
-	{% for vote in meeting.moodvote_set.all %}
+	{% if meeting.topic_set %}
+	{% for topic in meeting.topic_set.all %}
 	{% if forloop.first %}
 	<ul>
 	{% endif %}
 		<li>
-			{{ vote.vote }}
+			<a href="/demoserver/topic/{{ topic.id}}">{{ topic.name }}</a>
 		</li>
 	{% if forloop.last %}
 	</ul>
 	{% endif %}
 	{% endfor %}
 	{% else %}
-	No votes, yet.
+	No Topics, yet.
 	{% endif %}
 	</dd>
 </dl>
-<form method="POST" action="/demoserver/meeting/1/vote">
-    <input type="range" min="0" max="100" name="vote" />
-    <button type="submit">absenden</button>
-</form>
 {% endblock %}

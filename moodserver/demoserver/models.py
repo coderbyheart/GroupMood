@@ -179,17 +179,25 @@ class Question(BaseModel):
         if self.mode != self.MODE_AVERAGE:
             return 0
         votes = self.answers()
-        qmin_value = QuestionOption.objects.filter(question=self, key="min_value")
-        qmax_value = QuestionOption.objects.filter(question=self, key="max_value")
-        min_value = qmin_value[0].value if qmin_value else 0
-        max_value = qmax_value[0].value if qmax_value else 0
         
         if len(votes) == 0:
-            return (int(max_value) - int(min_value)) / 2
+            return (int(self.getMax(0)) - int(self.getMin(0))) / 2
         sum = 0
         for v in votes:
             sum += int(v.answer)
         return sum / len(votes)
+    
+    def getMin(self, default=None):
+        if self.mode != self.MODE_AVERAGE:
+            return default
+        qmin_value = QuestionOption.objects.filter(question=self, key="min_value")
+        return qmin_value[0].value if qmin_value else default
+        
+    def getMax(self, default=None):
+        if self.mode != self.MODE_AVERAGE:
+            return default
+        qmax_value = QuestionOption.objects.filter(question=self, key="max_value")
+        return qmax_value[0].value if qmax_value else default
     
     def toJsonDict(self):
         type = filter(lambda t: t[0] == self.type, self.TYPES)[0][0]

@@ -25,7 +25,7 @@ class MeetingTest(Base):
         response = self.client.post('/demoserver/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
         info = simplejson.loads(response.content)
         question_url = info['result']['topics'][0]['questions'][0]['@id']
-        
+
         response = self.client.get(question_url, Accept='application/json')
         info = simplejson.loads(response.content)
         self.assertEquals(50, info['result']['avg'])

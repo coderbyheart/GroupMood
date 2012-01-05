@@ -49,7 +49,7 @@ def jsonRequest(request):
 
 def meeting_list(request):
     if request.method == 'GET':
-        pass
+        return render_to_response('demoserver/meeting_list.html', {'latest_meeting_list': Meeting.objects.order_by('-creation_date')[:25]})
     elif request.method == 'POST':
         # Meeting anlegen
         meeting = Meeting.objects.create(name=request.POST['name'])
@@ -83,18 +83,23 @@ def meeting_entry(request, id):
     if request.method != 'GET':
         return HttpResponseBadRequest()
     meeting = get_object_or_404(Meeting, pk=id)
-    if 'json' in request.META.get("HTTP_ACCEPT", ""):
+    if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
         return jsonResponse(request, modelToJson(request, meeting))
     else:
-        return render_to_response('demoserver/meeting_detail.html', {'meeting': meeting})
+        appURL = 'groupmood://%s/demoserver/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
+        return render_to_response('demoserver/meeting_detail.html', {'meeting': meeting, 'appURL': appURL})
 
 def question_entry(request, id):
     if request.method == 'GET':
         question = get_object_or_404(Question, pk=id)
-        return jsonResponse(request, modelToJson(request, question))
+        if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
+            return jsonResponse(request, modelToJson(request, question))
+        else:
+            return render_to_response('demoserver/question_detail.html', {'question': question})    
     else:
         return HttpResponseBadRequest()
     
+@csrf_exempt
 def answer_create(request, question_id):
     if request.method == 'POST':
         question = get_object_or_404(Question, pk=question_id)

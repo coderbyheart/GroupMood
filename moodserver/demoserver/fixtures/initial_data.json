@@ -6,5 +6,45 @@
       "name": "Demo-Meeting",
       "creation_date": "2011-12-01 00:00"
     }
+  },
+  {
+    "model": "demoserver.topic",
+    "pk": 1,
+    "fields": {
+      "meeting": 1,
+      "name": "Wie bewerten Sie dieses Meeting?",
+      "creation_date": "2011-12-01 00:00"
+    }
+    },
+    {
+"model": "demoserver.question",
+    "pk": 1,
+    "fields": {
+      "topic": 1,
+      "name": "Allgemeine Bewertung",
+      "type": "range",
+      "mode": "avg",
+      "creation_date": "2011-12-01 00:00"
+    }
+    },
+    {
+"model": "demoserver.questionoption",
+    "pk": 1,
+    "fields": {
+      "question": 1,
+      "key": "min_value",
+      "value": 0,
+      "creation_date": "2011-12-01 00:00"
+      }
+    },
+    {
+"model": "demoserver.questionoption",
+    "pk": 2,
+    "fields": {
+      "question": 1,
+      "key": "max_value",
+      "value": 100,
+      "creation_date": "2011-12-01 00:00"
+    }
   }
 ]

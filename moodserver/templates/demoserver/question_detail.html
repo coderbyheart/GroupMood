@@ -1,0 +1,40 @@
+{% extends "demoserver/base.html" %}
+{% block content %}
+<h1>Question #{{ question.id }}</h1>
+<dl>
+	<dt>Name</dt>
+	<dd>{{ question.name }}</dd>
+	<dt>Typ</dt>
+	<dd>{{ question.type }}</dd>
+	<dt>Mode</dt>
+	<dd>{{ question.mode }}</dd>
+	<dt>Answers</dt>
+	<dd>
+	{% if question.answer_set %}
+	{% for answer in question.answer_set.all %}
+	{% if forloop.first %}
+	<ul>
+	{% endif %}
+		<li>
+			{{ answer.answer }}
+		</li>
+	{% if forloop.last %}
+	</ul>
+	{% endif %}
+	{% endfor %}
+	{% else %}
+	No Answers, yet.
+	{% endif %}
+	</dd>
+	{% if question.type == "range" %}
+	<dt>AvgVote</dt>
+	<dd>{{ question.avg }}</dd>
+	{% endif %}
+</dl>
+{% if question.type == "range" %}
+<form method="POST" action="/demoserver/question/{{ question.id }}/answer">
+    <input type="range" min="{{ question.getMin }}" max="{{ question.getMax }}" name="answer" />
+    <button type="submit">absenden</button>
+</form>
+{% endif %}
+{% endblock %}
