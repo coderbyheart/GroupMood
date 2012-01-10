@@ -1,11 +1,23 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Meeting implements Model {
 
 	private String name;
 	private int id;
 	private int avgVote;
 	private int numVotes;
+	private List<Slide> slides = new ArrayList<Slide>();
+
+	public List<Slide> getSlides() {
+		return slides;
+	}
+
+	public void setSlides(List<Slide> slides) {
+		this.slides = slides;
+	}
 
 	public Meeting() {
 	}
