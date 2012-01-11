@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.hsrm.mi.mobcomp.y2k11grp04.functions;
 
 import java.io.IOException;
@@ -9,184 +6,171 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import uk.co.jasonfry.android.tools.ui.PageControl;
+import uk.co.jasonfry.android.tools.ui.SwipeView;
+import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Message;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.Gallery;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+
+import com.devsmart.android.ui.HorizontalListView;
+
 import de.hsrm.mi.mobcomp.y2k11grp04.R;
-import de.hsrm.mi.mobcomp.y2k11grp04.ServiceActivity;
-import de.hsrm.mi.mobcomp.y2k11grp04.extra.ColoringTextWatcher;
-import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
-import de.hsrm.mi.mobcomp.y2k11grp04.model.Slide;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.ImageModel;
 
 /**
  * @author Coralie Reuter
  * 
  */
-public class SlideRatingActivity extends ServiceActivity {
-	private final String TAG = SlideRatingActivity.class.getSimpleName();
-	private final ArrayList<Slide> slides = new ArrayList<Slide>();
-	private Meeting meeting;
-
-	private WebView webView;
-	private TextView percentTextView;
-	private final int defaultVote = 50;
-	private SeekBar seekBar;
+public class SlideRatingActivity extends Activity {
+	private static final int DEFAULT_PROGRESS = 50;
+	private int currentImage = 0;
+	private SeekBar s1;
+	private SeekBar s2;
+	private TextView tv;
+	private WebView image_tall;
+	private SwipeView mSwipeView;
+	private final ArrayList<ImageModel> images = new ArrayList<ImageModel>();
+	private int currentSeekBar = 0;
+	private static String TAG = SlideRatingActivity.class.getSimpleName();
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.client);
+		setContentView(R.layout.gallery);
 
-		meeting = new Meeting(1, "Demo-Meeting");
-		meeting.setSlides(slides);
+		loadImages();
 
-		percentTextView = (TextView) findViewById(R.id.percentTextView);
-		new ColoringTextWatcher(percentTextView);
-		percentTextView.setText("50 %");
+		View image_previews = null;
 
-		seekBar = (SeekBar) findViewById(R.id.slide_seekBar);
-		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+		if (getResources().getConfiguration().orientation == 1) {
+			image_previews = findViewById(R.id.horizontal_list_view);
+			((HorizontalListView) image_previews).setAdapter(new ImageAdapter(this));
 
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-				Log.v(getClass().getCanonicalName(),
-						"Neue Mood:" + seekBar.getProgress());
+		} else {
 
+			tv = (TextView) findViewById(R.id.percentage);
+			tv.setText("" + DEFAULT_PROGRESS);
+			image_previews = findViewById(R.id.vertical_list_view);
+			((ListView) image_previews).setAdapter(new ImageAdapter(this));
+
+			PageControl mPageControl = (PageControl) findViewById(R.id.page_control);
+			mSwipeView = (SwipeView) findViewById(R.id.swipe_view);
+
+			for (int i = 0; i < images.get(currentImage).getNumberOfSeekbars(); i++) {
+				mSwipeView.addView(new FrameLayout(this));
 			}
 
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+			s1 = new SeekBar(this);
+			s2 = new SeekBar(this);
+			s1.setProgress(images.get(currentImage).getSeekBars().get(0).getProgress());
+			s2.setProgress(images.get(currentImage).getSeekBars().get(1).getProgress());
 
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				percentTextView.setText("" + progress + "%");
-			}
-		});
+			((FrameLayout) mSwipeView.getChildContainer().getChildAt(0)).addView(s1);
+			((FrameLayout) mSwipeView.getChildContainer().getChildAt(1)).addView(s2);
 
-		new ColoringTextWatcher(percentTextView);
+			SwipeImageLoader mSwipeImageLoader = new SwipeImageLoader();
 
-		seekBar.setProgress(defaultVote);
-		percentTextView.setText(defaultVote + " %");
+			mSwipeView.setOnPageChangedListener(mSwipeImageLoader);
 
-		try {
-			getSlides();
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			mSwipeView.setPageControl(mPageControl);
 		}
+		// tall image
+		image_tall = (WebView) findViewById(R.id.image_tall);
+		WebSettings webImageSettings = image_tall.getSettings();
+		webImageSettings.setBuiltInZoomControls(true);
+		webImageSettings.setSupportZoom(true);
+		webImageSettings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
+		webImageSettings.setJavaScriptEnabled(true);
+		webImageSettings.setLightTouchEnabled(true);
+		webImageSettings.setLoadWithOverviewMode(true);
+		webImageSettings.setUseWideViewPort(true);
+		image_tall.setPadding(0, 0, 0, 0);
 
-		Gallery gallery = (Gallery) findViewById(R.id.slide_gallery);
-		gallery.setAdapter(new ImageAdapter(this));
+		loadTallImage(image_tall, images.get(0).getUrl());
 
-		webView = (WebView) findViewById(R.id.image_switcher);
-		WebSettings webSettings = webView.getSettings();
-		webSettings.setBuiltInZoomControls(true);
-		webSettings.setSupportZoom(true);
-		webSettings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
-		webSettings.setJavaScriptEnabled(true);
-		webSettings.setLightTouchEnabled(true);
+	}
 
-		String webViewWidth = getWindow().getWindowManager().getDefaultDisplay().getWidth() + "px";
+	private class SwipeImageLoader implements OnPageChangedListener {
 
-		String webViewHeight = webView.getHeight() + "px";
+		@Override
+		public void onPageChanged(int oldPage, int newPage) {
 
-		final String htmlBeginning = "<HTML><HEAD><style type=\"text/css\">html, body {height: 100%;margin: 0;padding: 0;}</style></HEAD><BODY><img src=\"";
-		final String htmlEnd = "\"width=\"" + webViewWidth
-				+ "\"></BODY></HTML>";
-		String summary = htmlBeginning + slides.get(0).getImageUrl() + htmlEnd;
-		Log.d(TAG, summary);
-		webView.loadData(summary, "text/html", "utf-8");
+			// going forwards
+			if (newPage > oldPage) {
+				// if at the end, don't load one page after the end
+				if (newPage != (mSwipeView.getPageCount() - 1)) {
+					SeekBar s = new SeekBar(SlideRatingActivity.this);
+					s.setProgress(images.get(currentImage).getSeekBars().get(newPage + 1).getProgress());
+					((FrameLayout) mSwipeView.getChildContainer().getChildAt(newPage + 1)).addView(s);
+					currentSeekBar = newPage + 1;
 
-		// Erste Folie anzeigen
-		gallery.setOnItemClickListener(new OnItemClickListener() {
+				}
+				// if at the beginning, don't destroy one before the beginning
+				if (oldPage != 0) {
+					((FrameLayout) mSwipeView.getChildContainer().getChildAt(oldPage - 1)).removeAllViews();
+					currentSeekBar = newPage - 1;
 
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int id,
-					long arg3) {
-				String summary = htmlBeginning + slides.get(id).getImageUrl()
-						+ htmlEnd;
-				webView.loadData(summary, "text/html", "utf-8");
+				}
+
+			}
+			// going backwards
+			else {
+				// if at the beginning, don't load one before the beginning
+				if (newPage != 0) {
+					SeekBar s = new SeekBar(SlideRatingActivity.this);
+					s.setProgress(images.get(currentImage).getSeekBars().get(newPage - 1).getProgress());
+					((FrameLayout) mSwipeView.getChildContainer().getChildAt(newPage - 1)).addView(s);
+					currentSeekBar = newPage - 1;
+				}
+				// if at the end, don't destroy one page after the end
+				if (oldPage != (mSwipeView.getPageCount() - 1)) {
+					((FrameLayout) mSwipeView.getChildContainer().getChildAt(oldPage + 1)).removeAllViews();
+					currentSeekBar = newPage + 1;
+
+				}
 			}
 
-		});
+		}
 	}
 
-	/**
-	 * @throws MalformedURLException
-	 * 
-	 */
-	private void getSlides() throws MalformedURLException {
+	private void loadTallImage(WebView wv, URL imageURL) {
 
-		slides.add(new Slide().setImageUrl(
-				new URL("http://dummyimage.com/480x800/000/fff.jpg"))
-				.setNumber(1));
-		slides.add(new Slide().setImageUrl(
-				new URL("http://dummyimage.com/480x800/ffffff/fff.jpg"))
-				.setNumber(1));
-		slides.add(new Slide().setImageUrl(
-				new URL("http://dummyimage.com/480x800/540054/fff.jpg"))
-				.setNumber(1));
-		slides.add(new Slide().setImageUrl(
-				new URL("http://dummyimage.com/480x800/943540/fff.jpg"))
-				.setNumber(1));
-		slides.add(new Slide().setImageUrl(
-				new URL("http://dummyimage.com/480x800/234054/fff.jpg"))
-				.setNumber(1));
+		String htmlTemplateHead = "<HTML><HEAD><meta name=\"viewport\" content=\"width=device-width\"><style type=\"text/css\">html, body {height: 100%;margin: 0;padding:0; background-color: #000000;}</style></HEAD>";
+		String htmlTemplateBody = "<BODY> <div align=\"center\" ><img src=\"" + imageURL + "\"></div></BODY>";
+		String htmlTemplateFoot = "</HTML>";
 
+		String summary = htmlTemplateHead + htmlTemplateBody + htmlTemplateFoot;
+		Log.d(TAG, summary);
+
+		// wv.setInitialScale(getScale());
+		wv.loadData(summary, "text/html", "utf-8");
 	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * de.hsrm.mi.mobcomp.y2k11grp04.ServiceActivity#getServiceMessageRunnable
-	 * (android.os.Message)
-	 */
-	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	// @Override
-	// public View makeView() {
-	// ImageView imageView = new ImageView(this);
-	// imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-	// imageView.setLayoutParams(new ImageSwitcher.LayoutParams(
-	// LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-	// imageView.setBackgroundColor(0xFF000000);
-	// return imageView;
-	// }
 
 	/**
 	 * @author Coralie Reuter
 	 * 
 	 */
 	public class ImageAdapter extends BaseAdapter {
+		@SuppressWarnings("unused")
 		private final Context context;
 		private final int galleryItemBackground;
 
@@ -208,20 +192,19 @@ public class SlideRatingActivity extends ServiceActivity {
 		public ImageAdapter(Context _context) {
 			context = _context;
 			TypedArray ta = obtainStyledAttributes(R.styleable.Gallery);
-			galleryItemBackground = ta.getResourceId(
-					R.styleable.Gallery_android_galleryItemBackground, 0);
+			galleryItemBackground = ta.getResourceId(R.styleable.Gallery_android_galleryItemBackground, 0);
 			ta.recycle();
 
 		}
 
 		@Override
 		public int getCount() {
-			return slides.size();
+			return images.size();
 		}
 
 		@Override
 		public Object getItem(int position) {
-			return slides.get(position);
+			return images.get(position);
 		}
 
 		@Override
@@ -230,21 +213,94 @@ public class SlideRatingActivity extends ServiceActivity {
 		}
 
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			ImageView imageView = new ImageView(context);
+		public View getView(final int position, View convertView, ViewGroup parent) {
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.gallery_item, null);
+
+			ImageView iv = (ImageView) view.findViewById(R.id.image);
 			try {
-				URL url = slides.get(position).getImageUrl();
-				Drawable image = ImageOperations(this, url);
-				imageView.setImageDrawable(image);
+				URL url = images.get(position).getUrl();
+				Drawable img = ImageOperations(this, url);
+				iv.setImageDrawable(img);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
+			iv.setPadding(2, 2, 2, 2);
+			iv.setScaleType(ImageView.ScaleType.FIT_XY);
+			iv.setBackgroundResource(galleryItemBackground);
 
-			imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-			imageView.setLayoutParams(new Gallery.LayoutParams(150, 150));
-			imageView.setBackgroundResource(galleryItemBackground);
-			return imageView;
+			iv.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					loadTallImage(image_tall, images.get(position).getUrl());
+					setCurrentImage(position);
+				}
+
+			});
+
+			return view;
 
 		}
+	}
+
+	private void loadImages() {
+		SeekBar tempBar = new SeekBar(this);
+		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		layoutParams.weight = 1;
+		layoutParams.leftMargin = 5;
+		layoutParams.rightMargin = 5;
+		tempBar.setLayoutParams(layoutParams);
+		tempBar.setProgress(DEFAULT_PROGRESS);
+		tempBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				tv.setText(seekBar.getProgress() + "");
+				Log.d(TAG, "onStopTrackingTouch");
+
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				Log.d(TAG, "onStartTrackingTouch");
+
+			}
+
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				Log.d(TAG, "onProgressChanged");
+
+			}
+		});
+		try {
+			images.add(new ImageModel().setUrl(
+					new URL("http://images.idgentertainment.de/images/idgwpgsgp/bdb/2198613/1920x1200.jpg"))
+					.setSeekBars(tempBar, this));
+			images.add(new ImageModel().setUrl(new URL("http://dummyimage.com/480x800/000/fff.jpg")).setSeekBars(
+					tempBar, this));
+			images.add(new ImageModel().setUrl(new URL("http://dummyimage.com/480x800/ffffff/fff.jpg")).setSeekBars(
+					tempBar, this));
+			images.add(new ImageModel().setUrl(new URL("http://dummyimage.com/480x800/540054/fff.jpg")).setSeekBars(
+					tempBar, this));
+			images.add(new ImageModel().setUrl(new URL("http://dummyimage.com/480x800/943540/fff.jpg")).setSeekBars(
+					tempBar, this));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * @return the currentImage
+	 */
+	public int getCurrentImage() {
+		return currentImage;
+	}
+
+	/**
+	 * @param currentImage
+	 */
+	public void setCurrentImage(int currentImage) {
+		this.currentImage = currentImage;
 	}
 }
