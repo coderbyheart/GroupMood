@@ -1,13 +1,19 @@
 {% extends "groupmood/base.html" %}
 {% block content %}
 <h1>Meeting #{{ meeting.id }}</h1>
-{{ request.meta.HTTP_HOST }}
-<img src="http://chart.apis.google.com/chart?chs=450x450&amp;chld=H&amp;cht=qr&amp;chl={{ appURL|iriencode }}" alt="qrcode"  />
 <dl>
 	<dt>Name</dt>
 	<dd>{{ meeting.name }}</dd>
-	<dt>AppURL</dt>
-	<dd>{{ appURL|iriencode }}</dd>
+	<dt>URL für die Meeting-Teilnehmer</dt>
+	<dd>
+		{{ attendeeAppURL|iriencode }}<br />
+		<img src="http://chart.apis.google.com/chart?chs=400x400&amp;chld=H&amp;cht=qr&amp;chl={{ attendeeAppURL|iriencode }}" alt="qrcode"  />
+	</dd>
+	<dt>URL für den Meeting-Leiter</dt>
+	<dd>
+		{{ chairAppURL|iriencode }}<br />
+		<img src="http://chart.apis.google.com/chart?chs=400x400&amp;chld=H&amp;cht=qr&amp;chl={{ chairAppURL|iriencode }}" alt="qrcode"  />
+	</dd>
 	<dt>Topics</dt>
 	<dd>
 	{% if meeting.topic_set %}

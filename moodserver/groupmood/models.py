@@ -34,7 +34,7 @@ class Meeting(BaseModel):
         return len(self.topics())
         
     def toJsonDict(self):
-        return {'id': self.id, 'name': self.name, 'numTopics': self.numTopics()}
+        return {'id': self.id, 'name': self.name, 'numTopics': self.numTopics(), 'creationDate': self.creation_date.isoformat()}
     
 class User(BaseModel):
     """
