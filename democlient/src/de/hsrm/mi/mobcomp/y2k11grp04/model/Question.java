@@ -1,5 +1,8 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Question implements Model {
 
 	private Topic topic;
@@ -8,84 +11,145 @@ public class Question implements Model {
 	private String type;
 	private String modus;
 	private String creation_date;
+	private List<QuestionOption> questionOptions = new ArrayList<QuestionOption>();
+	private List<Choice> choices = new ArrayList<Choice>();
+
+	public void addChoice(Choice c) {
+		choices.add(c);
+	}
+
 	@Override
 	public String getContext() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public void addQuestionOption(QuestionOption qo) {
+		questionOptions.add(qo);
+	}
+
 	/**
 	 * @return the topic
 	 */
 	public Topic getTopic() {
 		return topic;
 	}
+
 	/**
-	 * @param topic the topic to set
+	 * @param topic
+	 *            the topic to set
+	 * @return
 	 */
-	public void setTopic(Topic topic) {
+	public Question setTopic(Topic topic) {
 		this.topic = topic;
+		return this;
 	}
+
 	/**
 	 * @return the id
 	 */
 	public int getId() {
 		return id;
 	}
+
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
+	 * @return
 	 */
-	public void setId(int id) {
+	public Question setId(int id) {
 		this.id = id;
+		return this;
 	}
+
 	/**
 	 * @return the name
 	 */
 	public String getName() {
 		return name;
 	}
+
 	/**
-	 * @param name the name to set
+	 * @param name
+	 *            the name to set
+	 * @return
 	 */
-	public void setName(String name) {
+	public Question setName(String name) {
 		this.name = name;
+		return this;
 	}
+
 	/**
 	 * @return the type
 	 */
 	public String getType() {
 		return type;
 	}
+
 	/**
-	 * @param type the type to set
+	 * @param type
+	 *            the type to set
+	 * @return
 	 */
-	public void setType(String type) {
+	public Question setType(String type) {
 		this.type = type;
+		return this;
 	}
+
 	/**
 	 * @return the modus
 	 */
 	public String getModus() {
 		return modus;
 	}
+
 	/**
-	 * @param modus the modus to set
+	 * @param modus
+	 *            the modus to set
+	 * @return
 	 */
-	public void setModus(String modus) {
+	public Question setModus(String modus) {
 		this.modus = modus;
+		return this;
 	}
+
 	/**
 	 * @return the creation_date
 	 */
 	public String getCreation_date() {
 		return creation_date;
 	}
+
 	/**
-	 * @param creation_date the creation_date to set
+	 * @param creation_date
+	 *            the creation_date to set
+	 * @return
 	 */
-	public void setCreation_date(String creation_date) {
+	public Question setCreation_date(String creation_date) {
 		this.creation_date = creation_date;
+		return this;
 	}
-	/* (non-Javadoc)
+
+	/**
+	 * @return the questionOptions
+	 */
+	public List<QuestionOption> getQuestionOptions() {
+		return questionOptions;
+	}
+
+	/**
+	 * @param questionOptions
+	 *            the questionOptions to set
+	 * @return
+	 */
+	public Question setQuestionOptions(List<QuestionOption> questionOptions) {
+		this.questionOptions = questionOptions;
+		return this;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -101,7 +165,10 @@ public class Question implements Model {
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -141,5 +208,19 @@ public class Question implements Model {
 		} else if (!type.equals(other.type))
 			return false;
 		return true;
+	}
+
+	/**
+	 * @return the choices
+	 */
+	public List<Choice> getChoices() {
+		return choices;
+	}
+
+	/**
+	 * @param choices the choices to set
+	 */
+	public void setChoices(List<Choice> choices) {
+		this.choices = choices;
 	}
 }

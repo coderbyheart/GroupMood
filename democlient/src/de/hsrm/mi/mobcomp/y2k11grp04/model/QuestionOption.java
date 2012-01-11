@@ -7,67 +7,95 @@ public class QuestionOption {
 	private String value;
 	private String creation_date;
 	private int id;
+
 	/**
 	 * @return the question
 	 */
 	public Question getQuestion() {
 		return question;
 	}
+
 	/**
-	 * @param question the question to set
+	 * @param question
+	 *            the question to set
+	 * @return
 	 */
-	public void setQuestion(Question question) {
+	public QuestionOption setQuestion(Question question) {
 		this.question = question;
+		return this;
 	}
+
 	/**
 	 * @return the key
 	 */
 	public String getKey() {
 		return key;
 	}
+
 	/**
-	 * @param key the key to set
+	 * @param key
+	 *            the key to set
+	 * @return
 	 */
-	public void setKey(String key) {
+	public QuestionOption setKey(String key) {
 		this.key = key;
+		return this;
 	}
+
 	/**
 	 * @return the value
 	 */
 	public String getValue() {
 		return value;
 	}
+
 	/**
-	 * @param value the value to set
+	 * @param value
+	 *            the value to set
+	 * @return
 	 */
-	public void setValue(String value) {
+	public QuestionOption setValue(String value) {
 		this.value = value;
+		return this;
 	}
+
 	/**
 	 * @return the creation_date
 	 */
 	public String getCreation_date() {
 		return creation_date;
 	}
+
 	/**
-	 * @param creation_date the creation_date to set
+	 * @param creation_date
+	 *            the creation_date to set
+	 * @return
 	 */
-	public void setCreation_date(String creation_date) {
+	public QuestionOption setCreation_date(String creation_date) {
 		this.creation_date = creation_date;
+		return this;
 	}
+
 	/**
 	 * @return the id
 	 */
 	public int getId() {
 		return id;
 	}
+
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
+	 * @return
 	 */
-	public void setId(int id) {
+	public QuestionOption setId(int id) {
 		this.id = id;
+		return this;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -83,7 +111,10 @@ public class QuestionOption {
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override

@@ -10,7 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import de.hsrm.mi.mobcomp.y2k11grp04.functions.MasterRatingActivity;
-import de.hsrm.mi.mobcomp.y2k11grp04.functions.SlideRatingActivity;
+import de.hsrm.mi.mobcomp.y2k11grp04.functions.TopicRatingActivity;
 
 /**
  * @author Coralie Reuter <coralie.reuter@hrcom.de>
@@ -34,7 +34,7 @@ public class ClientActivity extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				switch (position) {
 				case 0:
-					startActivity(new Intent(getApplicationContext(), SlideRatingActivity.class));
+					startActivity(new Intent(getApplicationContext(), TopicRatingActivity.class));
 					break;
 				case 1:
 					startActivity(new Intent(getApplicationContext(), MasterRatingActivity.class));

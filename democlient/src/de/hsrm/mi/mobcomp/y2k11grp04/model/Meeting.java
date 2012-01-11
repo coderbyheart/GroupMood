@@ -87,4 +87,11 @@ public class Meeting implements Model {
 	public void setNumVotes(int numVotes) {
 		this.numVotes = numVotes;
 	}
+
+	/**
+	 * @return the topics
+	 */
+	public List<Topic> getTopics() {
+		return topics;
+	}
 }

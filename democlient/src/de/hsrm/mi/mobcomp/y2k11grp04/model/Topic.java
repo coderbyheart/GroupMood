@@ -1,6 +1,8 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Coralie Reuter
@@ -12,8 +14,15 @@ public class Topic implements Model {
 	private String creation_date;
 	private URL image;
 	private String name;
-	
-	/* (non-Javadoc)
+	private List<Question> questions = new ArrayList<Question>();
+
+	public void addQuestion(Question q) {
+		questions.add(q);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -29,7 +38,9 @@ public class Topic implements Model {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -70,40 +81,63 @@ public class Topic implements Model {
 		return meeting;
 	}
 
-	public void setMeeting(Meeting meeting) {
+	public Topic setMeeting(Meeting meeting) {
 		this.meeting = meeting;
+		return this;
 	}
 
 	public int getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public Topic setId(int id) {
 		this.id = id;
+		return this;
+
 	}
 
 	public String getCreation_date() {
 		return creation_date;
 	}
 
-	public void setCreation_date(String creation_date) {
+	public Topic setCreation_date(String creation_date) {
 		this.creation_date = creation_date;
+		return this;
 	}
 
 	public URL getImage() {
 		return image;
 	}
 
-	public void setImage(URL image) {
+	public Topic setImage(URL image) {
 		this.image = image;
+		return this;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public Topic setName(String name) {
 		this.name = name;
+		return this;
+	}
+
+	/**
+	 * @return the questions
+	 */
+	public List<Question> getQuestions() {
+		return questions;
+	}
+
+	/**
+	 * @param questions
+	 *            the questions to set
+	 * @return
+	 */
+	public Topic setQuestions(List<Question> questions) {
+		this.questions = questions;
+		return this;
 	}
 
 	@Override
@@ -111,6 +145,5 @@ public class Topic implements Model {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 }
