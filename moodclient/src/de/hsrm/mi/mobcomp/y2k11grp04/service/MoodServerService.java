@@ -14,27 +14,24 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
 import android.util.Log;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 
 public class MoodServerService extends Service {
 
-	public static final int MSG_VOTE = 1;
-	public static final int MSG_VOTE_RESULT = 2;
-	public static final int MSG_PAUSE = 3;
-	public static final int MSG_PAUSE_RESULT = 4;
-	public static final int MSG_RESUME = 5;
-	public static final int MSG_RESUME_RESULT = 6;
-	public static final int MSG_MEETING = 7;
-	public static final int MSG_MEETING_RESULT = 8;
-	public static final int MSG_MEETING_SUBSCRIBE = 9;
-	public static final int MSG_MEETING_UNSUBSCRIBE = 10;
+	public static final int MSG_PAUSE = 1;
+	public static final int MSG_PAUSE_RESULT = 2;
+	public static final int MSG_RESUME = 3;
+	public static final int MSG_RESUME_RESULT = 4;
+	public static final int MSG_MEETING = 5;
+	public static final int MSG_MEETING_RESULT = 6;
+	public static final int MSG_MEETING_SUBSCRIBE = 7;
+	public static final int MSG_MEETING_UNSUBSCRIBE = 8;
 
+	public static final String KEY_MEETING_MODEL = "model.Meeting";
 	public static final String KEY_MEETING_ID = "meeting.id";
-	public static final String KEY_MEETING_NAME = "meeting.name";
 	public static final String KEY_MEETING_URI = "meeting.uri";
-	public static final String KEY_VOTE_VOTE = "vote.vote";
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
@@ -51,7 +48,7 @@ public class MoodServerService extends Service {
 		public void handleMessage(Message request) {
 			switch (request.what) {
 			case MSG_MEETING:
-				Meeting meeting = getMeeting(Uri.parse(request.getData()
+				BaseModel meeting = getMeeting(Uri.parse(request.getData()
 						.getString(KEY_MEETING_URI)));
 				if (meeting != null)
 					sendMeetingTo(meeting, request.replyTo);
@@ -100,12 +97,10 @@ public class MoodServerService extends Service {
 	 * @param meeting
 	 * @param rcpt
 	 */
-	private void sendMeetingTo(Meeting meeting, Messenger rcpt) {
+	private void sendMeetingTo(BaseModel meeting, Messenger rcpt) {
 		Message info = Message.obtain(null, MSG_MEETING_RESULT);
 		Bundle data = new Bundle();
-		data.putInt(MoodServerService.KEY_MEETING_ID, meeting.getId());
-		data.putString(MoodServerService.KEY_MEETING_NAME, meeting.getName());
-		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri().toString());
+		data.putParcelable(KEY_MEETING_MODEL, meeting);
 		info.setData(data);
 		sendMsg(rcpt, info);
 	}
@@ -139,7 +134,7 @@ public class MoodServerService extends Service {
 
 				// Alle registrierten Meeting-Watcher benachrichtigen
 				for (Messenger messenger : meetingSubscription.keySet()) {
-					Meeting updatedMeeting = getMeeting(meetingSubscription
+					BaseModel updatedMeeting = getMeeting(meetingSubscription
 							.get(messenger).getUri());
 					if (updatedMeeting != null)
 						sendMeetingTo(updatedMeeting, messenger);

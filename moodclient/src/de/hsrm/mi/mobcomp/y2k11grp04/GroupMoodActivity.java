@@ -35,7 +35,7 @@ public class GroupMoodActivity extends ServiceActivity {
 							// Geht auf Debug nicht
 							startActivity(new Intent(
 									Intent.ACTION_VIEW,
-									Uri.parse("groupmood://10.0.2.2:8000/demoserver/meeting/1")));
+									Uri.parse("groupmood://10.0.2.2:8000/groupmood/meeting/1")));
 						} else {
 							IntentIntegrator integrator = new IntentIntegrator(
 									GroupMoodActivity.this);
@@ -102,13 +102,12 @@ public class GroupMoodActivity extends ServiceActivity {
 				@Override
 				public void run() {
 					removeDialog(DIALOG_LOADING);
-					m = new Meeting();
-					m.setName(serviceMessage.getData().getString(
-							MoodServerService.KEY_MEETING_NAME));
-					m.setId(serviceMessage.getData().getInt(
-							MoodServerService.KEY_MEETING_NAME));
-					m.setUri(Uri.parse(serviceMessage.getData().getString(
-							MoodServerService.KEY_MEETING_URI)));
+					// The remote service is a separate os process. 
+					// Therefore, the current classloader has to be used by 
+					// the unparcelling process.
+					Bundle b = serviceMessage.getData();
+					b.setClassLoader(getClassLoader());
+					m = serviceMessage.getData().getParcelable(MoodServerService.KEY_MEETING_MODEL);
 					showDialog(DIALOG_MEETING);
 				}
 			};
