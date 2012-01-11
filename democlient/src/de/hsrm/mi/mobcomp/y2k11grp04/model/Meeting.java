@@ -9,14 +9,10 @@ public class Meeting implements Model {
 	private int id;
 	private int avgVote;
 	private int numVotes;
-	private List<Slide> slides = new ArrayList<Slide>();
+	private List<Topic> topics = new ArrayList<Topic>();
 
-	public List<Slide> getSlides() {
-		return slides;
-	}
-
-	public void setSlides(List<Slide> slides) {
-		this.slides = slides;
+	public void addTopic(Topic t) {
+		topics.add(t);
 	}
 
 	public Meeting() {
