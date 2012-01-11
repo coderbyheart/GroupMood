@@ -136,9 +136,39 @@ public class GroupMoodActivity extends ServiceActivity {
 		super.onConnect();
 		Uri groupMoodUri = getIntent().getData();
 		if (groupMoodUri != null) {
-			chairRequested = groupMoodUri.toString().contains("chair");
-			showDialog(DIALOG_LOADING);
-			loadMeeting(groupMoodUri);
+			if (currentMeeting == null) {
+				chairRequested = groupMoodUri.toString().contains("chair");
+				showDialog(DIALOG_LOADING);
+				loadMeeting(groupMoodUri);
+			}
+		}
+	}
+
+	/**
+	 * Wenn die Activity beendet wird, merken wir uns wichtige Objekte, damit
+	 * wird diese nicht mehr neu laden müssen.
+	 * 
+	 * Das kann z.B. wichtig sein, wenn ein Dialog angezeigt wird, und der
+	 * Nutzer das Device dreht, dann kann das OS die komplette VM zerstören,
+	 * startet die Activity neu und zeigt DIREKT den Dialog an - jetzt gibt es
+	 * das Objekt nicht mehr und müsste neu geladen werden.
+	 * 
+	 * Statt dessen kann man auf dem InstanceState Daten ablegen, die dann mit
+	 * onRestoreInstanceState() wieder ausgelesen werden können.
+	 */
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		if (currentMeeting != null) {
+			outState.putParcelable(MoodServerService.KEY_MEETING_MODEL,
+					currentMeeting);
+		}
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
+			currentMeeting = savedInstanceState
+					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 		}
 	}
 }
