@@ -1,9 +1,5 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;

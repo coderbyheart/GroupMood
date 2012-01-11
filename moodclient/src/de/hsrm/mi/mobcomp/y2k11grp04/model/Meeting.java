@@ -7,6 +7,7 @@ import android.os.Parcelable;
 public class Meeting extends BaseModel implements StateModel {
 	private String name;
 	private Uri uri;
+	private int numTopics;
 
 	public Meeting() {
 	}
@@ -20,7 +21,7 @@ public class Meeting extends BaseModel implements StateModel {
 		super.readFromParcel(in);
 		name = in.readString();
 		uri = Uri.parse(in.readString());
-
+		numTopics = in.readInt();
 	}
 
 	@Override
@@ -28,6 +29,7 @@ public class Meeting extends BaseModel implements StateModel {
 		super.writeToParcel(out, flags);
 		out.writeString(name);
 		out.writeString(uri.toString());
+		out.writeInt(numTopics);
 	}
 
 	public static final Parcelable.Creator<Meeting> CREATOR = new Parcelable.Creator<Meeting>() {
@@ -68,5 +70,13 @@ public class Meeting extends BaseModel implements StateModel {
 
 	public int describeContents() {
 		return 0;
+	}
+
+	public int getNumTopics() {
+		return numTopics;
+	}
+
+	public void setNumTopics(int numTopics) {
+		this.numTopics = numTopics;
 	}
 }

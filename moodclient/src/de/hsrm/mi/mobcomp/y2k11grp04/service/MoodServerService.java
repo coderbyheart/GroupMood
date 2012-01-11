@@ -28,17 +28,19 @@ public class MoodServerService extends Service {
 	public static final int MSG_MEETING_RESULT = 6;
 	public static final int MSG_MEETING_SUBSCRIBE = 7;
 	public static final int MSG_MEETING_UNSUBSCRIBE = 8;
+	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
 	public static final String KEY_MEETING_ID = "meeting.id";
 	public static final String KEY_MEETING_URI = "meeting.uri";
+	public static final String KEY_ERROR_MESSAGE = "error.message";
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
 	private Map<Messenger, Meeting> meetingSubscription = new HashMap<Messenger, Meeting>();
 
 	/**
-	 * Wir oft der Vote abgeschickt wird (ms)
+	 * Wie oft der Vote abgeschickt wird (ms)
 	 */
 	private int updateRate = 500;
 	private MoodServerApi api;
@@ -46,49 +48,53 @@ public class MoodServerService extends Service {
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message request) {
-			switch (request.what) {
-			case MSG_MEETING:
-				BaseModel meeting = getMeeting(Uri.parse(request.getData()
-						.getString(KEY_MEETING_URI)));
-				if (meeting != null)
-					sendMeetingTo(meeting, request.replyTo);
-				break;
-			case MSG_MEETING_SUBSCRIBE:
-				Meeting subscribeMeeting = getMeeting(Uri.parse(request
-						.getData().getString(KEY_MEETING_URI)));
-				if (subscribeMeeting != null) {
-					meetingSubscription.put(request.replyTo, subscribeMeeting);
+			try {
+				switch (request.what) {
+				case MSG_MEETING:
+					BaseModel meeting = getMeeting(Uri.parse(request.getData()
+							.getString(KEY_MEETING_URI)));
+					if (meeting != null)
+						sendMeetingTo(meeting, request.replyTo);
+					break;
+				case MSG_MEETING_SUBSCRIBE:
+					Meeting subscribeMeeting = getMeeting(Uri.parse(request
+							.getData().getString(KEY_MEETING_URI)));
+					if (subscribeMeeting != null) {
+						meetingSubscription.put(request.replyTo,
+								subscribeMeeting);
+					}
+					break;
+				case MSG_MEETING_UNSUBSCRIBE:
+					meetingSubscription.remove(request.replyTo);
+					break;
+				case MSG_PAUSE:
+					sendMsg(request.replyTo, Message.obtain(null,
+							MSG_PAUSE_RESULT, doPause(), 0));
+					break;
+				case MSG_RESUME:
+					sendMsg(request.replyTo, Message.obtain(null,
+							MSG_RESUME_RESULT, doResume(), 0));
+					break;
+				default:
+					super.handleMessage(request);
 				}
-				break;
-			case MSG_MEETING_UNSUBSCRIBE:
-				meetingSubscription.remove(request.replyTo);
-				break;
-			case MSG_PAUSE:
-				sendMsg(request.replyTo,
-						Message.obtain(null, MSG_PAUSE_RESULT, doPause(), 0));
-				break;
-			case MSG_RESUME:
-				sendMsg(request.replyTo,
-						Message.obtain(null, MSG_RESUME_RESULT, doResume(), 0));
-				break;
-			default:
-				super.handleMessage(request);
+			} catch (ApiException e) {
+				sendError(request.replyTo, e.getMessage());
 			}
 		}
+
 	}
 
 	/**
 	 * Lädt das Meeting mit der ID meeting_id
 	 * 
 	 * @param uri
+	 * @throws ApiException
 	 */
-	private Meeting getMeeting(Uri uri) {
-		try {
-			return api.getMeeting(uri);
-		} catch (ApiException e) {
-			Log.e(getClass().getCanonicalName(), e.getMessage());
-		}
-		return null;
+	private Meeting getMeeting(Uri uri) throws ApiException {
+		Meeting m = api.getMeeting(uri);
+
+		return m;
 	}
 
 	/**
@@ -131,13 +137,17 @@ public class MoodServerService extends Service {
 		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-
 				// Alle registrierten Meeting-Watcher benachrichtigen
 				for (Messenger messenger : meetingSubscription.keySet()) {
-					BaseModel updatedMeeting = getMeeting(meetingSubscription
-							.get(messenger).getUri());
-					if (updatedMeeting != null)
-						sendMeetingTo(updatedMeeting, messenger);
+					BaseModel updatedMeeting;
+					try {
+						updatedMeeting = getMeeting(meetingSubscription.get(
+								messenger).getUri());
+						if (updatedMeeting != null)
+							sendMeetingTo(updatedMeeting, messenger);
+					} catch (ApiException e) {
+						sendError(messenger, e.getMessage());
+					}
 				}
 			}
 		}, updateRate, updateRate);
@@ -179,4 +189,11 @@ public class MoodServerService extends Service {
 		}
 	}
 
+	private void sendError(Messenger rcpt, String message) {
+		Message errorMsg = Message.obtain(null, MSG_ERROR);
+		Bundle data = new Bundle();
+		data.putString(KEY_ERROR_MESSAGE, message);
+		errorMsg.setData(data);
+		sendMsg(rcpt, errorMsg);
+	}
 }

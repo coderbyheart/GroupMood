@@ -174,7 +174,7 @@ public class MoodServerApi {
 	public Meeting getMeeting(Uri meetingUri) throws ApiException {
 		Log.v(getClass().getCanonicalName(),
 				"Fetching meeting " + meetingUri.toString());
-		Uri u = meetingUri.buildUpon().scheme("http").build();
+		Uri u = meetingUri.buildUpon().scheme(meetingUri.toString().contains("+https") ? "https" : "http").build();
 		HttpGet request = new HttpGet(u.toString());
 		JSONObject response = execute(request);
 		return new JSONReader<Meeting>(response, Meeting.class, "result").get();
