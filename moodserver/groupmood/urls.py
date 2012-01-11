@@ -5,8 +5,9 @@ from groupmood.models import *
 urlpatterns = patterns('',
    url(r'^meeting$', 'groupmood.views.meeting_list'),
    url(r'^meeting/(?P<id>\d+)$', 'groupmood.views.meeting_entry'),
-   url(r'^topic/(?P<pk>\d+)$', DetailView.as_view(model=Topic, template_name='groupmood/topic_detail.html')),
+   url(r'^meeting/(?P<id>\d+)/topics$', 'groupmood.views.meeting_topics'),
+   url(r'^topic/(?P<id>\d+)$', 'groupmood.views.topic_entry'),
+   url(r'^topic/(?P<id>\d+)/questions$', 'groupmood.views.topic_questions'),
    url(r'^question/(?P<id>\d+)$', 'groupmood.views.question_entry'),
-   url(r'^question/(?P<question_id>\d+)/answer$', 'groupmood.views.answer_create'),
-   
+   url(r'^question/(?P<question_id>\d+)/answer$', 'groupmood.views.answer_create'),   
 )

@@ -22,6 +22,12 @@ def getBaseHref(request):
 def getModelUrl(request, model):
     return '%s/groupmood/%s/%d' % (getBaseHref(request), model.context, model.id)
 
+def modelsToJson(request, models):
+    data = []
+    for model in models:
+        data.append(modelToJson(request, model))
+    return data
+
 def modelToJson(request, model):
     data = model.toJsonDict()
     modeljson = {
@@ -59,20 +65,7 @@ def meeting_list(request):
         questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
         questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
         
-        meetingJson = modelToJson(request, meeting)
-        topicJson = modelToJson(request, voteTopic)
-        questionJson = modelToJson(request, question)
-        questionOptionMaxJson = modelToJson(request, questionOptionMax)
-        questionOptionMinJson = modelToJson(request, questionOptionMin)
-        meetingJson['topics'] = [topicJson]
-        topicJson['questions'] = [questionJson]
-        questionJson['options'] = [questionOptionMinJson, questionOptionMaxJson]
-        
-        meetingJson['@context'] = [meetingJson['@context'], {'topics': topicJson['@context'], '@list': True}]
-        topicJson['@context'] = [topicJson['@context'], {'questions': questionJson['@context'], '@list': True}]
-        questionJson['@context'] = [questionJson['@context'], {'options': questionOptionMaxJson['@context'], '@list': True}]
-        
-        resp = jsonResponse(request, meetingJson)
+        resp = jsonResponse(request, modelToJson(request, meeting))
         resp['Location'] = getModelUrl(request, meeting)
         resp.status_code = 201;
         return resp        
@@ -89,6 +82,29 @@ def meeting_entry(request, id):
         chairAppURL = 'groupmood.chair://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
         attendeeAppURL = 'groupmood.attendee://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
         return render_to_response('groupmood/meeting_detail.html', {'meeting': meeting, 'chairAppURL': chairAppURL, 'attendeeAppURL': attendeeAppURL})
+    
+def meeting_topics(request, id):
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    meeting = get_object_or_404(Meeting, pk=id)
+    return jsonResponse(request, modelsToJson(request, Topic.objects.filter(meeting=meeting)))
+
+def topic_questions(request, id):
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    topic = get_object_or_404(Topic, pk=id)
+    return jsonResponse(request, modelsToJson(request, Question.objects.filter(topic=topic)))
+
+def topic_entry(request, id):
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    topic = get_object_or_404(Topic, pk=id)
+    if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
+        return jsonResponse(request, modelToJson(request, topic))
+    else:
+        chairAppURL = 'groupmood.chair://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
+        attendeeAppURL = 'groupmood.attendee://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
+        return render_to_response('groupmood/topic_detail.html', {'topic': topic})
 
 def question_entry(request, id):
     if request.method == 'GET':

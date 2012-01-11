@@ -6,13 +6,11 @@
 	<dd>{{ meeting.name }}</dd>
 	<dt>URL für die Meeting-Teilnehmer</dt>
 	<dd>
-		{{ attendeeAppURL|iriencode }}<br />
-		<img src="http://chart.apis.google.com/chart?chs=400x400&amp;chld=H&amp;cht=qr&amp;chl={{ attendeeAppURL|iriencode }}" alt="qrcode"  />
+		<a href="#qr-attendees">{{ attendeeAppURL|iriencode }}</a>
 	</dd>
 	<dt>URL für den Meeting-Leiter</dt>
 	<dd>
-		{{ chairAppURL|iriencode }}<br />
-		<img src="http://chart.apis.google.com/chart?chs=400x400&amp;chld=H&amp;cht=qr&amp;chl={{ chairAppURL|iriencode }}" alt="qrcode"  />
+		<a href="#qr-chair">{{ chairAppURL|iriencode }}</a>
 	</dd>
 	<dt>Topics</dt>
 	<dd>
@@ -33,4 +31,13 @@
 	{% endif %}
 	</dd>
 </dl>
+
+<h2 id="qr-attendees">QRCode für Meeting-Teilnehmer</h2>
+<div>
+	<img src="http://chart.apis.google.com/chart?chs=400x400&amp;chld=H&amp;cht=qr&amp;chl={{ attendeeAppURL|iriencode }}" alt="QRCode für Meeting-Teilnehmer" style="width: 100%;" />
+</div>
+<h2 id="qr-chair">QRCode für den Meeting-Leiter</h2>
+<div>
+	<img src="http://chart.apis.google.com/chart?chs=400x400&amp;chld=H&amp;cht=qr&amp;chl={{ chairAppURL|iriencode }}" alt="QRCode für den Meeting-Leiter" style="width: 100%;" />
+</div>
 {% endblock %}
