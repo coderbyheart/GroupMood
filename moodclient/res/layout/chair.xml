@@ -8,7 +8,7 @@
         android:id="@+id/textView1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Leiter"
+        android:text="@string/chair"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <WebView

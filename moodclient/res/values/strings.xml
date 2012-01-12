@@ -2,11 +2,11 @@
 <resources>
     <string name="app_name">GroupMood</string>
     <string name="scan">QR-Code scannen</string>
-    <string name="client_button">Ich bin Teilnehmer!</string>
-    <string name="master_button">Ich bin Master!</string>
-    <string name="open_meeting">Öffne Meeting ...</string>
+    <string name="open_meeting">Öffne Meeting …</string>
     <string name="label_settings">Einstellungen</string>
-    
-    
-    
+    <string name="attendee">Teilnehmer</string>
+    <string name="chair">Leiter</string>
+    <string name="intro">Willkommen bei <b>GroupMood</b>.\n\nZum Starten der Anwendung, scanne bitte den QR-Code des Meeting.</string>
+    <string name="toast_no_scan">Es wurde nichts gescannt.</string>
+    <string name="toast_no_groupmood_qrcode">Ups! Du hast keinen GroupMood-QR-Code gescannt.</string>
 </resources>

@@ -2,6 +2,7 @@ package de.hsrm.mi.mobcomp.y2k11grp04;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -58,9 +59,17 @@ public class GroupMoodActivity extends ServiceActivity {
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		IntentResult scanResult = IntentIntegrator.parseActivityResult(
 				requestCode, resultCode, intent);
-		if (scanResult != null) {
-			startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(scanResult
-					.getContents())));
+		if (scanResult != null && scanResult.getContents() != null) {
+			try {
+				startActivity(new Intent(Intent.ACTION_VIEW,
+						Uri.parse(scanResult.getContents())));
+			} catch (ActivityNotFoundException e) {
+				Toast.makeText(getApplicationContext(),
+						R.string.toast_no_groupmood_qrcode, Toast.LENGTH_LONG).show();
+			}
+		} else {
+			Toast.makeText(getApplicationContext(), R.string.toast_no_scan,
+					Toast.LENGTH_LONG).show();
 		}
 	}
 
