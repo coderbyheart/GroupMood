@@ -7,6 +7,11 @@ from django.views.decorators.csrf import *
 from models import *
 
 contexthref = 'http://groupmood.net/jsonld'
+modelRelations = {
+    Meeting: [(Topic, True, '@id/topics')],
+    Topic: [(Question, True, '@id/questions')],
+    Question: [(Answer, True, '@id/answers'), (QuestionOption, True, '@id/options')],
+}
 
 def getUser(request):
     userMatch = User.objects.filter(ip=request.META['REMOTE_ADDR'])
@@ -30,13 +35,23 @@ def modelsToJson(request, models):
 
 def modelToJson(request, model):
     data = model.toJsonDict()
-    modeljson = {
+    modelJson = {
         '@context': '%s/%s' % (contexthref, model.context),
         '@id': getModelUrl(request, model)
     }
     for k in data:
-        modeljson[k] = data[k]
-    return modeljson
+        modelJson[k] = data[k]
+    if type(model) in modelRelations:
+        modelJson['@relations'] = []
+        for relation in modelRelations[type(model)]:
+            relatedModel, isList, href = relation
+            modelJson['@relations'].append({
+                '@context': '%s/%s' % (contexthref, "relation"),
+                'relatedcontext': '%s/%s' % (contexthref, relatedModel.context),
+                'list': True if isList else False,
+                'href': href.replace('@id', modelJson['@id'])
+            })
+    return modelJson
 
 def jsonResponse(request, result):
     resp = {}
@@ -102,8 +117,6 @@ def topic_entry(request, id):
     if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
         return jsonResponse(request, modelToJson(request, topic))
     else:
-        chairAppURL = 'groupmood.chair://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
-        attendeeAppURL = 'groupmood.attendee://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
         return render_to_response('groupmood/topic_detail.html', {'topic': topic})
 
 def question_entry(request, id):
@@ -116,10 +129,16 @@ def question_entry(request, id):
     else:
         return HttpResponseBadRequest()
     
+def question_options(request, id):
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    question = get_object_or_404(Question, pk=id)
+    return jsonResponse(request, modelsToJson(request, QuestionOption.objects.filter(question=question)))
+    
 @csrf_exempt
-def answer_create(request, question_id):
+def answer_create(request, id):
     if request.method == 'POST':
-        question = get_object_or_404(Question, pk=question_id)
+        question = get_object_or_404(Question, pk=id)
         # Antwort dazu
         answer = Answer.objects.create(question=question, user=getUser(request), answer=request.POST['answer'])
         resp = jsonResponse(request, modelToJson(request, answer))

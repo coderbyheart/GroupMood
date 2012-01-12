@@ -9,5 +9,6 @@ urlpatterns = patterns('',
    url(r'^topic/(?P<id>\d+)$', 'groupmood.views.topic_entry'),
    url(r'^topic/(?P<id>\d+)/questions$', 'groupmood.views.topic_questions'),
    url(r'^question/(?P<id>\d+)$', 'groupmood.views.question_entry'),
-   url(r'^question/(?P<question_id>\d+)/answer$', 'groupmood.views.answer_create'),   
+   url(r'^question/(?P<id>\d+)/answers$', 'groupmood.views.answer_create'),   
+   url(r'^question/(?P<id>\d+)/options$', 'groupmood.views.question_options'),
 )

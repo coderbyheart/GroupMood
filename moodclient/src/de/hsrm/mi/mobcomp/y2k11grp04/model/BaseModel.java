@@ -1,22 +1,34 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
-abstract public class BaseModel implements Parcelable {
+abstract public class BaseModel implements StateModel, Parcelable {
 
 	private int id;
 	private String creationDate;
+	private Uri uri;
+	private List<Relation> relations = new ArrayList<Relation>();
 
-	@Override
 	public void writeToParcel(Parcel out, int flags) {
 		out.writeInt(id);
 		out.writeString(creationDate);
+		out.writeString(uri.toString());
 	}
 
 	protected void readFromParcel(Parcel in) {
 		id = in.readInt();
 		creationDate = in.readString();
+		uri = Uri.parse(in.readString());
+	}
+
+	public int describeContents() {
+		return 0;
 	}
 
 	public int getId() {
@@ -35,11 +47,28 @@ abstract public class BaseModel implements Parcelable {
 		this.creationDate = creationDate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
+	@Override
+	public List<Relation> getRelations() {
+		return relations;
+	}
+
+	@Override
+	public void setRelations(List<Relation> relations) {
+		this.relations = relations;
+	}
+
+	public Uri getUri() {
+		return uri;
+	}
+
+	public void setUri(Uri uri) {
+		this.uri = uri;
+	}
+
+	@Override
+	public void setRelationItems(Relation relation, List<? extends StateModel> items) {
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -47,14 +76,10 @@ abstract public class BaseModel implements Parcelable {
 		result = prime * result
 				+ ((creationDate == null) ? 0 : creationDate.hashCode());
 		result = prime * result + id;
+		result = prime * result + ((uri == null) ? 0 : uri.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -70,6 +95,11 @@ abstract public class BaseModel implements Parcelable {
 		} else if (!creationDate.equals(other.creationDate))
 			return false;
 		if (id != other.id)
+			return false;
+		if (uri == null) {
+			if (other.uri != null)
+				return false;
+		} else if (!uri.equals(other.uri))
 			return false;
 		return true;
 	}

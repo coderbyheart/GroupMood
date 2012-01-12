@@ -7,6 +7,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -16,6 +20,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -28,15 +33,34 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.StateModel;
 
 public class MoodServerApi {
 	private HttpClient client;
+	private Map<Uri, Class<? extends Model>> contextToModel = new HashMap<Uri, Class<? extends Model>>();
+	private Map<Class<? extends Model>, Uri> modelToContext = new HashMap<Class<? extends Model>, Uri>();
 
 	private class JSONReader<T extends Model> {
-		private JSONObject jsonData;
 		private T objectInstance;
-		private String dataKey;
+
+		public static final String KEY_CONTEXT = "@context";
+		public static final String KEY_ID = "@id";
+		public static final String KEY_RELATIONS = "@relations";
+		public static final String KEY_STATUS = "status";
+		public static final String KEY_RESULT = "result";
+		private JSONObject objectData;
 
 		public JSONReader(JSONObject jsonData, Class<T> objectClass,
-				String dataKey) {
-			this.jsonData = jsonData;
+				String dataKey) throws ApiException {
+			newInstance(objectClass);
+			Uri context = modelToContext.get(objectClass);
+			Log.v(getClass().getCanonicalName(), "Lese " + context.toString()
+					+ " aus " + dataKey);
+			try {
+				objectData = jsonData.getJSONObject(dataKey);
+			} catch (JSONException e) {
+				throw new ApiException("API error: Response has no " + dataKey
+						+ " object.");
+			}
+		}
+
+		private void newInstance(Class<T> objectClass) {
 			try {
 				this.objectInstance = objectClass.newInstance();
 			} catch (IllegalAccessException e) {
@@ -46,32 +70,26 @@ public class MoodServerApi {
 				throw new InvalidParameterException(
 						"Could not instantiate class " + objectClass.toString());
 			}
-			this.dataKey = dataKey == null ? this.objectInstance.getContext()
-					: dataKey;
-			Log.v(getClass().getCanonicalName(),
-					"Lese " + objectInstance.getContext() + " aus "
-							+ this.dataKey);
+		}
+
+		public JSONReader(Class<T> objectClass, JSONObject objectData) {
+			this.objectData = objectData;
+			newInstance(objectClass);
 		}
 
 		public T get() throws ApiException {
-			JSONObject objectData;
+
 			String objectContext;
-			try {
-				objectData = jsonData.getJSONObject(dataKey);
-			} catch (JSONException e) {
-				throw new ApiException("API error: Response has no " + dataKey
-						+ " object.");
-			}
+			Uri contextUri = getObjectInstanceContext();
 
 			try {
 				// Check context
-				objectContext = objectData.getString("@context");
+				objectContext = objectData.getString(KEY_CONTEXT);
 			} catch (JSONException e) {
-				throw new ApiException("API error: "
-						+ objectInstance.getContext()
-						+ " object has no @context.");
+				throw new ApiException("API error: " + contextUri.toString()
+						+ " object has no " + KEY_CONTEXT);
 			}
-			Uri contextUri = getContextUri(objectInstance);
+
 			if (!contextUri.toString().equals(objectContext)) {
 				throw new ApiException("Unexpected context: " + objectContext
 						+ ". Expected: " + contextUri.toString());
@@ -81,12 +99,12 @@ public class MoodServerApi {
 				Log.v(getClass().getCanonicalName(), "Checke URI");
 				// Check @id
 				try {
-					Uri objectUri = Uri.parse(objectData.getString("@id"));
+					Uri objectUri = Uri.parse(objectData.getString(KEY_ID));
 					((StateModel) objectInstance).setUri(objectUri);
 				} catch (JSONException e) {
 					throw new ApiException("API error: "
-							+ objectInstance.getContext()
-							+ " object has no @id.");
+							+ contextUri.toString() + " object has no "
+							+ KEY_ID);
 				}
 			}
 
@@ -94,7 +112,7 @@ public class MoodServerApi {
 				if (!Modifier.isPublic(m.getModifiers())) {
 					continue;
 				}
-				
+
 				@SuppressWarnings("rawtypes")
 				Class[] params = m.getParameterTypes();
 				if (params.length != 1) {
@@ -108,7 +126,8 @@ public class MoodServerApi {
 				}
 				String key = m.getName().substring(3, 4).toLowerCase()
 						+ m.getName().substring(4);
-				if (key.equals("uri")) continue;
+				if (key.equals("uri"))
+					continue;
 				try {
 					if (param == int.class || param.equals(Integer.class)) {
 						Integer value;
@@ -127,8 +146,41 @@ public class MoodServerApi {
 									+ m.getName()
 									+ "(Integer) did not work.");
 						}
-					} else { // String
-						// TODO: support all Types
+					} else if (param == Uri.class) {
+						Uri value;
+						try {
+							value = Uri.parse(objectData.getString(key));
+						} catch (JSONException e) {
+							throw new ApiException(
+									"Failed to get Uri value for " + key);
+						}
+						try {
+							m.invoke(objectInstance, value);
+						} catch (IllegalArgumentException e) {
+							throw new ApiException(objectInstance.getClass()
+									.toString()
+									+ "#"
+									+ m.getName()
+									+ "(Uri) did not work.");
+						}
+					} else if (param == boolean.class) {
+						boolean value;
+						try {
+							value = objectData.getBoolean(key);
+						} catch (JSONException e) {
+							throw new ApiException(
+									"Failed to get boolean value for " + key);
+						}
+						try {
+							m.invoke(objectInstance, value);
+						} catch (IllegalArgumentException e) {
+							throw new ApiException(objectInstance.getClass()
+									.toString()
+									+ "#"
+									+ m.getName()
+									+ "(boolean) did not work.");
+						}
+					} else if (param == String.class) {
 						String value;
 						try {
 							value = objectData.getString(key);
@@ -145,6 +197,11 @@ public class MoodServerApi {
 									+ m.getName()
 									+ "(String) did not work.");
 						}
+					} else {
+						// TODO: support all Types
+						Log.d(getClass().getCanonicalName(), "Skipped value "
+								+ key + " of type " + param.toString() + " on "
+								+ objectInstance.getClass().toString());
 					}
 				} catch (IllegalAccessException e) {
 					throw new ApiException("Oops. I thought "
@@ -155,29 +212,142 @@ public class MoodServerApi {
 							+ objectInstance.getClass().toString() + "#"
 							+ m.getName());
 				}
+			}
 
+			// Add relations
+			if (objectInstance instanceof StateModel) {
+				if (objectData.has(KEY_RELATIONS)) {
+					Log.v(getClass().getCanonicalName(), "Lese @relations von "
+							+ contextUri.toString());
+
+					try {
+						List<Relation> instanceRelations = new ArrayList<Relation>();
+						JSONArray relations = objectData
+								.getJSONArray(KEY_RELATIONS);
+						for (int i = 0; i < relations.length(); i++) {
+							Relation rel = new JSONReader<Relation>(
+									Relation.class, relations.getJSONObject(i))
+									.get();
+							Log.v(getClass().getCanonicalName(),
+									contextUri.toString() + " hat Relation zu "
+											+ rel.getRelatedcontext());
+							if (!contextToModel.containsKey(rel
+									.getRelatedcontext())) {
+								Log.v(getClass().getCanonicalName(),
+										"Skipped relation with unknown context "
+												+ rel.getRelatedcontext()
+														.toString());
+								continue;
+							}
+							rel.setModel(contextToModel.get(rel
+									.getRelatedcontext()));
+							instanceRelations.add(rel);
+						}
+						((StateModel) objectInstance)
+								.setRelations(instanceRelations);
+					} catch (JSONException e) {
+						throw new ApiException("Failed to read relations from "
+								+ contextUri.toString());
+					}
+				}
 			}
 
 			return objectInstance;
 		}
 
-		private Uri getContextUri(T type) {
-			return Uri
-					.parse("http://groupmood.net/jsonld/" + type.getContext());
+		/**
+		 * Lädt das Objekt und alle Relationen
+		 * 
+		 * TODO: Sicherstellen dass nur abwärts zeigende Relationen verfolgt
+		 * werden, sonst lädt man sich so den ganzen Graphen
+		 * 
+		 * @return T
+		 * @throws ApiException
+		 */
+		@SuppressWarnings("unchecked")
+		public T getRecursive() throws ApiException {
+			T top = this.get();
+			if (top instanceof StateModel) {
+				for (Relation relation : ((StateModel) top).getRelations()) {
+					if (!contextToModel.containsKey(relation
+							.getRelatedcontext())) {
+						Log.v(getClass().getCanonicalName(),
+								"Skipped unknown context "
+										+ relation.getRelatedcontext()
+												.toString());
+						continue;
+					}
+					if (relation.isList()) {
+						Log.v(getClass().getCanonicalName(), "Lade Relation "
+								+ relation.getHref().toString() + " von "
+								+ modelToContext.get(top.getClass()).toString());
+						HttpGet request = new HttpGet(relation.getHref()
+								.toString());
+						try {
+							JSONObject response = execute(request);
+							JSONArray items = response.getJSONArray(KEY_RESULT);
+							List<StateModel> instanceItems = new ArrayList<StateModel>();
+							for (int i = 0; i < items.length(); i++) {
+								JSONObject item = items.getJSONObject(i);
+								try {
+									Class<? extends Model> itemClass = contextToModel
+											.get(Uri.parse(item
+													.getString(KEY_CONTEXT)));
+									@SuppressWarnings("rawtypes")
+									StateModel itemInstance = (StateModel) new JSONReader(
+											itemClass, item).getRecursive();
+									instanceItems.add(itemInstance);
+								} catch (JSONException e) {
+									throw new ApiException(
+											"No context in item for "
+													+ getObjectInstanceContext()
+															.toString());
+								}
+							}
+							Log.v(getClass().getCanonicalName(), "Set " + instanceItems.size() + " related items on " + top.getClass().getCanonicalName());
+							((StateModel) top).setRelationItems(relation,
+									instanceItems);
+						} catch (JSONException e) {
+							throw new ApiException(
+									"Failed to read list relation "
+											+ relation.getHref().toString()
+											+ " from "
+											+ getObjectInstanceContext()
+													.toString());
+						}
+					} else {
+						// TODO: Implementieren
+					}
+				}
+			}
+			return top;
+		}
+
+		private Uri getObjectInstanceContext() {
+			return modelToContext.get(this.objectInstance.getClass());
 		}
 	}
 
 	public MoodServerApi() {
 		client = new DefaultHttpClient();
+		registerModel(ApiStatus.class,
+				Uri.parse("http://groupmood.net/jsonld/apistatus"));
+		registerModel(Relation.class,
+				Uri.parse("http://groupmood.net/jsonld/relation"));
 	}
 
 	public Meeting getMeeting(Uri meetingUri) throws ApiException {
 		Log.v(getClass().getCanonicalName(),
 				"Fetching meeting " + meetingUri.toString());
-		Uri u = meetingUri.buildUpon().scheme(meetingUri.toString().contains("+https") ? "https" : "http").build();
+		Uri u = meetingUri
+				.buildUpon()
+				.scheme(meetingUri.toString().contains("+https") ? "https"
+						: "http").build();
 		HttpGet request = new HttpGet(u.toString());
 		JSONObject response = execute(request);
-		return new JSONReader<Meeting>(response, Meeting.class, "result").get();
+		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
+				JSONReader.KEY_RESULT).getRecursive();
+		return meeting;
 	}
 
 	private JSONObject execute(HttpUriRequest request) throws ApiException {
@@ -217,12 +387,17 @@ public class MoodServerApi {
 					+ dataAsString);
 		}
 		JSONReader<ApiStatus> jsonResponseReader = new JSONReader<ApiStatus>(
-				jsonResponse, ApiStatus.class, "status");
+				jsonResponse, ApiStatus.class, JSONReader.KEY_STATUS);
 		ApiStatus s = jsonResponseReader.get();
 		if (!s.getMessage().equals(ApiStatus.STATUS_OK)) {
 			throw new ApiException("API error: " + s.getMessage() + "("
 					+ s.getCode() + ")");
 		}
 		return jsonResponse;
+	}
+
+	public void registerModel(Class<? extends Model> modelClass, Uri context) {
+		contextToModel.put(context, modelClass);
+		modelToContext.put(modelClass, context);
 	}
 }

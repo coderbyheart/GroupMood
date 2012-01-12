@@ -15,11 +15,11 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
 public class GroupMoodActivity extends ServiceActivity {
-	Meeting currentMeeting;
+	BaseModel currentMeeting;
 
 	/** Called when the activity is first created. */
 	@Override

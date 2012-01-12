@@ -17,6 +17,9 @@ import android.os.RemoteException;
 import android.util.Log;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
 public class MoodServerService extends Service {
 
@@ -93,7 +96,6 @@ public class MoodServerService extends Service {
 	 */
 	private Meeting getMeeting(Uri uri) throws ApiException {
 		Meeting m = api.getMeeting(uri);
-
 		return m;
 	}
 
@@ -114,6 +116,14 @@ public class MoodServerService extends Service {
 	@Override
 	public void onCreate() {
 		api = new MoodServerApi();
+		api.registerModel(Meeting.class,
+				Uri.parse("http://groupmood.net/jsonld/meeting"));
+		api.registerModel(Topic.class,
+				Uri.parse("http://groupmood.net/jsonld/topic"));
+		api.registerModel(Question.class,
+				Uri.parse("http://groupmood.net/jsonld/question"));
+		api.registerModel(QuestionOption.class,
+				Uri.parse("http://groupmood.net/jsonld/questionoption"));
 		startTimer();
 	}
 

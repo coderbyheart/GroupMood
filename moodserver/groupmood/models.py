@@ -34,7 +34,12 @@ class Meeting(BaseModel):
         return len(self.topics())
         
     def toJsonDict(self):
-        return {'id': self.id, 'name': self.name, 'numTopics': self.numTopics(), 'creationDate': self.creation_date.isoformat()}
+        return {
+            'id': self.id, 
+            'name': self.name, 
+            'numTopics': self.numTopics(), 
+            'creationDate': self.creation_date.isoformat(),
+        }
     
 class User(BaseModel):
     """
@@ -101,7 +106,12 @@ class Topic(BaseModel):
         return Comment.objects.filter(topic=self.id)
     
     def toJsonDict(self):
-        return {'id': self.id, 'name': self.name, 'image': self.image}
+        return {
+            'id': self.id, 
+            'name': self.name, 
+            'image': self.image,
+            'creationDate': self.creation_date.isoformat(),
+        }
     
 class Comment(BaseModel):
     """
@@ -202,7 +212,15 @@ class Question(BaseModel):
     def toJsonDict(self):
         type = filter(lambda t: t[0] == self.type, self.TYPES)[0][0]
         mode = filter(lambda m: m[0] == self.mode, self.MODES)[0][0]
-        d = {'id': self.id, 'name': self.name, 'type': type, 'mode': mode, 'avg': self.avg(), 'numAnswers': self.numAnswers()}
+        d = {
+            'id': self.id, 
+            'name': self.name, 
+            'type': type, 
+            'mode': mode, 
+            'avg': self.avg(), 
+            'numAnswers': self.numAnswers(),
+            'creationDate': self.creation_date.isoformat(),
+        }
         return d
 
 class QuestionOption(BaseModel):
@@ -232,7 +250,12 @@ class QuestionOption(BaseModel):
         return "QuestionOption #%d: %s = %s for %s" % (self.id, self.key, self.value, unicode(self.question))
     
     def toJsonDict(self):
-        return {'id': self.id, 'key': self.key, 'value': self.value}
+        return {
+            'id': self.id, 
+            'key': self.key, 
+            'value': self.value,
+            'creationDate': self.creation_date.isoformat(),
+        }
 
 class Choice(BaseModel):
     """

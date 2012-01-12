@@ -7,6 +7,10 @@ import pprint
 class Base(unittest.TestCase):
     def setUp(self):
         self.client = Client()
+
+def get_related(context, result):
+    contextUri = 'http://groupmood.net/jsonld/' + context
+    return filter(lambda relation: context in relation['relatedcontext'], result['@relations'])[0]
         
 class MeetingTest(Base):
     
@@ -26,13 +30,13 @@ class MeetingTest(Base):
         info = simplejson.loads(response.content)
         meeting = info['result']
         
-        response = self.client.get(meeting['@id'] + '/topics', Accept='application/json')
+        response = self.client.get(get_related('topic', meeting)['href'], Accept='application/json')
         self.assertEqual(response.status_code, 200)
         info = simplejson.loads(response.content)
         topics = info['result']
         self.assertEquals('http://groupmood.net/jsonld/topic', topics[0]['@context'])
         
-        response = self.client.get(topics[0]['@id'] + '/questions', Accept='application/json')
+        response = self.client.get(get_related('question', topics[0])['href'], Accept='application/json')
         self.assertEqual(response.status_code, 200)
         info = simplejson.loads(response.content)
         questions = info['result']
@@ -41,8 +45,8 @@ class MeetingTest(Base):
         self.assertEquals(50, questions[0]['avg'])
         self.assertEquals(0, questions[0]['numAnswers'])
         
-        response = self.client.post(questions[0]['@id'] + '/answer', {'answer': 60}, Accept='application/json')
-        response = self.client.post(questions[0]['@id'] + '/answer', {'answer': 70}, Accept='application/json')
+        response = self.client.post(get_related('answer', questions[0])['href'], {'answer': 60}, Accept='application/json')
+        response = self.client.post(get_related('answer', questions[0])['href'], {'answer': 70}, Accept='application/json')
         self.assertEqual(response.status_code, 201)
         
         response = self.client.get(questions[0]['@id'], Accept='application/json')

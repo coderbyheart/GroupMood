@@ -1,13 +1,16 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
-import android.net.Uri;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.os.Parcel;
 import android.os.Parcelable;
+import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
-public class Meeting extends BaseModel implements StateModel {
+public class Meeting extends BaseModel {
 	private String name;
-	private Uri uri;
 	private int numTopics;
+	private List<Topic> topics = new ArrayList<Topic>();
 
 	public Meeting() {
 	}
@@ -20,16 +23,20 @@ public class Meeting extends BaseModel implements StateModel {
 	protected void readFromParcel(Parcel in) {
 		super.readFromParcel(in);
 		name = in.readString();
-		uri = Uri.parse(in.readString());
 		numTopics = in.readInt();
+		for (Parcelable t : in
+				.readParcelableArray(Topic.class.getClassLoader())) {
+			topics.add((Topic) t);
+			((Topic) t).setMeeting(this);
+		}
 	}
 
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
 		super.writeToParcel(out, flags);
 		out.writeString(name);
-		out.writeString(uri.toString());
 		out.writeInt(numTopics);
+		out.writeParcelableArray(topics.toArray(new Topic[topics.size()]), 0);
 	}
 
 	public static final Parcelable.Creator<Meeting> CREATOR = new Parcelable.Creator<Meeting>() {
@@ -41,11 +48,6 @@ public class Meeting extends BaseModel implements StateModel {
 			return new Meeting[size];
 		}
 	};
-
-	@Override
-	public String getContext() {
-		return "meeting";
-	}
 
 	public Meeting(int id, String name) {
 		this.setId(id);
@@ -60,18 +62,6 @@ public class Meeting extends BaseModel implements StateModel {
 		this.name = name;
 	}
 
-	public Uri getUri() {
-		return uri;
-	}
-
-	public void setUri(Uri uri) {
-		this.uri = uri;
-	}
-
-	public int describeContents() {
-		return 0;
-	}
-
 	public int getNumTopics() {
 		return numTopics;
 	}
@@ -80,26 +70,34 @@ public class Meeting extends BaseModel implements StateModel {
 		this.numTopics = numTopics;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
+	public List<Topic> getTopics() {
+		return topics;
+	}
+
+	@Override
+	public void setRelationItems(Relation relation,
+			List<? extends StateModel> items) {
+		if (relation.getModel() == Topic.class) {
+			topics = new ArrayList<Topic>();
+			for(StateModel m: items) {
+				topics.add((Topic)m);
+				((Topic)m).setMeeting(this);
+			}
+		} else {
+			super.setRelationItems(relation, items);
+		}
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + numTopics;
-		result = prime * result + ((uri == null) ? 0 : uri.hashCode());
+		result = prime * result + ((topics == null) ? 0 : topics.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -116,10 +114,10 @@ public class Meeting extends BaseModel implements StateModel {
 			return false;
 		if (numTopics != other.numTopics)
 			return false;
-		if (uri == null) {
-			if (other.uri != null)
+		if (topics == null) {
+			if (other.topics != null)
 				return false;
-		} else if (!uri.equals(other.uri))
+		} else if (!topics.equals(other.topics))
 			return false;
 		return true;
 	}

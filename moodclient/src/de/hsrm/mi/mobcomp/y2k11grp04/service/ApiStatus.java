@@ -50,9 +50,4 @@ public class ApiStatus implements Model {
 	public void setCode(int code) {
 		this.code = code;
 	}
-
-	@Override
-	public String getContext() {
-		return "apistatus";
-	}
 }
