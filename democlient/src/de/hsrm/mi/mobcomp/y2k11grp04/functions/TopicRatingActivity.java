@@ -39,7 +39,6 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
 public class TopicRatingActivity extends ServiceActivity {
-	private static final String DEFAULT_PROGRESS = "50";
 	private static int currentTopic = 0;
 	private static int currentQuestion = 0;
 
