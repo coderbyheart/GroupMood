@@ -65,7 +65,8 @@ public class GroupMoodActivity extends ServiceActivity {
 						Uri.parse(scanResult.getContents())));
 			} catch (ActivityNotFoundException e) {
 				Toast.makeText(getApplicationContext(),
-						R.string.toast_no_groupmood_qrcode, Toast.LENGTH_LONG).show();
+						R.string.toast_no_groupmood_qrcode, Toast.LENGTH_LONG)
+						.show();
 			}
 		} else {
 			Toast.makeText(getApplicationContext(), R.string.toast_no_scan,
@@ -87,15 +88,6 @@ public class GroupMoodActivity extends ServiceActivity {
 			return super.onCreateDialog(id);
 		}
 
-	}
-
-	private void loadMeeting(Uri groupMoodUri) {
-		Message m = Message.obtain(null, MoodServerService.MSG_MEETING);
-		Bundle data = new Bundle();
-		data.putString(MoodServerService.KEY_MEETING_URI,
-				groupMoodUri.toString());
-		m.setData(data);
-		sendMessage(m);
 	}
 
 	@Override

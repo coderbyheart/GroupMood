@@ -4,12 +4,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
 abstract public class ServiceActivity extends MenuActivity {
@@ -53,8 +57,30 @@ abstract public class ServiceActivity extends MenuActivity {
 		}
 	}
 
-	abstract protected ServiceMessageRunnable getServiceMessageRunnable(
-			Message message);
+	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
+		switch (message.what) {
+		case MoodServerService.MSG_ERROR:
+			return new ServiceMessageRunnable(message) {
+				@Override
+				public void run() {
+					Toast.makeText(
+							getApplicationContext(),
+							serviceMessage.getData().getString(
+									MoodServerService.KEY_ERROR_MESSAGE),
+							Toast.LENGTH_LONG).show();
+				}
+			};
+		default:
+			return new ServiceMessageRunnable(message) {
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(),
+							"Unhandled Message: " + serviceMessage.what,
+							Toast.LENGTH_LONG).show();
+				}
+			};
+		}
+	}
 
 	@Override
 	public void onResume() {
@@ -109,5 +135,34 @@ abstract public class ServiceActivity extends MenuActivity {
 	}
 
 	protected void onDisconnect() {
+	}
+
+	/**
+	 * Lädt ein Meeting anhand einer Uri
+	 * 
+	 * @param groupMoodUri
+	 */
+	protected void loadMeeting(Uri groupMoodUri) {
+		Message m = Message.obtain(null, MoodServerService.MSG_MEETING);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_MEETING_URI,
+				groupMoodUri.toString());
+		m.setData(data);
+		sendMessage(m);
+	}
+
+	/**
+	 * Lädt ein Meeting vollständig mit allen Daten
+	 * 
+	 * @param groupMoodUri
+	 */
+	protected void loadMeetingComplete(Meeting meeting) {
+		Message m = Message
+				.obtain(null, MoodServerService.MSG_MEETING_COMPLETE);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri()
+				.toString());
+		m.setData(data);
+		sendMessage(m);
 	}
 }

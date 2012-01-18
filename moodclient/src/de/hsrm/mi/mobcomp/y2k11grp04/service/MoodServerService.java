@@ -31,12 +31,18 @@ public class MoodServerService extends Service {
 	public static final int MSG_MEETING_RESULT = 6;
 	public static final int MSG_MEETING_SUBSCRIBE = 7;
 	public static final int MSG_MEETING_UNSUBSCRIBE = 8;
+	public static final int MSG_MEETING_COMPLETE = 9;
+	public static final int MSG_MEETING_COMPLETE_RESULT = 10;
+	public static final int MSG_MEETING_COMPLETE_PROGRESS = 11;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
 	public static final String KEY_MEETING_ID = "meeting.id";
 	public static final String KEY_MEETING_URI = "meeting.uri";
 	public static final String KEY_ERROR_MESSAGE = "error.message";
+
+	public static final String KEY_TOPIC_MODEL = "model.Topic";
+	public static final String KEY_QUESTION_MODEL = "model.Question";
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
@@ -54,29 +60,22 @@ public class MoodServerService extends Service {
 			try {
 				switch (request.what) {
 				case MSG_MEETING:
-					BaseModel meeting = getMeeting(Uri.parse(request.getData()
-							.getString(KEY_MEETING_URI)));
-					if (meeting != null)
-						sendMeetingTo(meeting, request.replyTo);
+					fetchMeeting(request);
+					break;
+				case MSG_MEETING_COMPLETE:
+					fetchMeetingComplete(request);
 					break;
 				case MSG_MEETING_SUBSCRIBE:
-					Meeting subscribeMeeting = getMeeting(Uri.parse(request
-							.getData().getString(KEY_MEETING_URI)));
-					if (subscribeMeeting != null) {
-						meetingSubscription.put(request.replyTo,
-								subscribeMeeting);
-					}
+					subscribeMeeting(request);
 					break;
 				case MSG_MEETING_UNSUBSCRIBE:
-					meetingSubscription.remove(request.replyTo);
+					unsubscribeMeeting(request);
 					break;
 				case MSG_PAUSE:
-					sendMsg(request.replyTo, Message.obtain(null,
-							MSG_PAUSE_RESULT, doPause(), 0));
+					doPause(request);
 					break;
 				case MSG_RESUME:
-					sendMsg(request.replyTo, Message.obtain(null,
-							MSG_RESUME_RESULT, doResume(), 0));
+					doResume(request);
 					break;
 				default:
 					super.handleMessage(request);
@@ -85,18 +84,71 @@ public class MoodServerService extends Service {
 				sendError(request.replyTo, e.getMessage());
 			}
 		}
-
 	}
 
 	/**
-	 * Lädt das Meeting mit der ID meeting_id
+	 * Lädt ein Meeting
 	 * 
-	 * @param uri
+	 * @param request
 	 * @throws ApiException
 	 */
-	private Meeting getMeeting(Uri uri) throws ApiException {
-		Meeting m = api.getMeeting(uri);
-		return m;
+	public void fetchMeeting(Message request) throws ApiException {
+		Meeting meeting = api.getMeeting(Uri.parse(request.getData().getString(
+				KEY_MEETING_URI)));
+		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_RESULT);
+	}
+
+	/**
+	 * @param request
+	 * @throws ApiException
+	 * @todo TODO: Hier muss noch das Laden des Meetings in Stücken
+	 *       implementiert werden.
+	 */
+	public void fetchMeetingComplete(Message request) throws ApiException {
+		sendMeetingProgress(request.replyTo, 1, 3);
+		Meeting meeting = api.getMeetingRecursive(Uri.parse(request.getData()
+				.getString(KEY_MEETING_URI)));
+		sendMeetingProgress(request.replyTo, 2, 3);
+		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
+		sendMeetingProgress(request.replyTo, 3, 3);
+	}
+
+	/**
+	 * Sendet Infos mit dem Fortschritt des Ladens eines Meetings an die
+	 * Activity, die es angefordert hat
+	 * 
+	 * @param replyTo
+	 * @param progress
+	 * @param max
+	 */
+	private void sendMeetingProgress(Messenger replyTo, int progress, int max) {
+		Message info = Message.obtain(null, MSG_MEETING_COMPLETE_PROGRESS);
+		info.arg1 = progress;
+		info.arg2 = max;
+		sendMsg(replyTo, info);
+	}
+
+	/**
+	 * Meldet sich von Änderungsbenachrichtigungen ab
+	 * 
+	 * @param request
+	 */
+	public void unsubscribeMeeting(Message request) {
+		meetingSubscription.remove(request.replyTo);
+	}
+
+	/**
+	 * Abonniert Änderungen am Meeting
+	 * 
+	 * @param request
+	 * @throws ApiException
+	 */
+	public void subscribeMeeting(Message request) throws ApiException {
+		Meeting subscribeMeeting = api.getMeeting(Uri.parse(request.getData()
+				.getString(KEY_MEETING_URI)));
+		if (subscribeMeeting != null) {
+			meetingSubscription.put(request.replyTo, subscribeMeeting);
+		}
 	}
 
 	/**
@@ -105,8 +157,8 @@ public class MoodServerService extends Service {
 	 * @param meeting
 	 * @param rcpt
 	 */
-	private void sendMeetingTo(BaseModel meeting, Messenger rcpt) {
-		Message info = Message.obtain(null, MSG_MEETING_RESULT);
+	private void sendMeetingTo(BaseModel meeting, Messenger rcpt, int type) {
+		Message info = Message.obtain(null, type);
 		Bundle data = new Bundle();
 		data.putParcelable(KEY_MEETING_MODEL, meeting);
 		info.setData(data);
@@ -151,10 +203,11 @@ public class MoodServerService extends Service {
 				for (Messenger messenger : meetingSubscription.keySet()) {
 					BaseModel updatedMeeting;
 					try {
-						updatedMeeting = getMeeting(meetingSubscription.get(
-								messenger).getUri());
+						updatedMeeting = api.getMeeting(meetingSubscription
+								.get(messenger).getUri());
 						if (updatedMeeting != null)
-							sendMeetingTo(updatedMeeting, messenger);
+							sendMeetingTo(updatedMeeting, messenger,
+									MSG_MEETING_RESULT);
 					} catch (ApiException e) {
 						sendError(messenger, e.getMessage());
 					}
@@ -177,16 +230,24 @@ public class MoodServerService extends Service {
 
 	/**
 	 * Methode zum Pausieren des Timers von Außen
+	 * 
+	 * @param request
 	 */
-	private int doResume() {
-		return startTimer() ? 1 : 0;
+	private void doResume(Message request) {
+		boolean timerResult = startTimer();
+		sendMsg(request.replyTo,
+				Message.obtain(null, MSG_RESUME_RESULT, timerResult ? 1 : 0, 0));
 	}
 
 	/**
 	 * Methode zum Pausieren des Timers von Außen
+	 * 
+	 * @param request
 	 */
-	private int doPause() {
-		return stopTimer() ? 1 : 0;
+	private void doPause(Message request) {
+		boolean stopResult = stopTimer();
+		sendMsg(request.replyTo,
+				Message.obtain(null, MSG_PAUSE_RESULT, stopResult ? 1 : 0, 0));
 	}
 
 	protected void sendMsg(Messenger rcpt, Message response) {

@@ -81,9 +81,9 @@ public class Topic extends BaseModel {
 			List<? extends StateModel> items) {
 		if (relation.getModel() == Question.class) {
 			questions = new ArrayList<Question>();
-			for(StateModel m: items) {
-				questions.add((Question)m);
-				((Question)m).setTopic(this);
+			for (StateModel m : items) {
+				questions.add((Question) m);
+				((Question) m).setTopic(this);
 			}
 		} else {
 			super.setRelationItems(relation, items);
@@ -92,6 +92,11 @@ public class Topic extends BaseModel {
 
 	public List<Question> getQuestions() {
 		return questions;
+	}
+
+	public void setQuestions(ArrayList<Question> questions) {
+		this.questions = questions;
+
 	}
 
 	@Override
@@ -137,5 +142,4 @@ public class Topic extends BaseModel {
 			return false;
 		return true;
 	}
-
 }

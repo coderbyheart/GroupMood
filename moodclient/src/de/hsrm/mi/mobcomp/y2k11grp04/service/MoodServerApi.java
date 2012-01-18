@@ -29,7 +29,9 @@ import android.net.Uri;
 import android.util.Log;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Model;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.StateModel;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
 public class MoodServerApi {
 	private HttpClient client;
@@ -304,7 +306,10 @@ public class MoodServerApi {
 															.toString());
 								}
 							}
-							Log.v(getClass().getCanonicalName(), "Set " + instanceItems.size() + " related items on " + top.getClass().getCanonicalName());
+							Log.v(getClass().getCanonicalName(), "Set "
+									+ instanceItems.size()
+									+ " related items on "
+									+ top.getClass().getCanonicalName());
 							((StateModel) top).setRelationItems(relation,
 									instanceItems);
 						} catch (JSONException e) {
@@ -337,6 +342,20 @@ public class MoodServerApi {
 	}
 
 	public Meeting getMeeting(Uri meetingUri) throws ApiException {
+		Log.v(getClass().getCanonicalName(),
+				"Fetching meeting " + meetingUri.toString());
+		Uri u = meetingUri
+				.buildUpon()
+				.scheme(meetingUri.toString().contains("+https") ? "https"
+						: "http").build();
+		HttpGet request = new HttpGet(u.toString());
+		JSONObject response = execute(request);
+		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
+				JSONReader.KEY_RESULT).get();
+		return meeting;
+	}
+
+	public Meeting getMeetingRecursive(Uri meetingUri) throws ApiException {
 		Log.v(getClass().getCanonicalName(),
 				"Fetching meeting " + meetingUri.toString());
 		Uri u = meetingUri
@@ -399,5 +418,71 @@ public class MoodServerApi {
 	public void registerModel(Class<? extends Model> modelClass, Uri context) {
 		contextToModel.put(context, modelClass);
 		modelToContext.put(modelClass, context);
+	}
+
+	/**
+	 * Lädt die Topics eines Meetings
+	 * 
+	 * @param meeting
+	 * @return
+	 * @throws ApiException
+	 */
+	public ArrayList<Topic> getTopics(Meeting meeting) throws ApiException {
+		// Suche Topic-Relation dieses Meetings
+		Relation topicRelation = null;
+		for (Relation rel : meeting.getRelations()) {
+			if (rel.getModel().equals(Topic.class))
+				topicRelation = rel;
+		}
+		// FIXME: Relations müssen auch serialisiert werden
+		topicRelation = new Relation();
+		topicRelation.setHref(Uri
+				.parse(meeting.getUri().toString() + "/topics"));
+		Log.v(getClass().getCanonicalName(), "Fetching topics "
+				+ topicRelation.getHref().toString());
+		HttpGet request = new HttpGet(topicRelation.getHref().toString());
+		JSONObject response = execute(request);
+
+		ArrayList<Topic> topics = new ArrayList<Topic>();
+
+		try {
+			JSONArray items = response.getJSONArray(JSONReader.KEY_RESULT);
+			for (int i = 0; i < items.length(); i++) {
+				Topic topic = new JSONReader<Topic>(Topic.class,
+						items.getJSONObject(i)).get();
+				topics.add(topic);
+			}
+		} catch (JSONException e) {
+			throw new ApiException("Failed to read topics from "
+					+ topicRelation.getHref().toString());
+		}
+		return topics;
+	}
+
+	public ArrayList<Question> getQuestionsWithExtras(Topic topic)
+			throws ApiException {
+		// FIXME: Relations müssen auch serialisiert werden
+		Relation questionRelation = new Relation();
+		questionRelation.setHref(Uri.parse(topic.getUri().toString()
+				+ "/questions"));
+		Log.v(getClass().getCanonicalName(), "Fetching topics "
+				+ questionRelation.getHref().toString());
+		HttpGet request = new HttpGet(questionRelation.getHref().toString());
+		JSONObject response = execute(request);
+
+		ArrayList<Question> questions = new ArrayList<Question>();
+
+		try {
+			JSONArray items = response.getJSONArray(JSONReader.KEY_RESULT);
+			for (int i = 0; i < items.length(); i++) {
+				Question question = new JSONReader<Question>(Question.class,
+						items.getJSONObject(i)).getRecursive();
+				questions.add(question);
+			}
+		} catch (JSONException e) {
+			throw new ApiException("Failed to read topics from "
+					+ questionRelation.getHref().toString());
+		}
+		return questions;
 	}
 }
