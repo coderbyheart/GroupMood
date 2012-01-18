@@ -10,17 +10,38 @@
     	android:id="@+id/progressBar" 
     	android:layout_width="fill_parent"
     	/>
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/attendee"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <WebView
-        android:id="@+id/webView1"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
-
+    	
+	<LinearLayout
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:orientation="vertical" >
+	    
+	    <TextView
+	        android:id="@+id/meetingName"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="{meeting.name}"
+	        android:textAppearance="?android:attr/textAppearanceLarge"
+	        />
+		
+		<LinearLayout
+		    android:layout_width="fill_parent"
+		    android:layout_height="fill_parent"
+		    android:orientation="vertical" >
+		
+		   	<com.devsmart.android.ui.HorizontalListView
+		        android:id="@+id/gallery"
+		        android:layout_width="fill_parent"
+		        android:layout_height="100dp"
+		        />
+		
+		    <WebView
+		        android:id="@+id/detailWebView"
+		        android:layout_width="fill_parent"
+		        android:layout_height="fill_parent"
+		        />
+		</LinearLayout>
+	
+	</LinearLayout>
+	
 </LinearLayout>

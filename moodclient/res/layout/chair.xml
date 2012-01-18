@@ -12,15 +12,17 @@
     	/>
     	
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/meetingName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/chair"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="{meeting.name}"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        />
 
     <WebView
-        android:id="@+id/webView1"
+        android:id="@+id/detailWebView"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+        android:layout_height="fill_parent" 
+        />
 
 </LinearLayout>

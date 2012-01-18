@@ -29,7 +29,7 @@ abstract public class ServiceActivity extends MenuActivity {
 			messengerSend = new Messenger(service);
 			onConnect();
 		}
-
+		
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			messengerSend = null;

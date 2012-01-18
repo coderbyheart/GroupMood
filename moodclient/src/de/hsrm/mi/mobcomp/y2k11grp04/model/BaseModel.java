@@ -69,6 +69,9 @@ abstract public class BaseModel implements StateModel, Parcelable {
 	public void setRelationItems(Relation relation, List<? extends StateModel> items) {
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -76,10 +79,15 @@ abstract public class BaseModel implements StateModel, Parcelable {
 		result = prime * result
 				+ ((creationDate == null) ? 0 : creationDate.hashCode());
 		result = prime * result + id;
+		result = prime * result
+				+ ((relations == null) ? 0 : relations.hashCode());
 		result = prime * result + ((uri == null) ? 0 : uri.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -95,6 +103,11 @@ abstract public class BaseModel implements StateModel, Parcelable {
 		} else if (!creationDate.equals(other.creationDate))
 			return false;
 		if (id != other.id)
+			return false;
+		if (relations == null) {
+			if (other.relations != null)
+				return false;
+		} else if (!relations.equals(other.relations))
 			return false;
 		if (uri == null) {
 			if (other.uri != null)
