@@ -21,30 +21,17 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_weight="1"
-            android:orientation="horizontal" >
+            android:orientation="horizontal"
+            android:padding="5dp" >
 
-            <FrameLayout
-                android:id="@+id/webview_container"
+            <WebView
+                android:id="@+id/image_tall"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_weight="1" >
-
-                <WebView
-                    android:id="@+id/image_tall"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:background="@android:color/black"
-                    android:fitsSystemWindows="true"
-                    android:scrollbars="none" >
-                </WebView>
-            </FrameLayout>
-
-            <uk.co.jasonfry.android.tools.ui.SwipeView
-                android:id="@+id/swipe_view"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_weight="1"
-                android:gravity="center_horizontal" />
+                android:background="@android:color/black"
+                android:fitsSystemWindows="true"
+                android:scrollbars="none" >
+            </WebView>
         </LinearLayout>
 
         <LinearLayout
@@ -54,13 +41,12 @@
             android:orientation="vertical"
             android:padding="5dp" >
 
-            <FrameLayout
+            <uk.co.jasonfry.android.tools.ui.SwipeView
+                android:id="@+id/swipe_view"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:padding="5dp" >
-            </FrameLayout>
+                android:gravity="center_horizontal" />
 
             <uk.co.jasonfry.android.tools.ui.PageControl
                 android:id="@+id/page_control"
