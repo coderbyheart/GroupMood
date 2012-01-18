@@ -7,12 +7,12 @@
  	<ProgressBar 
     	android:layout_height="wrap_content" 
     	style="?android:attr/progressBarStyleHorizontal" 
-    	android:id="@+id/progressBar" 
+    	android:id="@+id/groupMood_progressBar" 
     	android:layout_width="fill_parent"
     	/>
     	
     <TextView
-        android:id="@+id/meetingName"
+        android:id="@+id/groupMood_meetingName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="{meeting.name}"
@@ -20,7 +20,7 @@
         />
 
     <WebView
-        android:id="@+id/detailWebView"
+        android:id="@+id/groupMood_detailWebView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" 
         />

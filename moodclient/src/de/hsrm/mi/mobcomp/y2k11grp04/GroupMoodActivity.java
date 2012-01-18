@@ -28,7 +28,7 @@ public class GroupMoodActivity extends ServiceActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		((Button) findViewById(R.id.scan_button))
+		((Button) findViewById(R.id.groupMood_scan_button))
 				.setOnClickListener(new OnClickListener() {
 
 					public void onClick(View arg0) {

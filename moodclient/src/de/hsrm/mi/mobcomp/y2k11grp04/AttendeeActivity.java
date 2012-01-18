@@ -27,6 +27,7 @@ public class AttendeeActivity extends ServiceActivity {
 	private final int SCREEN_ORIENTATION_PORTRAIT = 1;
 	protected ProgressBar loadingProgress;
 	protected Meeting meeting;
+	protected boolean meetingComplete = false;
 	private View gallery;
 	private Topic currentTopic;
 	private Question currentQuestion;
@@ -37,7 +38,7 @@ public class AttendeeActivity extends ServiceActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(getLayout());
 
-		loadingProgress = (ProgressBar) findViewById(R.id.progressBar);
+		loadingProgress = (ProgressBar) findViewById(R.id.groupMood_progressBar);
 
 		Bundle b = getIntent().getExtras();
 		b.setClassLoader(getClassLoader());
@@ -45,14 +46,18 @@ public class AttendeeActivity extends ServiceActivity {
 
 		updateView();
 	}
-	
+
 	/**
 	 * Die Anzeige der Aktivity aktualisieren.
 	 */
-	protected void updateView()
-	{
-		TextView meetingName = (TextView)findViewById(R.id.meetingName);
+	protected void updateView() {
+		TextView meetingName = (TextView) findViewById(R.id.groupMood_meetingName);
 		meetingName.setText(meeting.getName());
+		if (meetingComplete) {
+			loadingProgress.setVisibility(View.GONE);
+		} else {
+			loadingProgress.setVisibility(View.VISIBLE);
+		}
 		if (getResources().getConfiguration().orientation == SCREEN_ORIENTATION_PORTRAIT)
 			portrait();
 		else
@@ -64,12 +69,12 @@ public class AttendeeActivity extends ServiceActivity {
 	}
 
 	private void landscape() {
-		gallery = findViewById(R.id.gallery);
+		gallery = findViewById(R.id.groupMood_gallery);
 		((ListView) gallery).setAdapter(new TopicGalleryAdapter(meeting
 				.getTopics()));
 
-		PageControl mPageControl = (PageControl) findViewById(R.id.page_control);
-		SwipeView mSwipeView = (SwipeView) findViewById(R.id.swipe_view);
+		PageControl mPageControl = (PageControl) findViewById(R.id.groupMood_page_control);
+		SwipeView mSwipeView = (SwipeView) findViewById(R.id.groupMood_swipe_view);
 		mSwipeView.setPageControl(mPageControl);
 
 		Topic currentTopic = getCurrentTopic();
@@ -85,7 +90,7 @@ public class AttendeeActivity extends ServiceActivity {
 	}
 
 	private void portrait() {
-		gallery = findViewById(R.id.gallery);
+		gallery = findViewById(R.id.groupMood_gallery);
 		((HorizontalListView) gallery).setAdapter(new TopicGalleryAdapter(
 				meeting.getTopics()));
 		updateDetailView();
@@ -94,7 +99,7 @@ public class AttendeeActivity extends ServiceActivity {
 	private View createSwipeTextView() {
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = layoutInflater.inflate(R.layout.question, null);
-		TextView tv = (TextView) view.findViewById(R.id.tv_question);
+		TextView tv = (TextView) view.findViewById(R.id.groupMood_question);
 		tv.setTextSize(16);
 		tv.setSingleLine(false);
 		return view;
@@ -113,7 +118,7 @@ public class AttendeeActivity extends ServiceActivity {
 	 * Aktualisiert die Detailansicht
 	 */
 	protected void updateDetailView() {
-		WebView webView = (WebView) findViewById(R.id.detailWebView);
+		WebView webView = (WebView) findViewById(R.id.groupMood_detailWebView);
 		String summary = "";
 		summary += "<h1>" + meeting.getName() + "</h1>";
 		if (meeting.getTopics().size() > 0) {
@@ -156,11 +161,6 @@ public class AttendeeActivity extends ServiceActivity {
 				public void run() {
 					loadingProgress.setMax(serviceMessage.arg2);
 					loadingProgress.setProgress(serviceMessage.arg1);
-					if (serviceMessage.arg1 == serviceMessage.arg2) {
-						loadingProgress.setVisibility(View.GONE);
-					} else {
-						loadingProgress.setVisibility(View.VISIBLE);
-					}
 				}
 			};
 		case MoodServerService.MSG_MEETING_COMPLETE_RESULT:
@@ -171,6 +171,7 @@ public class AttendeeActivity extends ServiceActivity {
 					b.setClassLoader(getClassLoader());
 					meeting = b
 							.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+					meetingComplete = true;
 					updateView();
 				}
 			};
@@ -183,6 +184,25 @@ public class AttendeeActivity extends ServiceActivity {
 	protected void onConnect() {
 		super.onConnect();
 		// Meeting vollständig laden
-		loadMeetingComplete(meeting);
+		if (!meetingComplete)
+			loadMeetingComplete(meeting);
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		if (meeting != null) {
+			outState.putParcelable(MoodServerService.KEY_MEETING_MODEL, meeting);
+		}
+		outState.putBoolean("meetingComplete", meetingComplete);
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
+			meeting = savedInstanceState
+					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+		}
+		meetingComplete = savedInstanceState.getBoolean("meetingComplete");
+		updateView();
 	}
 }

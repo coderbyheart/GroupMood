@@ -40,7 +40,7 @@ public class TopicGalleryAdapter extends BaseAdapter {
 		// TODO: Image
 		Topic topic = getItem(position);
 		if (topic != null) {
-			TextView text = (TextView) view.findViewById(R.id.name);
+			TextView text = (TextView) view.findViewById(R.id.groupMood_name);
 			text.setText(topic.getName());
 		}
 		return view;

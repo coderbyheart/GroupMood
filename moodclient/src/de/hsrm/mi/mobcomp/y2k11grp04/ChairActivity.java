@@ -21,7 +21,7 @@ public class ChairActivity extends AttendeeActivity {
 
 	@Override
 	protected void updateDetailView() {
-		WebView webView = (WebView) findViewById(R.id.detailWebView);
+		WebView webView = (WebView) findViewById(R.id.groupMood_detailWebView);
 		String summary = "<h1>" + meeting.getName() + "</h1>";
 		for (Topic t : meeting.getTopics()) {
 			summary += "<h2>" + t.getName() + "</h2>";

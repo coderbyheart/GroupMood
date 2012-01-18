@@ -7,7 +7,7 @@
     <ProgressBar 
     	android:layout_height="wrap_content" 
     	style="?android:attr/progressBarStyleHorizontal" 
-    	android:id="@+id/progressBar" 
+    	android:id="@+id/groupMood_progressBar" 
     	android:layout_width="fill_parent"
     	/>
     	
@@ -17,7 +17,7 @@
 		    android:orientation="vertical" >
     	
 	    	<TextView
-		        android:id="@+id/meetingName"
+		        android:id="@+id/groupMood_meetingName"
 		        android:layout_width="fill_parent"
 		        android:layout_height="wrap_content"
 		        android:text="{meeting.name}"
@@ -31,7 +31,7 @@
 			    >
 			
 				<ListView
-			        android:id="@+id/gallery"
+			        android:id="@+id/groupMood_gallery"
 			        android:layout_width="100dp"
 			        android:layout_height="fill_parent"
 			        />
@@ -51,7 +51,7 @@
 			            >
 	
 			            <uk.co.jasonfry.android.tools.ui.SwipeView
-			                android:id="@+id/swipe_view"
+			                android:id="@+id/groupMood_swipe_view"
 			                android:layout_width="fill_parent"
 			                android:layout_height="fill_parent"
 			                android:layout_weight="1"
@@ -59,7 +59,7 @@
 			                />
 			
 			            <uk.co.jasonfry.android.tools.ui.PageControl
-			                android:id="@+id/page_control"
+			                android:id="@+id/groupMood_page_control"
 			                android:layout_width="fill_parent"
 			                android:layout_height="wrap_content"
 			                android:gravity="center_horizontal"

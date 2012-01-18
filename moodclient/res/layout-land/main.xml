@@ -19,7 +19,7 @@
         android:text="@string/intro" />
 
     <Button
-        android:id="@+id/scan_button"
+        android:id="@+id/groupMood_scan_button"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="@string/scan" />

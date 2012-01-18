@@ -18,7 +18,7 @@
         />
 
     <Button
-        android:id="@+id/scan_button"
+        android:id="@+id/groupMood_scan_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/scan" />
