@@ -5,9 +5,12 @@ import uk.co.jasonfry.android.tools.ui.SwipeView;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -28,9 +31,10 @@ public class AttendeeActivity extends ServiceActivity {
 	protected ProgressBar loadingProgress;
 	protected Meeting meeting;
 	protected boolean meetingComplete = false;
-	private View gallery;
+	private View topicGallery;
 	private Topic currentTopic;
 	private Question currentQuestion;
+	private TopicGalleryAdapter topicGalleryAdapter;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -58,6 +62,21 @@ public class AttendeeActivity extends ServiceActivity {
 		} else {
 			loadingProgress.setVisibility(View.VISIBLE);
 		}
+
+		topicGallery = findViewById(R.id.groupMood_gallery);
+		topicGalleryAdapter = new TopicGalleryAdapter(meeting.getTopics());
+		GalleryItemSelectListener topicGallerySelectListener = new GalleryItemSelectListener();
+
+		if (topicGallery instanceof HorizontalListView) {
+			HorizontalListView lv = ((HorizontalListView) topicGallery);
+			lv.setAdapter(topicGalleryAdapter);
+			lv.setOnItemSelectedListener(topicGallerySelectListener);
+		} else {
+			ListView lv = ((ListView) topicGallery);
+			lv.setAdapter(topicGalleryAdapter);
+			lv.setOnItemSelectedListener(topicGallerySelectListener);
+		}
+
 		if (getResources().getConfiguration().orientation == SCREEN_ORIENTATION_PORTRAIT)
 			portrait();
 		else
@@ -69,10 +88,6 @@ public class AttendeeActivity extends ServiceActivity {
 	}
 
 	private void landscape() {
-		gallery = findViewById(R.id.groupMood_gallery);
-		((ListView) gallery).setAdapter(new TopicGalleryAdapter(meeting
-				.getTopics()));
-
 		PageControl mPageControl = (PageControl) findViewById(R.id.groupMood_page_control);
 		SwipeView mSwipeView = (SwipeView) findViewById(R.id.groupMood_swipe_view);
 		mSwipeView.setPageControl(mPageControl);
@@ -90,9 +105,6 @@ public class AttendeeActivity extends ServiceActivity {
 	}
 
 	private void portrait() {
-		gallery = findViewById(R.id.groupMood_gallery);
-		((HorizontalListView) gallery).setAdapter(new TopicGalleryAdapter(
-				meeting.getTopics()));
 		updateDetailView();
 	}
 
@@ -204,5 +216,19 @@ public class AttendeeActivity extends ServiceActivity {
 		}
 		meetingComplete = savedInstanceState.getBoolean("meetingComplete");
 		updateView();
+	}
+
+	private class GalleryItemSelectListener implements OnItemSelectedListener {
+		@Override
+		public void onItemSelected(AdapterView<?> arg0, View parent,
+				int position, long arg3) {
+			Log.v(getClass().getCanonicalName(),
+					topicGalleryAdapter.getItem(position).getName()
+							+ " selected");
+		}
+
+		@Override
+		public void onNothingSelected(AdapterView<?> arg0) {
+		}
 	}
 }
