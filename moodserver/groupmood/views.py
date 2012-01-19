@@ -1,10 +1,16 @@
+# -*- coding: utf8 -*-
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import get_object_or_404, render_to_response
 from django.utils import simplejson
 from django.views.decorators.csrf import *
+from django import forms
 from models import *
+import os
+import subprocess
+import re
+import mimetypes
 
 contexthref = 'http://groupmood.net/jsonld'
 modelRelations = {
@@ -102,13 +108,89 @@ def meeting_topics(request, id):
     if request.method != 'GET':
         return HttpResponseBadRequest()
     meeting = get_object_or_404(Meeting, pk=id)
-    return jsonResponse(request, modelsToJson(request, Topic.objects.filter(meeting=meeting)))
+    topics = Topic.objects.filter(meeting=meeting)
+    # Fixe Bild-URLs
+    for topic in topics:
+        if topic.image != None:
+            topic.image = "%s/groupmood/topic/%d/image" % (getBaseHref(request), topic.id)
+    return jsonResponse(request, modelsToJson(request, topics))
+
+class PresentationWizardForm(forms.Form):
+    name = forms.CharField(max_length=200)
+    presentation  = forms.FileField()
+
+@csrf_exempt
+def meeting_wizard(request, type):
+    """Mit dem Wizard können verschiedene Standard-Meetings angelegt werden."""
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+    wizardTypes = ['presentation']
+    if type not in wizardTypes:
+        return HttpResponseBadRequest("Unknown wizard type %s" % type)
+    
+    form = PresentationWizardForm(request.POST, request.FILES)
+    if not form.is_valid():
+        return HttpResponseBadRequest()
+    
+    # Meeting anlegen
+    meeting = Meeting.objects.create(name=form.cleaned_data['name'])
+    # Standard-Topic zum Bewerten des Meetings anlegen
+    voteTopic = Topic.objects.create(meeting=meeting, name="Wie bewerten Sie dieses Meeting?")
+    question = Question.objects.create(topic=voteTopic, name="Allgemeine Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
+    questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
+    questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
+    
+    archiveFile = 'uploads/presentation-%d.tgz' % meeting.id
+    destination = open(archiveFile, 'wb+')
+    for chunk in request.FILES['presentation'].chunks():
+        destination.write(chunk)
+    destination.close()
+    
+    extractDir = 'uploads/presentation-%d' % meeting.id
+    os.mkdir(extractDir)
+    try:
+        subprocess.check_call(["tar", "-x", "-z", "-f", archiveFile, '--overwrite-dir', '-C', extractDir])
+    except CalledProcessError:
+        return HttpResponseBadRequest("Failed to extra archive.") 
+    os.remove(archiveFile)
+    
+    # Folie zählen
+    slides = []
+    for file in os.listdir(extractDir):
+        slides.append(file)
+    if (len(slides) == 0):
+        return HttpResponseBadRequest("No slides found.")
+    
+    # Topics für alle Folien anlegen
+    nslide = 0
+    for slide in sorted(slides, key=lambda v: int(re.sub(r'[^0-9]', '', v))):
+        nslide = nslide + 1
+        slideTopic = Topic.objects.create(meeting=meeting, name="Folie #%d" % nslide, image="%s/%s" % (extractDir, slide))
+        # Fragen für jede Folie
+        for q in ["Wie ist diese Folie gestaltet?", "Wie gut ist der Inhalt?"]:
+            question = Question.objects.create(topic=slideTopic, name=q, type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
+            questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
+            questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
+    
+    jsondata = modelToJson(request, meeting);
+    resp = jsonResponse(request, jsondata)
+    resp['Location'] = getModelUrl(request, meeting)
+    resp.status_code = 201;
+    return resp
 
 def topic_questions(request, id):
     if request.method != 'GET':
         return HttpResponseBadRequest()
     topic = get_object_or_404(Topic, pk=id)
     return jsonResponse(request, modelsToJson(request, Question.objects.filter(topic=topic)))
+
+def topic_image(request, id):
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    topic = get_object_or_404(Topic, pk=id)
+    if topic.image == None:
+        return HttpResponseNotFound()
+    return HttpResponse(content=open(topic.image).read(), mimetype=mimetypes.guess_type(topic.image)[0])
 
 def topic_entry(request, id):
     if request.method != 'GET':

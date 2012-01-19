@@ -1,0 +1,13 @@
+Mit Hilfe des Scripts pdf2pngzip.sh ist es möglich, aus einer PDF-Datei ein
+Archiv mit einem PNG pro Seite zu machen.
+
+Verwendung:
+
+$ ./pdf2pngzip.sh vorlesung.pdf
+
+So wird ein Archiv vorlesung.tgz erzeugt.
+
+Dieses kann mit curl an den Mood-Server geschickt werden, der daraus 
+ein Meeting mit einem Topic pro Slide macht.
+
+$ curl -v -H Accept=application/json -X POST --form presentation=@HttpKommunikation-slides.tgz --form name=Test http://localhost:8000/groupmood/meeting/wizard/presentation

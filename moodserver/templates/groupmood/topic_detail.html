@@ -4,6 +4,10 @@
 <dl>
 	<dt>Name</dt>
 	<dd>{{ topic.name }}</dd>
+	{% if topic.image %}
+	<dt>Bild</dt>
+	<dd><a href="/groupmood/topic/{{ topic.id }}/image"><img src="/groupmood/topic/{{ topic.id }}/image" /></a></dd>
+	{% endif %}
 	<dt>Questions</dt>
 	<dd>
 	{% if topic.question_set %}
