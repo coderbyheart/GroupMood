@@ -12,9 +12,8 @@ import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -85,16 +84,16 @@ public class AttendeeActivity extends ServiceActivity {
 
 		topicGallery = findViewById(R.id.groupMood_gallery);
 		topicGalleryAdapter = new TopicGalleryAdapter(meeting.getTopics());
-		GalleryItemSelectListener topicGallerySelectListener = new GalleryItemSelectListener();
+		GalleryItemClickListener topicGalleryClickListener = new GalleryItemClickListener();
 
 		if (topicGallery instanceof HorizontalListView) {
 			HorizontalListView lv = ((HorizontalListView) topicGallery);
 			lv.setAdapter(topicGalleryAdapter);
-			lv.setOnItemSelectedListener(topicGallerySelectListener);
+			lv.setOnItemClickListener(topicGalleryClickListener);
 		} else {
 			ListView lv = ((ListView) topicGallery);
 			lv.setAdapter(topicGalleryAdapter);
-			lv.setOnItemSelectedListener(topicGallerySelectListener);
+			lv.setOnItemClickListener(topicGalleryClickListener);
 		}
 
 		updateTopic();
@@ -212,7 +211,6 @@ public class AttendeeActivity extends ServiceActivity {
 				.findViewById(R.id.groupMood_questionActionButton);
 		SeekBar s = (SeekBar) view
 				.findViewById(R.id.groupMood_questionActionSeekBar);
-		Log.v(getClass().getCanonicalName(), q.getType());
 		if (q.getType().equals(Question.TYPE_RANGE)) {
 			view.removeView(b);
 		} else {
@@ -306,17 +304,12 @@ public class AttendeeActivity extends ServiceActivity {
 		updateView();
 	}
 
-	private class GalleryItemSelectListener implements OnItemSelectedListener {
+	private class GalleryItemClickListener implements OnItemClickListener {
 		@Override
-		public void onItemSelected(AdapterView<?> arg0, View parent,
-				int position, long arg3) {
-			Log.v(getClass().getCanonicalName(), "Post: " + position);
+		public void onItemClick(AdapterView<?> item, View parent, int position,
+				long arg3) {
 			setCurrentTopic(topicGalleryAdapter.getItem(position));
 			updateTopic();
-		}
-
-		@Override
-		public void onNothingSelected(AdapterView<?> arg0) {
 		}
 	}
 }
