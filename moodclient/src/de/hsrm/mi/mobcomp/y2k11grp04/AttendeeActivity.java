@@ -1,7 +1,11 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import uk.co.jasonfry.android.tools.ui.PageControl;
 import uk.co.jasonfry.android.tools.ui.SwipeView;
+import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
@@ -11,16 +15,17 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.FrameLayout;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.devsmart.android.ui.HorizontalListView;
 
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
-import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
@@ -35,6 +40,9 @@ public class AttendeeActivity extends ServiceActivity {
 	private Topic currentTopic;
 	private Question currentQuestion;
 	private TopicGalleryAdapter topicGalleryAdapter;
+	private Map<Topic, View> topicViews = new HashMap<Topic, View>();
+	private Map<Question, LinearLayout> questionActionViews = new HashMap<Question, LinearLayout>();
+	private OnPageChangedListener swipeChangeListener;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -47,6 +55,18 @@ public class AttendeeActivity extends ServiceActivity {
 		Bundle b = getIntent().getExtras();
 		b.setClassLoader(getClassLoader());
 		meeting = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+
+		swipeChangeListener = new OnPageChangedListener() {
+			@Override
+			public void onPageChanged(int oldPage, int newPage) {
+				questionActionViews.get(
+						getCurrentTopic().getQuestions().get(oldPage))
+						.setVisibility(View.GONE);
+				currentQuestion = getCurrentTopic().getQuestions().get(newPage);
+				questionActionViews.get(currentQuestion).setVisibility(
+						View.VISIBLE);
+			}
+		};
 
 		updateView();
 	}
@@ -77,6 +97,10 @@ public class AttendeeActivity extends ServiceActivity {
 			lv.setOnItemSelectedListener(topicGallerySelectListener);
 		}
 
+		updateTopic();
+	}
+
+	protected void updateTopic() {
 		if (getResources().getConfiguration().orientation == SCREEN_ORIENTATION_PORTRAIT)
 			portrait();
 		else
@@ -88,80 +112,128 @@ public class AttendeeActivity extends ServiceActivity {
 	}
 
 	private void landscape() {
-		PageControl mPageControl = (PageControl) findViewById(R.id.groupMood_page_control);
-		SwipeView mSwipeView = (SwipeView) findViewById(R.id.groupMood_swipe_view);
-		mSwipeView.setPageControl(mPageControl);
+		// Enthält alle Layouts zur Darstellung der Fragen eines Topics
+		LinearLayout allTopicQuestionsLayout = (LinearLayout) findViewById(R.id.groupMood_allTopicQuestionsLayout);
+
+		// Alle Question-Views aushängen
+		allTopicQuestionsLayout.removeAllViews();
 
 		Topic currentTopic = getCurrentTopic();
 		if (currentTopic != null) {
-			for (Question q : currentTopic.getQuestions()) {
-				FrameLayout questionView = new FrameLayout(this);
-				mSwipeView.addView(questionView);
-				TextView questionText = (TextView) createSwipeTextView();
-				questionText.setText(q.getName());
-				questionView.addView(questionText);
+			// Gibt es die View schon für das Topic?
+			if (!topicViews.containsKey(currentTopic)) {
+				Log.v(getClass().getCanonicalName(), "Erzeuge View für "
+						+ currentTopic.getName());
+				// Layout für das Topic erzeugen
+				LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				LinearLayout topicQuestionsLayout = (LinearLayout) layoutInflater
+						.inflate(R.layout.topic_questions,
+								allTopicQuestionsLayout, false);
+				// Name des Topics
+				TextView topicName = (TextView) topicQuestionsLayout
+						.findViewById(R.id.groupMood_topicName);
+				topicName.setText(currentTopic.getName());
+
+				// Swipe-View zum Durchblättern,
+				// enthält die Namen der Fragen
+				SwipeView mSwipeView = (SwipeView) topicQuestionsLayout
+						.findViewById(R.id.groupMood_questionsSwipe);
+				mSwipeView.setOnPageChangedListener(swipeChangeListener);
+
+				// Layout mit den Antwort-Möglichkeiten zur Frage
+				LinearLayout topicQuestionActionsLayout = (LinearLayout) topicQuestionsLayout
+						.findViewById(R.id.groupMood_questionsActions);
+
+				for (Question q : currentTopic.getQuestions()) {
+					// Die Anzeige des Frage-Textes erfolgt in der SwipeView
+					View questionView = createQuestionView(q);
+					mSwipeView.addView(questionView);
+					// Die Frage-Aktion wird in einer anderen View angzeigt,
+					// damit man z.B. den SeekBar bedienen kann
+					LinearLayout actionView = createQuestionAction(q);
+					topicQuestionActionsLayout.addView(actionView);
+					// Merken, um beim Swipen umschalten zu können
+					questionActionViews.put(q, actionView);
+				}
+
+				// Nur Aktion der erste Fragen anzeigen
+				int actionCount = topicQuestionActionsLayout.getChildCount();
+				if (actionCount > 0) {
+					for (int i = 1; i < actionCount; i++) {
+						topicQuestionActionsLayout.getChildAt(i).setVisibility(
+								View.GONE);
+					}
+				}
+
+				// Pager für die SwipeView erst initialisieren, wenn alle Fragen
+				// drin sind
+				PageControl mPageControl = (PageControl) topicQuestionsLayout
+						.findViewById(R.id.groupMood_questionsSwipePager);
+				mSwipeView.setPageControl(mPageControl);
+
+				// Fertige View merken
+				topicViews.put(currentTopic, topicQuestionsLayout);
 			}
+			// Die View zum aktuellen Topic Anzeigen
+			allTopicQuestionsLayout.addView(topicViews.get(currentTopic));
 		}
 	}
 
 	private void portrait() {
-		updateDetailView();
+		// FIXME: Hier die Detailansicht bei Topics mit Bild einbauen
+		TextView t = (TextView) findViewById(R.id.groupMood_topicName);
+		TextView q = (TextView) findViewById(R.id.groupMood_questionName);
+		t.setText("");
+		q.setText("");
+		Topic c = getCurrentTopic();
+		if (c != null) {
+			t.setText(getCurrentTopic().getName());
+			if (currentQuestion != null) {
+				q.setText(currentQuestion.getName());
+			}
+		}
 	}
 
-	private View createSwipeTextView() {
+	private LinearLayout createQuestionView(Question q) {
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View view = layoutInflater.inflate(R.layout.question, null);
-		TextView tv = (TextView) view.findViewById(R.id.groupMood_question);
-		tv.setTextSize(16);
-		tv.setSingleLine(false);
+		LinearLayout view = (LinearLayout) layoutInflater.inflate(
+				R.layout.question_name, null);
+		TextView questionText = (TextView) view
+				.findViewById(R.id.groupMood_question_text);
+		questionText.setText(q.getName());
+		return view;
+	}
+
+	private LinearLayout createQuestionAction(Question q) {
+		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LinearLayout view = (LinearLayout) layoutInflater.inflate(
+				R.layout.question_action, null);
+		Button b = (Button) view
+				.findViewById(R.id.groupMood_questionActionButton);
+		SeekBar s = (SeekBar) view
+				.findViewById(R.id.groupMood_questionActionSeekBar);
+		Log.v(getClass().getCanonicalName(), q.getType());
+		if (q.getType().equals(Question.TYPE_RANGE)) {
+			view.removeView(b);
+		} else {
+			view.removeView(s);
+		}
 		return view;
 	}
 
 	private Topic getCurrentTopic() {
 		if (currentTopic == null) {
 			if (meeting.getTopics().size() > 0) {
-				currentTopic = meeting.getTopics().get(0);
+				setCurrentTopic(meeting.getTopics().get(0));
 			}
 		}
 		return currentTopic;
 	}
 
-	/**
-	 * Aktualisiert die Detailansicht
-	 */
-	protected void updateDetailView() {
-		WebView webView = (WebView) findViewById(R.id.groupMood_detailWebView);
-		String summary = "";
-		summary += "<h1>" + meeting.getName() + "</h1>";
-		if (meeting.getTopics().size() > 0) {
-			summary += "<h2>Topics</h2>";
-			summary += "<ul>";
-			for (Topic t : meeting.getTopics()) {
-				summary += "<li>" + t.getName();
-				summary += "<br>Questions:";
-				summary += "<ul>";
-				for (Question q : t.getQuestions()) {
-					summary += "<li>" + q.getName();
-					summary += "<br>Type: " + q.getType();
-					summary += "<br>Mode: " + q.getMode();
-					summary += "<br>Average: " + q.getAvg();
-					summary += "<br>Options:";
-					summary += "<ul>";
-					for (QuestionOption o : q.getOptions()) {
-						summary += "<li>" + o.getKey() + " = " + o.getValue()
-								+ "</li>";
-					}
-					summary += "</ul>";
-					summary += "</li>";
-				}
-				summary += "</ul>";
-				summary += "</li>";
-			}
-			summary += "</ul>";
-		}
-
-		webView.loadData("<html><body>" + summary + "</body></html>",
-				"text/html", null);
+	private void setCurrentTopic(Topic topic) {
+		currentTopic = topic;
+		currentQuestion = topic.getQuestions().size() > 0 ? topic
+				.getQuestions().get(0) : null;
 	}
 
 	@Override
@@ -204,6 +276,10 @@ public class AttendeeActivity extends ServiceActivity {
 	protected void onSaveInstanceState(Bundle outState) {
 		if (meeting != null) {
 			outState.putParcelable(MoodServerService.KEY_MEETING_MODEL, meeting);
+			outState.putParcelable(MoodServerService.KEY_TOPIC_MODEL,
+					currentTopic);
+			outState.putParcelable(MoodServerService.KEY_QUESTION_MODEL,
+					currentQuestion);
 		}
 		outState.putBoolean("meetingComplete", meetingComplete);
 	}
@@ -214,7 +290,19 @@ public class AttendeeActivity extends ServiceActivity {
 			meeting = savedInstanceState
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 		}
-		meetingComplete = savedInstanceState.getBoolean("meetingComplete");
+		if (savedInstanceState.containsKey(MoodServerService.KEY_TOPIC_MODEL)) {
+			setCurrentTopic((Topic) savedInstanceState
+					.getParcelable(MoodServerService.KEY_TOPIC_MODEL));
+		}
+		if (savedInstanceState
+				.containsKey(MoodServerService.KEY_QUESTION_MODEL)) {
+			currentQuestion = (Question) savedInstanceState
+					.getParcelable(MoodServerService.KEY_QUESTION_MODEL);
+		}
+		if (savedInstanceState.containsKey("meetingComplete")) {
+			meetingComplete = savedInstanceState.getBoolean("meetingComplete");
+		}
+
 		updateView();
 	}
 
@@ -222,9 +310,9 @@ public class AttendeeActivity extends ServiceActivity {
 		@Override
 		public void onItemSelected(AdapterView<?> arg0, View parent,
 				int position, long arg3) {
-			Log.v(getClass().getCanonicalName(),
-					topicGalleryAdapter.getItem(position).getName()
-							+ " selected");
+			Log.v(getClass().getCanonicalName(), "Post: " + position);
+			setCurrentTopic(topicGalleryAdapter.getItem(position));
+			updateTopic();
 		}
 
 		@Override

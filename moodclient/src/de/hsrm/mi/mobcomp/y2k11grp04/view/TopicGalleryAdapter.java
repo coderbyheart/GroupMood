@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import de.hsrm.mi.mobcomp.y2k11grp04.R;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
@@ -35,13 +37,22 @@ public class TopicGalleryAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
-		View view = LayoutInflater.from(parent.getContext()).inflate(
-				R.layout.gallery_item_text, null);
-		// TODO: Image
+		LinearLayout view = (LinearLayout)LayoutInflater.from(parent.getContext()).inflate(
+				R.layout.topic_item, null);
+		TextView text = (TextView) view.findViewById(R.id.groupMood_topicItem_Name);
+		ImageView image = (ImageView) view.findViewById(R.id.groupMood_topicItem_Image);
 		Topic topic = getItem(position);
 		if (topic != null) {
-			TextView text = (TextView) view.findViewById(R.id.groupMood_name);
-			text.setText(topic.getName());
+			
+			if (topic.getImage() == null) {
+				text.setText(topic.getName());
+				view.removeView(image);
+			} else {
+				image.setImageResource(R.drawable.logo);
+				// FIXME: Hier das Laden der Folien-Bilder implementieren
+				// image.setImageURI(topic.getImage());
+				view.removeView(text);
+			}
 		}
 		return view;
 	}

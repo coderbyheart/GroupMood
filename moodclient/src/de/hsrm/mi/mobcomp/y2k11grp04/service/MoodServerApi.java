@@ -149,22 +149,26 @@ public class MoodServerApi {
 									+ "(Integer) did not work.");
 						}
 					} else if (param == Uri.class) {
-						Uri value;
+						String uriVal;
 						try {
-							value = Uri.parse(objectData.getString(key));
+							uriVal = objectData.isNull(key) ? null : objectData
+									.getString(key);
 						} catch (JSONException e) {
 							throw new ApiException(
 									"Failed to get Uri value for " + key);
 						}
-						try {
-							m.invoke(objectInstance, value);
-						} catch (IllegalArgumentException e) {
-							throw new ApiException(objectInstance.getClass()
-									.toString()
-									+ "#"
-									+ m.getName()
-									+ "(Uri) did not work.");
+						if (uriVal != null) {
+							Uri value = Uri.parse(uriVal);
+							try {
+								m.invoke(objectInstance, value);
+							} catch (IllegalArgumentException e) {
+								throw new ApiException(objectInstance
+										.getClass().toString()
+										+ "#"
+										+ m.getName() + "(Uri) did not work.");
+							}
 						}
+
 					} else if (param == boolean.class) {
 						boolean value;
 						try {

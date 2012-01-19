@@ -9,17 +9,15 @@ public class ChairActivity extends AttendeeActivity {
 	protected int getLayout() {
 		return R.layout.chair;
 	}
-	
+
 	/**
 	 * Die Anzeige der Aktivity aktualisieren.
 	 */
 	@Override
-	protected void updateView()
-	{
+	protected void updateView() {
 		updateDetailView();
 	}
 
-	@Override
 	protected void updateDetailView() {
 		WebView webView = (WebView) findViewById(R.id.groupMood_detailWebView);
 		String summary = "<h1>" + meeting.getName() + "</h1>";

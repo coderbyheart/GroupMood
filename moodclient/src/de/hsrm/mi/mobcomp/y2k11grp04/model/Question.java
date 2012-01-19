@@ -9,6 +9,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Question extends BaseModel {
+	public static final String TYPE_SINGLECHOICE = "singlechoice";
+	public static final String TYPE_MULTIPLECHOICE = "multiplechoice";
+	public static final String TYPE_RANGE = "range";
+	public static final String MODE_SINGLE = "single";
+	public static final String MODE_AVERAGE = "avg";
+
 	private Topic topic;
 	private String name;
 	private String type;
@@ -136,7 +142,6 @@ public class Question extends BaseModel {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + numAnswers;
 		result = prime * result + ((options == null) ? 0 : options.hashCode());
-		result = prime * result + ((topic == null) ? 0 : topic.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}

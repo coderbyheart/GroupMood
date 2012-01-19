@@ -3,45 +3,53 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
-    
-    <ProgressBar 
-    	android:layout_height="wrap_content" 
-    	style="?android:attr/progressBarStyleHorizontal" 
-    	android:id="@+id/groupMood_progressBar" 
-    	android:layout_width="fill_parent"
-    	/>
-    	
-	<LinearLayout
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:orientation="vertical" >
-	    
-	    <TextView
-	        android:id="@+id/groupMood_meetingName"
-	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:text="{meeting.name}"
-	        android:textAppearance="?android:attr/textAppearanceLarge"
-	        />
-		
-		<LinearLayout
-		    android:layout_width="fill_parent"
-		    android:layout_height="fill_parent"
-		    android:orientation="vertical" >
-		
-		   	<com.devsmart.android.ui.HorizontalListView
-		        android:id="@+id/groupMood_gallery"
-		        android:layout_width="fill_parent"
-		        android:layout_height="100dp"
-		        />
-		
-		    <WebView
-		        android:id="@+id/groupMood_detailWebView"
-		        android:layout_width="fill_parent"
-		        android:layout_height="fill_parent"
-		        />
-		</LinearLayout>
-	
-	</LinearLayout>
-	
+
+    <ProgressBar
+        android:id="@+id/groupMood_progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/groupMood_meetingName"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="{meeting.name}"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical" >
+
+            <com.devsmart.android.ui.HorizontalListView
+                android:id="@+id/groupMood_gallery"
+                android:layout_width="fill_parent"
+                android:layout_height="100dp" >
+
+                <!-- Die Gallery wird mit topic_item.xml befüllt -->
+
+            </com.devsmart.android.ui.HorizontalListView>
+
+            <TextView
+                android:id="@+id/groupMood_topicName"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="{topic.name}"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <TextView
+                android:id="@+id/groupMood_questionName"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="{question.name}"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

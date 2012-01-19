@@ -3,75 +3,47 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
-    
-    <ProgressBar 
-    	android:layout_height="wrap_content" 
-    	style="?android:attr/progressBarStyleHorizontal" 
-    	android:id="@+id/groupMood_progressBar" 
-    	android:layout_width="fill_parent"
-    	/>
-    	
-    	<LinearLayout
-		    android:layout_width="fill_parent"
-		    android:layout_height="fill_parent"
-		    android:orientation="vertical" >
-    	
-	    	<TextView
-		        android:id="@+id/groupMood_meetingName"
-		        android:layout_width="fill_parent"
-		        android:layout_height="wrap_content"
-		        android:text="{meeting.name}"
-		        android:textAppearance="?android:attr/textAppearanceLarge"
-		        />
-    
-		    <LinearLayout
-			    android:layout_width="fill_parent"
-			    android:layout_height="fill_parent"
-			    android:orientation="horizontal" 
-			    >
-			
-				<ListView
-			        android:id="@+id/groupMood_gallery"
-			        android:layout_width="100dp"
-			        android:layout_height="fill_parent"
-			        />
-			        
-		        <LinearLayout
-	        		android:layout_width="fill_parent"
-	        		android:layout_height="fill_parent"
-	        		android:layout_weight="1"
-	        		android:orientation="vertical"
-	        		>
-	
-	                <LinearLayout
-			            android:layout_width="fill_parent"
-			            android:layout_height="fill_parent"
-			            android:layout_weight="1"
-			            android:orientation="vertical"
-			            >
-	
-			            <uk.co.jasonfry.android.tools.ui.SwipeView
-			                android:id="@+id/groupMood_swipe_view"
-			                android:layout_width="fill_parent"
-			                android:layout_height="fill_parent"
-			                android:layout_weight="1"
-			                android:gravity="center_horizontal"
-			                />
-			
-			            <uk.co.jasonfry.android.tools.ui.PageControl
-			                android:id="@+id/groupMood_page_control"
-			                android:layout_width="fill_parent"
-			                android:layout_height="wrap_content"
-			                android:gravity="center_horizontal"
-			                android:orientation="horizontal" 
-			                />
-			        
-			        </LinearLayout>
-			    
-			    </LinearLayout>
-			
-			</LinearLayout>
-	
-	</LinearLayout>	
-	
+
+    <ProgressBar
+        android:id="@+id/groupMood_progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/groupMood_meetingName"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="{meeting.name}"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="horizontal" >
+
+            <ListView
+                android:id="@+id/groupMood_gallery"
+                android:layout_width="100dp"
+                android:layout_height="fill_parent" >
+
+                <!-- Die Gallery wird mit topic_item.xml befüllt -->
+            </ListView>
+
+            <LinearLayout
+                android:id="@+id/groupMood_allTopicQuestionsLayout"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical" >
+
+                <!-- Hier rein werden die einzelnen Fragen gerendert: topic_questions.xml -->
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

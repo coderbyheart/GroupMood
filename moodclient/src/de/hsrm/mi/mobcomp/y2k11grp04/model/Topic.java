@@ -25,7 +25,9 @@ public class Topic extends BaseModel {
 	protected void readFromParcel(Parcel in) {
 		super.readFromParcel(in);
 		name = in.readString();
-		image = Uri.parse(in.readString());
+		String uriString = in.readString();
+		if (uriString.length() > 0)
+			image = Uri.parse(uriString);
 		for (Parcelable q : in
 				.readParcelableArray(Topic.class.getClassLoader())) {
 			questions.add((Question) q);
@@ -37,7 +39,7 @@ public class Topic extends BaseModel {
 	public void writeToParcel(Parcel out, int flags) {
 		super.writeToParcel(out, flags);
 		out.writeString(name);
-		out.writeString(image.toString());
+		out.writeString(image != null ? image.toString() : "");
 		out.writeParcelableArray(
 				questions.toArray(new Question[questions.size()]), 0);
 	}
@@ -99,7 +101,9 @@ public class Topic extends BaseModel {
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -107,14 +111,15 @@ public class Topic extends BaseModel {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((image == null) ? 0 : image.hashCode());
-		result = prime * result + ((meeting == null) ? 0 : meeting.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((questions == null) ? 0 : questions.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
