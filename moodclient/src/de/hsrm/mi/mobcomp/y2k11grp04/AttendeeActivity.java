@@ -74,8 +74,6 @@ public class AttendeeActivity extends ServiceActivity {
 	 * Die Anzeige der Aktivity aktualisieren.
 	 */
 	protected void updateView() {
-		TextView meetingName = (TextView) findViewById(R.id.groupMood_meetingName);
-		meetingName.setText(meeting.getName());
 		if (meetingComplete) {
 			loadingProgress.setVisibility(View.GONE);
 		} else {
@@ -99,18 +97,11 @@ public class AttendeeActivity extends ServiceActivity {
 		updateTopic();
 	}
 
-	protected void updateTopic() {
-		if (getResources().getConfiguration().orientation == SCREEN_ORIENTATION_PORTRAIT)
-			portrait();
-		else
-			landscape();
-	}
-
 	protected int getLayout() {
 		return R.layout.attendee;
 	}
 
-	private void landscape() {
+	private void updateTopic() {
 		// Enthält alle Layouts zur Darstellung der Fragen eines Topics
 		LinearLayout allTopicQuestionsLayout = (LinearLayout) findViewById(R.id.groupMood_allTopicQuestionsLayout);
 
@@ -175,21 +166,6 @@ public class AttendeeActivity extends ServiceActivity {
 			}
 			// Die View zum aktuellen Topic Anzeigen
 			allTopicQuestionsLayout.addView(topicViews.get(currentTopic));
-		}
-	}
-
-	private void portrait() {
-		// FIXME: Hier die Detailansicht bei Topics mit Bild einbauen
-		TextView t = (TextView) findViewById(R.id.groupMood_topicName);
-		TextView q = (TextView) findViewById(R.id.groupMood_questionName);
-		t.setText("");
-		q.setText("");
-		Topic c = getCurrentTopic();
-		if (c != null) {
-			t.setText(getCurrentTopic().getName());
-			if (currentQuestion != null) {
-				q.setText(currentQuestion.getName());
-			}
 		}
 	}
 
@@ -303,7 +279,7 @@ public class AttendeeActivity extends ServiceActivity {
 
 		updateView();
 	}
-
+	
 	private class GalleryItemClickListener implements OnItemClickListener {
 		@Override
 		public void onItemClick(AdapterView<?> item, View parent, int position,

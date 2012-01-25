@@ -10,18 +10,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/groupMood_meetingName"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="{meeting.name}"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -44,6 +32,5 @@
                 <!-- Hier rein werden die einzelnen Fragen gerendert: topic_questions.xml -->
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
 
 </LinearLayout>

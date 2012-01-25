@@ -10,18 +10,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/groupMood_meetingName"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="{meeting.name}"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -36,20 +24,15 @@
 
             </com.devsmart.android.ui.HorizontalListView>
 
-            <TextView
-                android:id="@+id/groupMood_topicName"
+            <LinearLayout
+                android:id="@+id/groupMood_allTopicQuestionsLayout"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="{topic.name}"
-                android:textAppearance="?android:attr/textAppearanceLarge" />
+                android:layout_height="fill_parent"
+                android:orientation="vertical" >
 
-            <TextView
-                android:id="@+id/groupMood_questionName"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="{question.name}"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                <!-- Hier rein werden die einzelnen Fragen gerendert: topic_questions.xml -->
+            </LinearLayout>
+        
         </LinearLayout>
-    </LinearLayout>
 
 </LinearLayout>

@@ -36,7 +36,7 @@ public class GroupMoodActivity extends ServiceActivity {
 							// Geht auf Debug nicht
 							startActivity(new Intent(
 									Intent.ACTION_VIEW,
-									Uri.parse("groupmood.attendee://10.0.2.2:8000/groupmood/meeting/1")));
+									Uri.parse("groupmood.attendee://login3.mi.hs-rm.de:8001/groupmood/meeting/2")));
 						} else {
 							IntentIntegrator integrator = new IntentIntegrator(
 									GroupMoodActivity.this);

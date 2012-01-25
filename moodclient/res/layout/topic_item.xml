@@ -6,10 +6,10 @@
 
     <TextView
         android:id="@+id/groupMood_topicItem_Name"
-        android:layout_width="95dp"
-        android:layout_height="95dp"
-        android:layout_margin="2.5dp"
-        android:background="@color/gallery_item"
+        android:layout_width="94dp"
+        android:layout_height="94dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/bg_blue"
         android:gravity="center"
         android:text="{item.name}"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -17,9 +17,9 @@
 
     <ImageView
         android:id="@+id/groupMood_topicItem_Image"
-        android:layout_width="95dp"
-        android:layout_height="95dp"
-        android:layout_margin="2.5dp"
+        android:layout_width="94dp"
+        android:layout_height="94dp"
+        android:layout_marginTop="2dp"
         android:scaleType="fitXY" />
 
 </LinearLayout>

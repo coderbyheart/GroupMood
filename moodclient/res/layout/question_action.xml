@@ -3,12 +3,71 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
+    
+	<LinearLayout 
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical"
+	    android:id="@+id/groupMood_questionActionRangeLayout"
+	    android:background="@drawable/bg_yellow"
+	    >
 
-    <SeekBar
-        android:id="@+id/groupMood_questionActionSeekBar"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp" />
+		<LinearLayout 
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="horizontal"
+		    android:weightSum="3"
+		     >
+		    
+	        <TextView
+		        android:id="@+id/groupMood_questionActionMinLabel"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:gravity="center"
+		        android:text="{minLabel}"
+		        android:textAppearance="?android:attr/textAppearanceSmall"
+		        android:textColor="@android:color/white"
+		        android:layout_weight="1"
+		        android:layout_marginLeft="5dp"
+		        android:layout_marginTop="5dp"
+		        />
+
+	        <TextView
+		        android:id="@+id/groupMood_questionActionMidLabel"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:gravity="center"
+		        android:text="{midLabel}"
+		        android:textAppearance="?android:attr/textAppearanceSmall"
+		        android:textColor="@android:color/white" 
+		        android:layout_weight="1"
+		        android:layout_marginLeft="2dp"
+		        android:layout_marginRight="2dp"
+		        android:layout_marginTop="5dp"
+		        />
+		        
+	        <TextView
+		        android:id="@+id/groupMood_questionActionMaxLabel"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:gravity="center"
+		        android:text="{maxLabel}"
+		        android:textAppearance="?android:attr/textAppearanceSmall"
+		        android:textColor="@android:color/white" 
+		        android:layout_weight="1"
+		        android:layout_marginRight="5dp"
+		        android:layout_marginTop="5dp"
+		        />
+
+	    </LinearLayout>
+	
+	    <SeekBar
+	        android:id="@+id/groupMood_questionActionSeekBar"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_margin="5dp" />
+    
+    </LinearLayout>
 
     <Button
         android:id="@+id/groupMood_questionActionButton"

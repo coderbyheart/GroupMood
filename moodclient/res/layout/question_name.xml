@@ -9,9 +9,10 @@
         android:id="@+id/groupMood_question_text"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:linksClickable="true"
-        android:scrollHorizontally="false"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="{question.name}"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
         />
 
 </LinearLayout>
