@@ -185,6 +185,20 @@ class Question(BaseModel):
     def numAnswers(self):
         return len(self.answers());
     
+    def toJsonDict(self):
+        type = filter(lambda t: t[0] == self.type, self.TYPES)[0][0]
+        mode = filter(lambda m: m[0] == self.mode, self.MODES)[0][0]
+        d = {
+            'id': self.id, 
+            'name': self.name, 
+            'type': type, 
+            'mode': mode, 
+            'numAnswers': self.numAnswers(),
+            'creationDate': self.creation_date.isoformat(),
+            'avg': self.avg(),
+        }
+        return d
+    
     def avg(self):
         if self.mode != self.MODE_AVERAGE:
             return 0
@@ -196,33 +210,38 @@ class Question(BaseModel):
         for v in votes:
             sum += int(v.answer)
         return sum / len(votes)
+
+    OPTION_RANGE_MIN_VALUE = "min_value"
+    OPTION_RANGE_MAX_VALUE = "max_value"
+    OPTION_RANGE_LABEL_MIN_VALUE = "label_min_value"
+    OPTION_RANGE_LABEL_MID_VALUE = "label_mid_value"
+    OPTION_RANGE_LABEL_MAX_VALUE = "label_max_value"
     
     def getMin(self, default=None):
-        if self.mode != self.MODE_AVERAGE:
-            return default
-        qmin_value = QuestionOption.objects.filter(question=self, key="min_value")
-        return qmin_value[0].value if qmin_value else default
+        """Gibt den Min-Wert der Range zurück"""
+        return self.getOption(self.OPTION_RANGE_MIN_VALUE, default);
         
     def getMax(self, default=None):
-        if self.mode != self.MODE_AVERAGE:
-            return default
-        qmax_value = QuestionOption.objects.filter(question=self, key="max_value")
-        return qmax_value[0].value if qmax_value else default
+        """Gibt den Max-Wert der Range zurück"""
+        return self.getOption(self.OPTION_RANGE_MAX_VALUE, default);
     
-    def toJsonDict(self):
-        type = filter(lambda t: t[0] == self.type, self.TYPES)[0][0]
-        mode = filter(lambda m: m[0] == self.mode, self.MODES)[0][0]
-        d = {
-            'id': self.id, 
-            'name': self.name, 
-            'type': type, 
-            'mode': mode, 
-            'avg': self.avg(), 
-            'numAnswers': self.numAnswers(),
-            'creationDate': self.creation_date.isoformat(),
-        }
-        return d
-
+    def getMinLabel(self):
+        """Gibt das Label für den Min-Wert zurück"""
+        return self.getOption(self.OPTION_RANGE_LABEL_MIN_VALUE);
+    
+    def getMidLabel(self):
+        """Gibt das Label für den Mittel-Wert zurück"""
+        return self.getOption(self.OPTION_RANGE_LABEL_MID_VALUE);
+        
+    def getMaxLabel(self):
+        """Gibt das Label für den Max-Wert zurück"""
+        return self.getOption(self.OPTION_RANGE_LABEL_MAX_VALUE);
+        
+    def getOption(self, name, default=None):
+        """Gibt eine Option dieser Frage zurück"""
+        v = QuestionOption.objects.filter(question=self, key=name)
+        return v[0].value if v else default
+    
 class QuestionOption(BaseModel):
     """
     Definiert die Details einer Frage, in Form von Key/Value-Paare

@@ -83,8 +83,8 @@ def meeting_list(request):
         # Standard-Topic zum Bewerten des Meetings anlegen
         voteTopic = Topic.objects.create(meeting=meeting, name="Wie bewerten Sie dieses Meeting?")
         question = Question.objects.create(topic=voteTopic, name="Allgemeine Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
-        questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
-        questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
+        questionOptionMin = QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
+        questionOptionMax = QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
         
         resp = jsonResponse(request, modelToJson(request, meeting))
         resp['Location'] = getModelUrl(request, meeting)
@@ -121,7 +121,7 @@ class PresentationWizardForm(forms.Form):
 
 @csrf_exempt
 def meeting_wizard(request, type):
-    """Mit dem Wizard können verschiedene Standard-Meetings angelegt werden."""
+    """Mit dem Wizard können Meetings mit vorgegebenen Einstellungen angelegt werden."""
     if request.method != 'POST':
         return HttpResponseBadRequest()
     wizardTypes = ['presentation']
@@ -137,8 +137,11 @@ def meeting_wizard(request, type):
     # Standard-Topic zum Bewerten des Meetings anlegen
     voteTopic = Topic.objects.create(meeting=meeting, name="Wie bewerten Sie dieses Meeting?")
     question = Question.objects.create(topic=voteTopic, name="Allgemeine Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
-    questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
-    questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MIN_VALUE, value="Schlecht")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MID_VALUE, value="Mittel")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MAX_VALUE, value="Gut")
     
     archiveFile = 'uploads/presentation-%d.tgz' % meeting.id
     destination = open(archiveFile, 'wb+')
@@ -167,10 +170,19 @@ def meeting_wizard(request, type):
         nslide = nslide + 1
         slideTopic = Topic.objects.create(meeting=meeting, name="Folie #%d" % nslide, image="%s/%s" % (extractDir, slide))
         # Fragen für jede Folie
-        for q in ["Wie ist diese Folie gestaltet?", "Wie gut ist der Inhalt?"]:
-            question = Question.objects.create(topic=slideTopic, name=q, type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
-            questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
-            questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
+        question = Question.objects.create(topic=slideTopic, name="Wie bewerten Sie die Gestaltung dieser Folie?", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MIN_VALUE, value="Katastrophal")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MID_VALUE, value="In Ordnung")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MAX_VALUE, value="Sehr ansprechend")
+        
+        question = Question.objects.create(topic=slideTopic, name="Wie verständlich wurde diese Folie erläutert?", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MIN_VALUE, value="Überhaupt nicht")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MID_VALUE, value="So lala.")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MAX_VALUE, value="Vollkommen")
     
     jsondata = modelToJson(request, meeting);
     resp = jsonResponse(request, jsondata)
