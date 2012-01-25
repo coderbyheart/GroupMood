@@ -14,6 +14,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
 abstract public class ServiceActivity extends MenuActivity {
@@ -29,7 +30,7 @@ abstract public class ServiceActivity extends MenuActivity {
 			messengerSend = new Messenger(service);
 			onConnect();
 		}
-		
+
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			messengerSend = null;
@@ -162,6 +163,18 @@ abstract public class ServiceActivity extends MenuActivity {
 		Bundle data = new Bundle();
 		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri()
 				.toString());
+		m.setData(data);
+		sendMessage(m);
+	}
+
+	/**
+	 * Erzeugt eine Antwort zu einer Frage
+	 */
+	protected void createAnswer(Question q, String answer) {
+		Message m = Message.obtain(null, MoodServerService.MSG_ANSWER);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_ANSWER, answer);
+		data.putParcelable(MoodServerService.KEY_QUESTION_MODEL, q);
 		m.setData(data);
 		sendMessage(m);
 	}

@@ -3,10 +3,9 @@ package de.hsrm.mi.mobcomp.y2k11grp04.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
-
 import android.os.Parcel;
 import android.os.Parcelable;
+import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
 public class Question extends BaseModel {
 	public static final String TYPE_SINGLECHOICE = "singlechoice";
@@ -103,6 +102,20 @@ public class Question extends BaseModel {
 		return options;
 	}
 
+	/**
+	 * Gibt die Option mit dem Namen name zurück
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public String getOption(String name) {
+		for (QuestionOption o : getOptions()) {
+			if (o.getKey().equals(name))
+				return o.getValue();
+		}
+		return null;
+	}
+
 	@Override
 	public void setRelationItems(Relation relation,
 			List<? extends StateModel> items) {
@@ -131,6 +144,26 @@ public class Question extends BaseModel {
 
 	public void setNumAnswers(int numAnswers) {
 		this.numAnswers = numAnswers;
+	}
+
+	/**
+	 * Gibt den Min-Wert zurück, falls vorhanden
+	 * 
+	 * @return
+	 */
+	public Integer getMinOption() {
+		return Integer
+				.parseInt(getOption(QuestionOption.OPTION_RANGE_MIN_VALUE));
+	}
+
+	/**
+	 * Gibt Max-Wert zurück, falls vorhanden
+	 * 
+	 * @return
+	 */
+	public Integer getMaxOption() {
+		return Integer
+				.parseInt(getOption(QuestionOption.OPTION_RANGE_MAX_VALUE));
 	}
 
 	@Override

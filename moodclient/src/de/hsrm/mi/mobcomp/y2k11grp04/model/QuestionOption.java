@@ -8,6 +8,12 @@ public class QuestionOption extends BaseModel {
 	private String key;
 	private String value;
 
+	public static final String OPTION_RANGE_LABEL_MIN_VALUE = "label_min_value";
+	public static final String OPTION_RANGE_LABEL_MID_VALUE = "label_mid_value";
+	public static final String OPTION_RANGE_LABEL_MAX_VALUE = "label_max_value";
+	public static final String OPTION_RANGE_MIN_VALUE = "min_value";
+	public static final String OPTION_RANGE_MAX_VALUE = "max_value";
+
 	public QuestionOption() {
 	}
 
@@ -46,7 +52,7 @@ public class QuestionOption extends BaseModel {
 			return new QuestionOption[size];
 		}
 	};
-	
+
 	public String getKey() {
 		return key;
 	}

@@ -28,7 +28,7 @@ public class GroupMoodActivity extends ServiceActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-
+		
 		((Button) findViewById(R.id.groupMood_scan_button))
 				.setOnClickListener(new OnClickListener() {
 
@@ -36,7 +36,7 @@ public class GroupMoodActivity extends ServiceActivity {
 						if ("google_sdk".equals(Build.PRODUCT)) {
 							// Geht auf Debug nicht
 							startActivity(new Intent(Intent.ACTION_VIEW, Uri
-									.parse("grpmd://login3.mi.hs-rm.de:8001/2")));
+									.parse("grpmd://login3.mi.hs-rm.de:8001/3")));
 						} else {
 							IntentIntegrator integrator = new IntentIntegrator(
 									GroupMoodActivity.this);

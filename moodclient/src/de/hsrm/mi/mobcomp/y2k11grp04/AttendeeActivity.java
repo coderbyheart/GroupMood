@@ -21,12 +21,15 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
+import android.widget.Toast;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 import com.devsmart.android.ui.HorizontalListView;
 
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
@@ -43,6 +46,8 @@ public class AttendeeActivity extends ServiceActivity {
 	private Map<Topic, View> topicViews = new HashMap<Topic, View>();
 	private Map<Question, LinearLayout> questionActionViews = new HashMap<Question, LinearLayout>();
 	private OnPageChangedListener swipeChangeListener;
+	private Map<SeekBar, Question> questionActionSeekBar = new HashMap<SeekBar, Question>();
+	private OnSeekBarChangeListener questionActionSeekBarListener;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -51,12 +56,14 @@ public class AttendeeActivity extends ServiceActivity {
 		setContentView(getLayout());
 
 		loadingProgress = (ProgressBar) findViewById(R.id.groupMood_progressBar);
-		if (meetingComplete) showDialog(DIALOG_LOADING);
+		if (!meetingComplete)
+			showDialog(DIALOG_LOADING);
 
 		Bundle b = getIntent().getExtras();
 		b.setClassLoader(getClassLoader());
 		meeting = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 
+		// Kümmert sich um das Wechseln der Fragen durch eine Swipe-Geste
 		swipeChangeListener = new OnPageChangedListener() {
 			@Override
 			public void onPageChanged(int oldPage, int newPage) {
@@ -66,6 +73,38 @@ public class AttendeeActivity extends ServiceActivity {
 				currentQuestion = getCurrentTopic().getQuestions().get(newPage);
 				questionActionViews.get(currentQuestion).setVisibility(
 						View.VISIBLE);
+			}
+		};
+
+		// Kümmert sich um das Setzen der Antwort, falls diese einen
+		// Slider verwendet
+		questionActionSeekBarListener = new OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				// Frage
+				Question q = questionActionSeekBar.get(seekBar);
+				// Rating berechnen
+				Integer value = (q.getMinOption() + (q.getMaxOption() - q.getMinOption())
+						* seekBar.getProgress() / 100);
+				Log.v(getClass().getCanonicalName(), "Min: " + q.getMinOption());
+				Log.v(getClass().getCanonicalName(), "Max: " + q.getMaxOption());
+				Log.v(getClass().getCanonicalName(),
+						"Progress: " + seekBar.getProgress());
+				Log.v(getClass().getCanonicalName(), "Value: " + value);
+				// Vote absetzen
+				Toast.makeText(AttendeeActivity.this, "Vote: " + value,
+						Toast.LENGTH_LONG).show();
+				// TODO
+				createAnswer(q, String.valueOf(value));
 			}
 		};
 
@@ -191,6 +230,24 @@ public class AttendeeActivity extends ServiceActivity {
 				.findViewById(R.id.groupMood_questionActionSeekBar);
 		if (q.getType().equals(Question.TYPE_RANGE)) {
 			view.removeView(b);
+			// Min/Max aus Question ziehen, da eine Seekbar IMMER bei 0 anfängt.
+			// Also merken, wird dann später im SeekBarChangeListener verwendet
+			questionActionSeekBar.put(s, q);
+			// Labels
+			TextView minValueLabel = (TextView) view
+					.findViewById(R.id.groupMood_questionActionMinLabel);
+			TextView midValueLabel = (TextView) view
+					.findViewById(R.id.groupMood_questionActionMidLabel);
+			TextView maxValueLabel = (TextView) view
+					.findViewById(R.id.groupMood_questionActionMaxLabel);
+			minValueLabel.setText(q
+					.getOption(QuestionOption.OPTION_RANGE_LABEL_MIN_VALUE));
+			midValueLabel.setText(q
+					.getOption(QuestionOption.OPTION_RANGE_LABEL_MID_VALUE));
+			maxValueLabel.setText(q
+					.getOption(QuestionOption.OPTION_RANGE_LABEL_MAX_VALUE));
+			// Listener
+			s.setOnSeekBarChangeListener(questionActionSeekBarListener);
 		} else {
 			view.removeView(s);
 		}
@@ -282,7 +339,7 @@ public class AttendeeActivity extends ServiceActivity {
 
 		updateView();
 	}
-	
+
 	public static final int DIALOG_LOADING = 1;
 
 	@Override
@@ -296,7 +353,7 @@ public class AttendeeActivity extends ServiceActivity {
 		}
 
 	}
-	
+
 	private class GalleryItemClickListener implements OnItemClickListener {
 		@Override
 		public void onItemClick(AdapterView<?> item, View parent, int position,

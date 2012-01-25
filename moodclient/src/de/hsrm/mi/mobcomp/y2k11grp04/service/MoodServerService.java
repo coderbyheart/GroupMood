@@ -34,12 +34,15 @@ public class MoodServerService extends Service {
 	public static final int MSG_MEETING_COMPLETE = 9;
 	public static final int MSG_MEETING_COMPLETE_RESULT = 10;
 	public static final int MSG_MEETING_COMPLETE_PROGRESS = 11;
+	public static final int MSG_ANSWER = 12;
+	public static final int MSG_ANSWER_RESULT = 13;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
 	public static final String KEY_MEETING_ID = "meeting.id";
 	public static final String KEY_MEETING_URI = "meeting.uri";
 	public static final String KEY_ERROR_MESSAGE = "error.message";
+	public static final String KEY_ANSWER = "answer.answer";
 
 	public static final String KEY_TOPIC_MODEL = "model.Topic";
 	public static final String KEY_QUESTION_MODEL = "model.Question";
