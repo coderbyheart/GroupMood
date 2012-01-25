@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.Uri.Builder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
@@ -34,9 +35,8 @@ public class GroupMoodActivity extends ServiceActivity {
 					public void onClick(View arg0) {
 						if ("google_sdk".equals(Build.PRODUCT)) {
 							// Geht auf Debug nicht
-							startActivity(new Intent(
-									Intent.ACTION_VIEW,
-									Uri.parse("groupmood.attendee://login3.mi.hs-rm.de:8001/groupmood/meeting/2")));
+							startActivity(new Intent(Intent.ACTION_VIEW, Uri
+									.parse("grpmd://login3.mi.hs-rm.de:8001/2")));
 						} else {
 							IntentIntegrator integrator = new IntentIntegrator(
 									GroupMoodActivity.this);
@@ -75,15 +75,13 @@ public class GroupMoodActivity extends ServiceActivity {
 	}
 
 	public static final int DIALOG_LOADING = 1;
-	private boolean chairRequested = false;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case DIALOG_LOADING:
-			Dialog d = new ProgressDialog(this);
-			d.setTitle(R.string.open_meeting);
-			return d;
+			return ProgressDialog.show(GroupMoodActivity.this, "",
+					getResources().getString(R.string.check_meeting), true);
 		default:
 			return super.onCreateDialog(id);
 		}
@@ -108,8 +106,7 @@ public class GroupMoodActivity extends ServiceActivity {
 					// Starte Activity entsprechend dem vorher ausgewählten
 					// Schema.
 					Intent next = new Intent(getApplicationContext(),
-							chairRequested ? ChairActivity.class
-									: AttendeeActivity.class);
+							AttendeeActivity.class);
 					next.putExtras(b);
 					startActivity(next);
 					finish();
@@ -138,9 +135,14 @@ public class GroupMoodActivity extends ServiceActivity {
 		Uri groupMoodUri = getIntent().getData();
 		if (groupMoodUri != null) {
 			if (currentMeeting == null) {
-				chairRequested = groupMoodUri.toString().contains("chair");
 				showDialog(DIALOG_LOADING);
-				loadMeeting(groupMoodUri);
+				// Uri umwandeln
+				Builder u = groupMoodUri
+						.buildUpon()
+						.scheme(groupMoodUri.toString().contains("+https") ? "https"
+								: "http");
+				u.path("/groupmood/meeting" + groupMoodUri.getPath());
+				loadMeeting(u.build());
 			}
 		}
 	}

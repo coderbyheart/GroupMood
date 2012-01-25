@@ -19,15 +19,11 @@
 				<category android:name="android.intent.category.DEFAULT" />
 				<category android:name="android.intent.category.BROWSABLE" />
 
-				<data android:scheme="groupmood.chair" />
-				<data android:scheme="groupmood.attendee" />
-				<data android:scheme="groupmood.chair+https" />
-				<data android:scheme="groupmood.attendee+https" />
+				<data android:scheme="grpmd" />
+				<data android:scheme="grpmd+https" />
 			</intent-filter>
 		</activity>
 		<activity android:name=".AttendeeActivity" android:label="@string/app_name">
-		</activity>
-		<activity android:name=".ChairActivity" android:label="@string/app_name">
 		</activity>
 		<service android:name=".service.MoodServerService"
 			android:process=":process" />

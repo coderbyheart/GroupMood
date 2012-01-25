@@ -100,9 +100,8 @@ def meeting_entry(request, id):
     if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
         return jsonResponse(request, modelToJson(request, meeting))
     else:
-        chairAppURL = 'groupmood.chair://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
-        attendeeAppURL = 'groupmood.attendee://%s/groupmood/meeting/%d' % (request.META['HTTP_HOST'], meeting.id)
-        return render_to_response('groupmood/meeting_detail.html', {'meeting': meeting, 'chairAppURL': chairAppURL, 'attendeeAppURL': attendeeAppURL})
+        attendeeAppURL = 'grpmd://%s/%d' % (request.META['HTTP_HOST'], meeting.id)
+        return render_to_response('groupmood/meeting_detail.html', {'meeting': meeting, 'attendeeAppURL': attendeeAppURL})
     
 def meeting_topics(request, id):
     if request.method != 'GET':

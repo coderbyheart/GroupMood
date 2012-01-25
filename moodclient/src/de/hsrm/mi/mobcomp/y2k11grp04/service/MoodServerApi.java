@@ -348,11 +348,7 @@ public class MoodServerApi {
 	public Meeting getMeeting(Uri meetingUri) throws ApiException {
 		Log.v(getClass().getCanonicalName(),
 				"Fetching meeting " + meetingUri.toString());
-		Uri u = meetingUri
-				.buildUpon()
-				.scheme(meetingUri.toString().contains("+https") ? "https"
-						: "http").build();
-		HttpGet request = new HttpGet(u.toString());
+		HttpGet request = new HttpGet(meetingUri.toString());
 		JSONObject response = execute(request);
 		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
 				JSONReader.KEY_RESULT).get();
@@ -362,11 +358,7 @@ public class MoodServerApi {
 	public Meeting getMeetingRecursive(Uri meetingUri) throws ApiException {
 		Log.v(getClass().getCanonicalName(),
 				"Fetching meeting " + meetingUri.toString());
-		Uri u = meetingUri
-				.buildUpon()
-				.scheme(meetingUri.toString().contains("+https") ? "https"
-						: "http").build();
-		HttpGet request = new HttpGet(u.toString());
+		HttpGet request = new HttpGet(meetingUri.toString());
 		JSONObject response = execute(request);
 		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
 				JSONReader.KEY_RESULT).getRecursive();

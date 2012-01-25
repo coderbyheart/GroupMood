@@ -6,6 +6,8 @@ import java.util.Map;
 import uk.co.jasonfry.android.tools.ui.PageControl;
 import uk.co.jasonfry.android.tools.ui.SwipeView;
 import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
@@ -31,7 +33,6 @@ import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
 
 public class AttendeeActivity extends ServiceActivity {
 
-	private final int SCREEN_ORIENTATION_PORTRAIT = 1;
 	protected ProgressBar loadingProgress;
 	protected Meeting meeting;
 	protected boolean meetingComplete = false;
@@ -50,6 +51,7 @@ public class AttendeeActivity extends ServiceActivity {
 		setContentView(getLayout());
 
 		loadingProgress = (ProgressBar) findViewById(R.id.groupMood_progressBar);
+		if (meetingComplete) showDialog(DIALOG_LOADING);
 
 		Bundle b = getIntent().getExtras();
 		b.setClassLoader(getClassLoader());
@@ -230,6 +232,7 @@ public class AttendeeActivity extends ServiceActivity {
 					meeting = b
 							.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 					meetingComplete = true;
+					dismissDialog(DIALOG_LOADING);
 					updateView();
 				}
 			};
@@ -278,6 +281,20 @@ public class AttendeeActivity extends ServiceActivity {
 		}
 
 		updateView();
+	}
+	
+	public static final int DIALOG_LOADING = 1;
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case DIALOG_LOADING:
+			return ProgressDialog.show(AttendeeActivity.this, "",
+					getResources().getString(R.string.loading_meeting), true);
+		default:
+			return super.onCreateDialog(id);
+		}
+
 	}
 	
 	private class GalleryItemClickListener implements OnItemClickListener {
