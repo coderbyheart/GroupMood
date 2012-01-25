@@ -51,9 +51,6 @@ public class MoodServerApi {
 		public JSONReader(JSONObject jsonData, Class<T> objectClass,
 				String dataKey) throws ApiException {
 			newInstance(objectClass);
-			Uri context = modelToContext.get(objectClass);
-			Log.v(getClass().getCanonicalName(), "Lese " + context.toString()
-					+ " aus " + dataKey);
 			try {
 				objectData = jsonData.getJSONObject(dataKey);
 			} catch (JSONException e) {
@@ -98,7 +95,6 @@ public class MoodServerApi {
 			}
 
 			if (objectInstance instanceof StateModel) {
-				Log.v(getClass().getCanonicalName(), "Checke URI");
 				// Check @id
 				try {
 					Uri objectUri = Uri.parse(objectData.getString(KEY_ID));
@@ -223,9 +219,6 @@ public class MoodServerApi {
 			// Add relations
 			if (objectInstance instanceof StateModel) {
 				if (objectData.has(KEY_RELATIONS)) {
-					Log.v(getClass().getCanonicalName(), "Lese @relations von "
-							+ contextUri.toString());
-
 					try {
 						List<Relation> instanceRelations = new ArrayList<Relation>();
 						JSONArray relations = objectData
@@ -234,12 +227,9 @@ public class MoodServerApi {
 							Relation rel = new JSONReader<Relation>(
 									Relation.class, relations.getJSONObject(i))
 									.get();
-							Log.v(getClass().getCanonicalName(),
-									contextUri.toString() + " hat Relation zu "
-											+ rel.getRelatedcontext());
 							if (!contextToModel.containsKey(rel
 									.getRelatedcontext())) {
-								Log.v(getClass().getCanonicalName(),
+								Log.d(getClass().getCanonicalName(),
 										"Skipped relation with unknown context "
 												+ rel.getRelatedcontext()
 														.toString());
@@ -277,16 +267,13 @@ public class MoodServerApi {
 				for (Relation relation : ((StateModel) top).getRelations()) {
 					if (!contextToModel.containsKey(relation
 							.getRelatedcontext())) {
-						Log.v(getClass().getCanonicalName(),
+						Log.d(getClass().getCanonicalName(),
 								"Skipped unknown context "
 										+ relation.getRelatedcontext()
 												.toString());
 						continue;
 					}
 					if (relation.isList()) {
-						Log.v(getClass().getCanonicalName(), "Lade Relation "
-								+ relation.getHref().toString() + " von "
-								+ modelToContext.get(top.getClass()).toString());
 						HttpGet request = new HttpGet(relation.getHref()
 								.toString());
 						try {
@@ -310,10 +297,6 @@ public class MoodServerApi {
 															.toString());
 								}
 							}
-							Log.v(getClass().getCanonicalName(), "Set "
-									+ instanceItems.size()
-									+ " related items on "
-									+ top.getClass().getCanonicalName());
 							((StateModel) top).setRelationItems(relation,
 									instanceItems);
 						} catch (JSONException e) {
@@ -346,8 +329,6 @@ public class MoodServerApi {
 	}
 
 	public Meeting getMeeting(Uri meetingUri) throws ApiException {
-		Log.v(getClass().getCanonicalName(),
-				"Fetching meeting " + meetingUri.toString());
 		HttpGet request = new HttpGet(meetingUri.toString());
 		JSONObject response = execute(request);
 		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
@@ -356,8 +337,6 @@ public class MoodServerApi {
 	}
 
 	public Meeting getMeetingRecursive(Uri meetingUri) throws ApiException {
-		Log.v(getClass().getCanonicalName(),
-				"Fetching meeting " + meetingUri.toString());
 		HttpGet request = new HttpGet(meetingUri.toString());
 		JSONObject response = execute(request);
 		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
@@ -392,7 +371,7 @@ public class MoodServerApi {
 		} catch (IOException e) {
 			throw new ApiException("I/O error: " + e.toString());
 		}
-		Log.v(getClass().getCanonicalName(), dataAsString);
+		Log.d(getClass().getCanonicalName(), dataAsString);
 		JSONObject jsonResponse;
 		try {
 			jsonResponse = (JSONObject) new JSONTokener(dataAsString)
@@ -434,8 +413,6 @@ public class MoodServerApi {
 		topicRelation = new Relation();
 		topicRelation.setHref(Uri
 				.parse(meeting.getUri().toString() + "/topics"));
-		Log.v(getClass().getCanonicalName(), "Fetching topics "
-				+ topicRelation.getHref().toString());
 		HttpGet request = new HttpGet(topicRelation.getHref().toString());
 		JSONObject response = execute(request);
 
@@ -461,8 +438,6 @@ public class MoodServerApi {
 		Relation questionRelation = new Relation();
 		questionRelation.setHref(Uri.parse(topic.getUri().toString()
 				+ "/questions"));
-		Log.v(getClass().getCanonicalName(), "Fetching topics "
-				+ questionRelation.getHref().toString());
 		HttpGet request = new HttpGet(questionRelation.getHref().toString());
 		JSONObject response = execute(request);
 

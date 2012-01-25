@@ -26,15 +26,24 @@ abstract public class ServiceActivity extends MenuActivity {
 	private final ServiceConnection sConn = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			Log.v(getClass().getCanonicalName(), "... verbunden.");
 			messengerSend = new Messenger(service);
-			onConnect();
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					onConnect();
+				}
+			});
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			messengerSend = null;
-			onDisconnect();
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					onDisconnect();
+				}
+			});
 		}
 	};
 
@@ -91,30 +100,24 @@ abstract public class ServiceActivity extends MenuActivity {
 
 	private void connect() {
 		if (!serviceBound) {
-			Log.v(getClass().getCanonicalName(), "Verbinde mit Service ...");
 			Intent intent = new Intent(this, MoodServerService.class);
 			serviceBound = bindService(intent, sConn, Context.BIND_AUTO_CREATE);
-			if (serviceBound) {
-				Log.v(getClass().getCanonicalName(), "Verbunden");
-			} else {
-				Log.e(getClass().getCanonicalName(), "Nicht Verbunden");
+			if (!serviceBound) {
+				Log.e(getClass().getCanonicalName(), "Konnte nicht zum Service verbinden.");
 			}
 		}
 	}
 
 	@Override
 	public void onPause() {
-		Log.v(getClass().getCanonicalName(), "onPause()");
 		super.onPause();
 		disconnect();
 	}
 
 	private void disconnect() {
 		if (serviceBound) {
-			Log.v(getClass().getCanonicalName(), "Trenne vom Service ...");
 			unbindService(sConn);
 			serviceBound = false;
-			Log.v(getClass().getCanonicalName(), "Getrennt.");
 		}
 	}
 
@@ -128,7 +131,7 @@ abstract public class ServiceActivity extends MenuActivity {
 		try {
 			messengerSend.send(message);
 		} catch (RemoteException e) {
-			Log.v(getClass().getCanonicalName(), "Sending message failed.");
+			Log.e(getClass().getCanonicalName(), "Sending message failed.");
 		}
 	}
 

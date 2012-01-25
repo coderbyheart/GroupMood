@@ -36,7 +36,7 @@ public class GroupMoodActivity extends ServiceActivity {
 						if ("google_sdk".equals(Build.PRODUCT)) {
 							// Geht auf Debug nicht
 							startActivity(new Intent(Intent.ACTION_VIEW, Uri
-									.parse("grpmd://login3.mi.hs-rm.de:8001/3")));
+									.parse("grpmd://10.0.2.2:8000/29")));
 						} else {
 							IntentIntegrator integrator = new IntentIntegrator(
 									GroupMoodActivity.this);

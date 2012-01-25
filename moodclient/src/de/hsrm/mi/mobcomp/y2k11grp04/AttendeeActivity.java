@@ -56,8 +56,6 @@ public class AttendeeActivity extends ServiceActivity {
 		setContentView(getLayout());
 
 		loadingProgress = (ProgressBar) findViewById(R.id.groupMood_progressBar);
-		if (!meetingComplete)
-			showDialog(DIALOG_LOADING);
 
 		Bundle b = getIntent().getExtras();
 		b.setClassLoader(getClassLoader());
@@ -93,13 +91,8 @@ public class AttendeeActivity extends ServiceActivity {
 				// Frage
 				Question q = questionActionSeekBar.get(seekBar);
 				// Rating berechnen
-				Integer value = (q.getMinOption() + (q.getMaxOption() - q.getMinOption())
-						* seekBar.getProgress() / 100);
-				Log.v(getClass().getCanonicalName(), "Min: " + q.getMinOption());
-				Log.v(getClass().getCanonicalName(), "Max: " + q.getMaxOption());
-				Log.v(getClass().getCanonicalName(),
-						"Progress: " + seekBar.getProgress());
-				Log.v(getClass().getCanonicalName(), "Value: " + value);
+				Integer value = (q.getMinOption() + (q.getMaxOption() - q
+						.getMinOption()) * seekBar.getProgress() / 100);
 				// Vote absetzen
 				Toast.makeText(AttendeeActivity.this, "Vote: " + value,
 						Toast.LENGTH_LONG).show();
@@ -290,6 +283,15 @@ public class AttendeeActivity extends ServiceActivity {
 							.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 					meetingComplete = true;
 					dismissDialog(DIALOG_LOADING);
+					// If you are using onCreateDialog(int) to manage the state
+					// of your dialogs, then every time your dialog is
+					// dismissed, the state of the Dialog object is retained by
+					// the Activity. If you decide that you will no longer need
+					// this object or it's important that the state is cleared,
+					// then you should call removeDialog(int). This will remove
+					// any internal references to the object and if the dialog
+					// is showing, it will dismiss it.
+					removeDialog(DIALOG_LOADING);
 					updateView();
 				}
 			};
@@ -300,10 +302,15 @@ public class AttendeeActivity extends ServiceActivity {
 
 	@Override
 	protected void onConnect() {
+		Log.v(getClass().getCanonicalName(), "onConnect");
 		super.onConnect();
 		// Meeting vollständig laden
-		if (!meetingComplete)
+		Log.v(getClass().getCanonicalName(), "meetingComplete in onConnect(): "
+				+ (meetingComplete ? "JA" : "NEIN"));
+		if (!meetingComplete) {
+			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
+		}
 	}
 
 	@Override
@@ -320,6 +327,7 @@ public class AttendeeActivity extends ServiceActivity {
 
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		Log.v(getClass().getCanonicalName(), "onRestoreInstanceState");
 		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
 			meeting = savedInstanceState
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
@@ -335,6 +343,9 @@ public class AttendeeActivity extends ServiceActivity {
 		}
 		if (savedInstanceState.containsKey("meetingComplete")) {
 			meetingComplete = savedInstanceState.getBoolean("meetingComplete");
+			Log.v(getClass().getCanonicalName(),
+					"meetingComplete in onRestoreInstanceState(): "
+							+ (meetingComplete ? "JA" : "NEIN"));
 		}
 
 		updateView();
@@ -344,6 +355,7 @@ public class AttendeeActivity extends ServiceActivity {
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
+		Log.v(getClass().getCanonicalName(), "onCreateDialog");
 		switch (id) {
 		case DIALOG_LOADING:
 			return ProgressDialog.show(AttendeeActivity.this, "",

@@ -1,12 +1,7 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.view;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,21 +57,11 @@ public class TopicGalleryAdapter extends BaseAdapter {
 				text.setText(topic.getName());
 				view.removeView(image);
 			} else {
-
-				URL temp = null;
-				Bitmap b = null;
-
-				try {
-					temp = new URL(topic.getImage().toString());
-					b = BitmapFactory.decodeStream(temp.openConnection().getInputStream());
-				} catch (MalformedURLException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				image.setImageBitmap(b);
-				view.removeView(text);
+				// TODO: MediaView verwenden. Media-URI kommt vom Service.
+				//  Doppelklick soll Vollbild anzeigen.
+				// view.removeView(text);
+				text.setText("Image: " + topic.getName());
+				view.removeView(image);
 			}
 		}
 		return view;
