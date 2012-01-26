@@ -1,5 +1,6 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,17 +104,30 @@ public class Question extends BaseModel {
 	}
 
 	/**
-	 * Gibt die Option mit dem Namen name zurück
+	 * Gibt die Option mit dem Namen name zurück, existiert diese Option nicht,
+	 * wird defaultValue zurück gegeben
+	 * 
+	 * @param name
+	 * @param defaultValue
+	 * @return
+	 */
+	public String getOption(String name, String defaultValue) {
+		for (QuestionOption o : getOptions()) {
+			if (o.getKey().equals(name))
+				return o.getValue();
+		}
+		return defaultValue;
+	}
+
+	/**
+	 * Gibt die Option mit dem Namen name zurück, existiert diese Option nicht,
+	 * wird null zurück gegeben
 	 * 
 	 * @param name
 	 * @return
 	 */
 	public String getOption(String name) {
-		for (QuestionOption o : getOptions()) {
-			if (o.getKey().equals(name))
-				return o.getValue();
-		}
-		return null;
+		return getOption(name, null);
 	}
 
 	@Override
@@ -218,5 +232,12 @@ public class Question extends BaseModel {
 		} else if (!type.equals(other.type))
 			return false;
 		return true;
+	}
+
+	public Integer getValueAt(double d) {
+		if (d < 0 || d > 1)
+			throw new InvalidParameterException(
+					"progress must be between 0 and 1");
+		return (int) (getMinOption() + (getMaxOption() - getMinOption()) * d);
 	}
 }

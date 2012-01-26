@@ -51,6 +51,7 @@ public class AttendeeActivity extends ServiceActivity {
 	private Map<Question, LinearLayout> questionActionViews = new HashMap<Question, LinearLayout>();
 	private OnPageChangedListener swipeChangeListener;
 	private Map<SeekBar, Question> questionActionSeekBar = new HashMap<SeekBar, Question>();
+	private Map<SeekBar, TextView> questionActionCurrentValue = new HashMap<SeekBar, TextView>();
 	private OnSeekBarChangeListener questionActionSeekBarListener;
 
 	/** Called when the activity is first created. */
@@ -200,12 +201,19 @@ public class AttendeeActivity extends ServiceActivity {
 					.findViewById(R.id.groupMood_questionActionMidLabel);
 			TextView maxValueLabel = (TextView) view
 					.findViewById(R.id.groupMood_questionActionMaxLabel);
-			minValueLabel.setText(q
-					.getOption(QuestionOption.OPTION_RANGE_LABEL_MIN_VALUE));
-			midValueLabel.setText(q
-					.getOption(QuestionOption.OPTION_RANGE_LABEL_MID_VALUE));
-			maxValueLabel.setText(q
-					.getOption(QuestionOption.OPTION_RANGE_LABEL_MAX_VALUE));
+			minValueLabel.setText(q.getOption(
+					QuestionOption.OPTION_RANGE_LABEL_MIN_VALUE,
+					"" + q.getMinOption()));
+			midValueLabel.setText(q.getOption(
+					QuestionOption.OPTION_RANGE_LABEL_MID_VALUE,
+					"" + q.getValueAt(0.5)));
+			maxValueLabel.setText(q.getOption(
+					QuestionOption.OPTION_RANGE_LABEL_MAX_VALUE,
+					"" + q.getMaxOption()));
+			TextView currentValue = (TextView) view
+					.findViewById(R.id.groupMood_questionActionCurrentValue);
+			currentValue.setText(""+ q.getValueAt(s.getProgress() / 100.0));
+			questionActionCurrentValue.put(s, currentValue);
 			// Listener
 			s.setOnSeekBarChangeListener(questionActionSeekBarListener);
 		} else {
@@ -372,6 +380,10 @@ public class AttendeeActivity extends ServiceActivity {
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int progress,
 				boolean fromUser) {
+			Question q = questionActionSeekBar.get(seekBar);
+			// Aktuellen Wert anzeigen
+			TextView currVal = questionActionCurrentValue.get(seekBar);
+			currVal.setText("" + q.getValueAt(progress / 100.0));
 		}
 
 		@Override
@@ -383,13 +395,15 @@ public class AttendeeActivity extends ServiceActivity {
 			// Frage
 			Question q = questionActionSeekBar.get(seekBar);
 			// Rating berechnen
-			Integer value = (q.getMinOption() + (q.getMaxOption() - q
-					.getMinOption()) * seekBar.getProgress() / 100);
+			Integer value = q.getValueAt(seekBar.getProgress() / 100.0);
 			// Vote absetzen
-			Toast.makeText(AttendeeActivity.this, "Vote: " + value,
-					Toast.LENGTH_LONG).show();
-			// TODO
 			createAnswer(q, String.valueOf(value));
+			Toast.makeText(
+					AttendeeActivity.this,
+					String.format(
+							getResources()
+									.getString(R.string.question_answered), ""
+									+ value), Toast.LENGTH_LONG).show();
 		}
 	}
 
