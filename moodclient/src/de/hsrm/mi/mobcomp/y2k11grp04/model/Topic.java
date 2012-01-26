@@ -1,5 +1,6 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class Topic extends BaseModel {
 	private Meeting meeting;
 	private Uri image;
 	private List<Question> questions = new ArrayList<Question>();
+	private File imageFile;
 
 	public Topic() {
 	}
@@ -28,6 +30,9 @@ public class Topic extends BaseModel {
 		String uriString = in.readString();
 		if (uriString.length() > 0)
 			image = Uri.parse(uriString);
+		String imageFileString = in.readString();
+		if (imageFileString.length() > 0)
+			imageFile = new File(imageFileString);
 		for (Parcelable q : in
 				.readParcelableArray(Topic.class.getClassLoader())) {
 			questions.add((Question) q);
@@ -40,6 +45,7 @@ public class Topic extends BaseModel {
 		super.writeToParcel(out, flags);
 		out.writeString(name);
 		out.writeString(image != null ? image.toString() : "");
+		out.writeString(imageFile != null ? imageFile.toString() : "");
 		out.writeParcelableArray(
 				questions.toArray(new Question[questions.size()]), 0);
 	}
@@ -101,27 +107,36 @@ public class Topic extends BaseModel {
 
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Datei in dem das Bild des Topics abgespeichert ist
 	 * 
-	 * @see java.lang.Object#hashCode()
+	 * @param imageFile
 	 */
+	public void setImageFile(File imageFile) {
+		this.imageFile = imageFile;
+	}
+
+	/**
+	 * Gibt die Datei zurück, in dem das Bild gespeichert ist
+	 */
+	public File getImageFile() 
+	{
+		return imageFile;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((image == null) ? 0 : image.hashCode());
+		result = prime * result
+				+ ((imageFile == null) ? 0 : imageFile.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((questions == null) ? 0 : questions.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -135,6 +150,11 @@ public class Topic extends BaseModel {
 			if (other.image != null)
 				return false;
 		} else if (!image.equals(other.image))
+			return false;
+		if (imageFile == null) {
+			if (other.imageFile != null)
+				return false;
+		} else if (!imageFile.equals(other.imageFile))
 			return false;
 		if (meeting == null) {
 			if (other.meeting != null)

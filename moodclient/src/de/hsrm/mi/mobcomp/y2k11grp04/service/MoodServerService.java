@@ -1,14 +1,21 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.service;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -36,6 +43,7 @@ public class MoodServerService extends Service {
 	public static final int MSG_MEETING_COMPLETE_PROGRESS = 11;
 	public static final int MSG_ANSWER = 12;
 	public static final int MSG_ANSWER_RESULT = 13;
+	public static final int MSG_TOPIC_IMAGE_RESULT = 14;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
@@ -43,6 +51,8 @@ public class MoodServerService extends Service {
 	public static final String KEY_MEETING_URI = "meeting.uri";
 	public static final String KEY_ERROR_MESSAGE = "error.message";
 	public static final String KEY_ANSWER = "answer.answer";
+	public static final String KEY_TOPIC_ID = "topic.id";
+	public static final String KEY_TOPIC_IMAGE = "topic.image";
 
 	public static final String KEY_TOPIC_MODEL = "model.Topic";
 	public static final String KEY_QUESTION_MODEL = "model.Question";
@@ -50,6 +60,9 @@ public class MoodServerService extends Service {
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
 	private Map<Messenger, Meeting> meetingSubscription = new HashMap<Messenger, Meeting>();
+
+	private ExecutorService pool = Executors.newFixedThreadPool(1,
+			Executors.defaultThreadFactory());
 
 	/**
 	 * Wie oft der Vote abgeschickt wird (ms)
@@ -108,12 +121,71 @@ public class MoodServerService extends Service {
 	 *       implementiert werden.
 	 */
 	public void fetchMeetingComplete(Message request) throws ApiException {
-		sendMeetingProgress(request.replyTo, 1, 3);
+		int maxProgress = 2;
+		sendMeetingProgress(request.replyTo, 1, maxProgress);
 		Meeting meeting = api.getMeetingRecursive(Uri.parse(request.getData()
 				.getString(KEY_MEETING_URI)));
-		sendMeetingProgress(request.replyTo, 2, 3);
+
+		// Bilder der Topics ggfs. nachladen
+		Queue<Topic> missingImages = new LinkedList<Topic>();
+		for (Topic topic : meeting.getTopics()) {
+			if (topic.getImage() == null)
+				continue;
+			File imageFile = getTopicImageFile(topic);
+			if (!imageFile.exists()) {
+				missingImages.add(topic);
+			} else {
+				topic.setImageFile(imageFile);
+			}
+		}
+		maxProgress += missingImages.size();
+		sendMeetingProgress(request.replyTo, 2, maxProgress);
 		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
-		sendMeetingProgress(request.replyTo, 3, 3);
+
+		int p = 0;
+		while (!missingImages.isEmpty()) {
+			Topic topic = missingImages.poll();
+			fetchTopicImage(request, topic);
+			p++;
+			sendMeetingProgress(request.replyTo, 2 + p, maxProgress);
+		}
+	}
+
+	private File getTopicImageFile(Topic topic) {
+		return new File(Environment.getExternalStorageDirectory()
+				.getAbsolutePath()
+				+ "/de.hsrm.mi.mobcomp.y2k11grp04/cache/topic-"
+				+ topic.getId()
+				+ ".png");
+	}
+
+	/**
+	 * Lädt das Bild eines Meetings
+	 * 
+	 * @throws ApiException
+	 */
+	private void fetchTopicImage(Message request, Topic topic)
+			throws ApiException {
+
+		File imageFile = getTopicImageFile(topic);
+
+		// Bilder werden letzendlich blockierend geladen,
+		// um die Verbindung zu schonen
+		// Könnte man auch ohne Future lösen ...
+		Future<File> imageLoader = pool.submit(new HttpToFileLoader(topic
+				.getImage(), imageFile));
+		try {
+			imageLoader.get();
+		} catch (Exception e) {
+			throw new ApiException(e.getMessage());
+		}
+
+		Message info = Message.obtain(null, MSG_TOPIC_IMAGE_RESULT);
+		Bundle data = new Bundle();
+		data.putInt(KEY_TOPIC_ID, topic.getId());
+		data.putString(KEY_TOPIC_IMAGE, imageFile.toString());
+		info.setData(data);
+		sendMsg(request.replyTo, info);
 	}
 
 	/**

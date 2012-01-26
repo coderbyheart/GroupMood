@@ -62,7 +62,7 @@ abstract public class ServiceActivity extends MenuActivity {
 			if (smr == null) {
 				super.handleMessage(msg);
 			} else {
-				smr.run();
+				runOnUiThread(smr);
 			}
 		}
 	}
@@ -103,7 +103,8 @@ abstract public class ServiceActivity extends MenuActivity {
 			Intent intent = new Intent(this, MoodServerService.class);
 			serviceBound = bindService(intent, sConn, Context.BIND_AUTO_CREATE);
 			if (!serviceBound) {
-				Log.e(getClass().getCanonicalName(), "Konnte nicht zum Service verbinden.");
+				Log.e(getClass().getCanonicalName(),
+						"Konnte nicht zum Service verbinden.");
 			}
 		}
 	}

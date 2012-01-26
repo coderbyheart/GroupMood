@@ -1,5 +1,6 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,9 +22,9 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
-import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.devsmart.android.ui.HorizontalListView;
 
@@ -108,12 +109,6 @@ public class AttendeeActivity extends ServiceActivity {
 	 * Die Anzeige der Aktivity aktualisieren.
 	 */
 	protected void updateView() {
-		if (meetingComplete) {
-			loadingProgress.setVisibility(View.GONE);
-		} else {
-			loadingProgress.setVisibility(View.VISIBLE);
-		}
-
 		topicGallery = findViewById(R.id.groupMood_gallery);
 		topicGalleryAdapter = new TopicGalleryAdapter(meeting.getTopics());
 		GalleryItemClickListener topicGalleryClickListener = new GalleryItemClickListener();
@@ -266,14 +261,23 @@ public class AttendeeActivity extends ServiceActivity {
 	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
 		switch (message.what) {
 		case MoodServerService.MSG_MEETING_COMPLETE_PROGRESS:
+			// Wird aufgerufen, wenn der Server Fortschritt beim Laden des
+			// Meetings hat
 			return new ServiceMessageRunnable(message) {
 				@Override
 				public void run() {
 					loadingProgress.setMax(serviceMessage.arg2);
 					loadingProgress.setProgress(serviceMessage.arg1);
+					if (loadingProgress.getProgress() >= loadingProgress
+							.getMax()) {
+						loadingProgress.setVisibility(View.GONE);
+					} else {
+						loadingProgress.setVisibility(View.VISIBLE);
+					}
 				}
 			};
 		case MoodServerService.MSG_MEETING_COMPLETE_RESULT:
+			// Wird aufgerufen, wenn das Meeting vollständig geladen ist
 			return new ServiceMessageRunnable(message) {
 				@Override
 				public void run() {
@@ -293,6 +297,24 @@ public class AttendeeActivity extends ServiceActivity {
 					// is showing, it will dismiss it.
 					removeDialog(DIALOG_LOADING);
 					updateView();
+				}
+			};
+		case MoodServerService.MSG_TOPIC_IMAGE_RESULT:
+			// Wird aufgerufen, wenn der Service das Bild zu einem Topic geladen
+			// hat
+			return new ServiceMessageRunnable(message) {
+				@Override
+				public void run() {
+					// Und Bild aus Datei setzen
+					Integer topicId = serviceMessage.getData().getInt(
+							MoodServerService.KEY_TOPIC_ID);
+					for (Topic t : meeting.getTopics()) {
+						if (t.getId() == topicId) {
+							t.setImageFile(new File(serviceMessage.getData()
+									.getString(
+											MoodServerService.KEY_TOPIC_IMAGE)));
+						}
+					}
 				}
 			};
 		default:
@@ -321,7 +343,10 @@ public class AttendeeActivity extends ServiceActivity {
 					currentTopic);
 			outState.putParcelable(MoodServerService.KEY_QUESTION_MODEL,
 					currentQuestion);
+
 		}
+		outState.putBoolean("LOADING_HIDDEN",
+				loadingProgress.getVisibility() != View.VISIBLE);
 		outState.putBoolean("meetingComplete", meetingComplete);
 	}
 
@@ -341,13 +366,12 @@ public class AttendeeActivity extends ServiceActivity {
 			currentQuestion = (Question) savedInstanceState
 					.getParcelable(MoodServerService.KEY_QUESTION_MODEL);
 		}
-		if (savedInstanceState.containsKey("meetingComplete")) {
-			meetingComplete = savedInstanceState.getBoolean("meetingComplete");
-			Log.v(getClass().getCanonicalName(),
-					"meetingComplete in onRestoreInstanceState(): "
-							+ (meetingComplete ? "JA" : "NEIN"));
-		}
-
+		meetingComplete = savedInstanceState.getBoolean("meetingComplete");
+		Log.v(getClass().getCanonicalName(),
+				"meetingComplete in onRestoreInstanceState(): "
+						+ (meetingComplete ? "JA" : "NEIN"));
+		if (savedInstanceState.getBoolean("LOADING_HIDDEN"))
+			loadingProgress.setVisibility(View.GONE);
 		updateView();
 	}
 

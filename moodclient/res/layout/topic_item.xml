@@ -4,24 +4,33 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
+    <ImageView
+        android:id="@+id/groupMood_topicItem_Image"
+        android:layout_width="94dp"
+        android:layout_height="94dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="2dp"
+        android:scaleType="fitXY" />
+
     <TextView
         android:id="@+id/groupMood_topicItem_Name"
         android:layout_width="94dp"
         android:layout_height="94dp"
-        android:layout_marginTop="2dp"
         android:layout_marginRight="2dp"
+        android:layout_marginTop="2dp"
         android:background="@drawable/bg_blue"
         android:gravity="center"
         android:text="{item.name}"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@android:color/white" />
 
-    <ImageView
-        android:id="@+id/groupMood_topicItem_Image"
+    <ProgressBar
+        android:id="@+id/groupMood_topicItem_Image_Loading"
         android:layout_width="94dp"
         android:layout_height="94dp"
-        android:layout_marginTop="2dp"
         android:layout_marginRight="2dp"
-        android:scaleType="fitXY" />
+        android:layout_marginTop="2dp"
+        android:background="@drawable/bg_blue"
+        android:padding="24dp" />
 
 </LinearLayout>

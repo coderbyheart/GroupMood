@@ -2,12 +2,13 @@ package de.hsrm.mi.mobcomp.y2k11grp04.view;
 
 import java.util.List;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import de.hsrm.mi.mobcomp.y2k11grp04.R;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
@@ -47,21 +48,37 @@ public class TopicGalleryAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(final int position, View convertView, ViewGroup parent) {
-		LinearLayout view = (LinearLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.topic_item, null);
-		TextView text = (TextView) view.findViewById(R.id.groupMood_topicItem_Name);
-		ImageView image = (ImageView) view.findViewById(R.id.groupMood_topicItem_Image);
-		Topic topic = getItem(position);
-		if (topic != null) {
 
-			if (topic.getImage() == null) {
-				text.setText(topic.getName());
-				view.removeView(image);
+		Topic topic = getItem(position);
+		if (topic == null)
+			return null;
+		ViewGroup view = (ViewGroup) LayoutInflater.from(parent.getContext())
+				.inflate(R.layout.topic_item, parent, false);
+
+		if (topic.getImage() == null) {
+			TextView topicName = (TextView) view
+					.findViewById(R.id.groupMood_topicItem_Name);
+			topicName.setText(topic.getName());
+			view.removeView(view.findViewById(R.id.groupMood_topicItem_Image));
+			view.removeView(view
+					.findViewById(R.id.groupMood_topicItem_Image_Loading));
+		} else {
+			view.removeView(view.findViewById(R.id.groupMood_topicItem_Name));
+			if (topic.getImageFile() == null) {
+				view.removeView(view
+						.findViewById(R.id.groupMood_topicItem_Image));
 			} else {
-				// TODO: MediaView verwenden. Media-URI kommt vom Service.
-				//  Doppelklick soll Vollbild anzeigen.
-				// view.removeView(text);
-				text.setText("Image: " + topic.getName());
-				view.removeView(image);
+				ImageView topicImage = (ImageView) view
+						.findViewById(R.id.groupMood_topicItem_Image);
+
+				Bitmap bm = BitmapFactory.decodeFile(topic.getImageFile()
+						.getAbsolutePath());
+				Bitmap thumb = Bitmap.createScaledBitmap(bm, 150, 150, true);
+				bm.recycle();
+				System.gc();
+				topicImage.setImageBitmap(thumb);
+				view.removeView(view
+						.findViewById(R.id.groupMood_topicItem_Image_Loading));
 			}
 		}
 		return view;
