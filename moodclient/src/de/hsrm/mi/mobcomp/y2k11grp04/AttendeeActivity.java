@@ -10,6 +10,8 @@ import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
@@ -17,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -63,44 +66,11 @@ public class AttendeeActivity extends ServiceActivity {
 		meeting = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 
 		// Kümmert sich um das Wechseln der Fragen durch eine Swipe-Geste
-		swipeChangeListener = new OnPageChangedListener() {
-			@Override
-			public void onPageChanged(int oldPage, int newPage) {
-				questionActionViews.get(
-						getCurrentTopic().getQuestions().get(oldPage))
-						.setVisibility(View.GONE);
-				currentQuestion = getCurrentTopic().getQuestions().get(newPage);
-				questionActionViews.get(currentQuestion).setVisibility(
-						View.VISIBLE);
-			}
-		};
+		swipeChangeListener = new QuestionSwipeListener();
 
 		// Kümmert sich um das Setzen der Antwort, falls diese einen
 		// Slider verwendet
-		questionActionSeekBarListener = new OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
-
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-				// Frage
-				Question q = questionActionSeekBar.get(seekBar);
-				// Rating berechnen
-				Integer value = (q.getMinOption() + (q.getMaxOption() - q
-						.getMinOption()) * seekBar.getProgress() / 100);
-				// Vote absetzen
-				Toast.makeText(AttendeeActivity.this, "Vote: " + value,
-						Toast.LENGTH_LONG).show();
-				// TODO
-				createAnswer(q, String.valueOf(value));
-			}
-		};
+		questionActionSeekBarListener = new QuestionSeekBarListener();
 
 		updateView();
 	}
@@ -117,10 +87,12 @@ public class AttendeeActivity extends ServiceActivity {
 			HorizontalListView lv = ((HorizontalListView) topicGallery);
 			lv.setAdapter(topicGalleryAdapter);
 			lv.setOnItemClickListener(topicGalleryClickListener);
+			lv.setOnItemLongClickListener(topicGalleryClickListener);
 		} else {
 			ListView lv = ((ListView) topicGallery);
 			lv.setAdapter(topicGalleryAdapter);
 			lv.setOnItemClickListener(topicGalleryClickListener);
+			lv.setOnItemLongClickListener(topicGalleryClickListener);
 		}
 
 		updateTopic();
@@ -390,12 +362,76 @@ public class AttendeeActivity extends ServiceActivity {
 
 	}
 
-	private class GalleryItemClickListener implements OnItemClickListener {
+	/**
+	 * Kümmert sich um Änderungen an Vote-Seekbars
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class QuestionSeekBarListener implements
+			OnSeekBarChangeListener {
 		@Override
-		public void onItemClick(AdapterView<?> item, View parent, int position,
-				long arg3) {
+		public void onProgressChanged(SeekBar seekBar, int progress,
+				boolean fromUser) {
+		}
+
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+		}
+
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			// Frage
+			Question q = questionActionSeekBar.get(seekBar);
+			// Rating berechnen
+			Integer value = (q.getMinOption() + (q.getMaxOption() - q
+					.getMinOption()) * seekBar.getProgress() / 100);
+			// Vote absetzen
+			Toast.makeText(AttendeeActivity.this, "Vote: " + value,
+					Toast.LENGTH_LONG).show();
+			// TODO
+			createAnswer(q, String.valueOf(value));
+		}
+	}
+
+	/**
+	 * Kümmert sich um das Wechseln der Fragen durch eine Swipe-Geste
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class QuestionSwipeListener implements OnPageChangedListener {
+		@Override
+		public void onPageChanged(int oldPage, int newPage) {
+			questionActionViews.get(
+					getCurrentTopic().getQuestions().get(oldPage))
+					.setVisibility(View.GONE);
+			currentQuestion = getCurrentTopic().getQuestions().get(newPage);
+			questionActionViews.get(currentQuestion)
+					.setVisibility(View.VISIBLE);
+		}
+	}
+
+	/**
+	 * Kümmert sich um Klicks in der Gallery
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private class GalleryItemClickListener implements OnItemClickListener,
+			OnItemLongClickListener {
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
 			setCurrentTopic(topicGalleryAdapter.getItem(position));
 			updateTopic();
+		}
+
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view,
+				int position, long id) {
+			Intent intent = new Intent(Intent.ACTION_VIEW);
+			intent.setDataAndType(Uri.fromFile(topicGalleryAdapter.getItem(
+					position).getImageFile()), "image/*");
+			startActivity(intent);
+			return true;
 		}
 	}
 }
