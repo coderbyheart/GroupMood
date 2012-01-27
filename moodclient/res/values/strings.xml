@@ -9,5 +9,7 @@
     <string name="toast_no_scan">Es wurde nichts gescannt.</string>
     <string name="toast_no_groupmood_qrcode">Ups! Du hast keinen GroupMood-QR-Code gescannt.</string>
     <string name="question_action_answer">Frage beantworten</string>
+    <string name="question_your_answer">Deine Antwort:</string>
     <string name="question_answered">Antwort gespeichert: %s</string>
+    <string name="question_total">von %d</string>
 </resources>

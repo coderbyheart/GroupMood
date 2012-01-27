@@ -1,6 +1,7 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
+import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
 
 public class AttendeeActivity extends ServiceActivity {
@@ -50,8 +52,9 @@ public class AttendeeActivity extends ServiceActivity {
 	private Map<Topic, View> topicViews = new HashMap<Topic, View>();
 	private Map<Question, LinearLayout> questionActionViews = new HashMap<Question, LinearLayout>();
 	private OnPageChangedListener swipeChangeListener;
-	private Map<SeekBar, Question> questionActionSeekBar = new HashMap<SeekBar, Question>();
-	private Map<SeekBar, TextView> questionActionCurrentValue = new HashMap<SeekBar, TextView>();
+	private Map<SeekBar, Question> seekbarToQuestion = new HashMap<SeekBar, Question>();
+	private Map<SeekBar, TextView> seekbarToCurrentValueTextView = new HashMap<SeekBar, TextView>();
+	private Map<Integer, Integer> seekBarState = new HashMap<Integer, Integer>();
 	private OnSeekBarChangeListener questionActionSeekBarListener;
 
 	/** Called when the activity is first created. */
@@ -136,9 +139,10 @@ public class AttendeeActivity extends ServiceActivity {
 				LinearLayout topicQuestionActionsLayout = (LinearLayout) topicQuestionsLayout
 						.findViewById(R.id.groupMood_questionsActions);
 
+				int num = 0;
 				for (Question q : currentTopic.getQuestions()) {
 					// Die Anzeige des Frage-Textes erfolgt in der SwipeView
-					View questionView = createQuestionView(q);
+					View questionView = createQuestionView(q, ++num);
 					mSwipeView.addView(questionView);
 					// Die Frage-Aktion wird in einer anderen View angzeigt,
 					// damit man z.B. den SeekBar bedienen kann
@@ -165,19 +169,35 @@ public class AttendeeActivity extends ServiceActivity {
 
 				// Fertige View merken
 				topicViews.put(currentTopic, topicQuestionsLayout);
+				
+				// Zur aktuellen Frage springen
+				if (currentQuestion != null) {
+					int page = 0;
+					for(Question q: currentTopic.getQuestions()) {
+						if (currentQuestion.equals(q)) {
+							mSwipeView.scrollToPage(page);
+						}
+						page++;
+					}
+				}
 			}
 			// Die View zum aktuellen Topic Anzeigen
 			allTopicQuestionsLayout.addView(topicViews.get(currentTopic));
 		}
 	}
 
-	private LinearLayout createQuestionView(Question q) {
+	private LinearLayout createQuestionView(Question q, Integer number) {
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout) layoutInflater.inflate(
 				R.layout.question_name, null);
-		TextView questionText = (TextView) view
-				.findViewById(R.id.groupMood_question_text);
-		questionText.setText(q.getName());
+		((TextView) view.findViewById(R.id.groupMood_question_text)).setText(q
+				.getName());
+		((TextView) view.findViewById(R.id.groupMood_question_number))
+				.setText("" + number);
+		((TextView) view.findViewById(R.id.groupMood_question_total))
+				.setText(String.format(
+						getResources().getString(R.string.question_total), q
+								.getTopic().getQuestions().size()));
 		return view;
 	}
 
@@ -189,11 +209,14 @@ public class AttendeeActivity extends ServiceActivity {
 				.findViewById(R.id.groupMood_questionActionButton);
 		SeekBar s = (SeekBar) view
 				.findViewById(R.id.groupMood_questionActionSeekBar);
+		if (seekBarState.containsKey(q.getId())) {
+			s.setProgress(seekBarState.get(q.getId()));
+		}
 		if (q.getType().equals(Question.TYPE_RANGE)) {
 			view.removeView(b);
 			// Min/Max aus Question ziehen, da eine Seekbar IMMER bei 0 anfängt.
 			// Also merken, wird dann später im SeekBarChangeListener verwendet
-			questionActionSeekBar.put(s, q);
+			seekbarToQuestion.put(s, q);
 			// Labels
 			TextView minValueLabel = (TextView) view
 					.findViewById(R.id.groupMood_questionActionMinLabel);
@@ -212,8 +235,8 @@ public class AttendeeActivity extends ServiceActivity {
 					"" + q.getMaxOption()));
 			TextView currentValue = (TextView) view
 					.findViewById(R.id.groupMood_questionActionCurrentValue);
-			currentValue.setText(""+ q.getValueAt(s.getProgress() / 100.0));
-			questionActionCurrentValue.put(s, currentValue);
+			currentValue.setText("" + q.getValueAt(s.getProgress() / 100.0));
+			seekbarToCurrentValueTextView.put(s, currentValue);
 			// Listener
 			s.setOnSeekBarChangeListener(questionActionSeekBarListener);
 		} else {
@@ -328,6 +351,14 @@ public class AttendeeActivity extends ServiceActivity {
 		outState.putBoolean("LOADING_HIDDEN",
 				loadingProgress.getVisibility() != View.VISIBLE);
 		outState.putBoolean("meetingComplete", meetingComplete);
+
+		// Zustand der Seekbars merken
+		ArrayList<SeekBarState> seekBarStates = new ArrayList<SeekBarState>();
+		for (Integer questionId : seekBarState.keySet()) {
+			seekBarStates.add(new SeekBarState().setIdentifier(questionId)
+					.setProgress(seekBarState.get(questionId)));
+		}
+		outState.putParcelableArrayList("seekbarStates", seekBarStates);
 	}
 
 	@Override
@@ -336,22 +367,22 @@ public class AttendeeActivity extends ServiceActivity {
 		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
 			meeting = savedInstanceState
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
-		}
-		if (savedInstanceState.containsKey(MoodServerService.KEY_TOPIC_MODEL)) {
 			setCurrentTopic((Topic) savedInstanceState
 					.getParcelable(MoodServerService.KEY_TOPIC_MODEL));
-		}
-		if (savedInstanceState
-				.containsKey(MoodServerService.KEY_QUESTION_MODEL)) {
 			currentQuestion = (Question) savedInstanceState
 					.getParcelable(MoodServerService.KEY_QUESTION_MODEL);
 		}
 		meetingComplete = savedInstanceState.getBoolean("meetingComplete");
-		Log.v(getClass().getCanonicalName(),
-				"meetingComplete in onRestoreInstanceState(): "
-						+ (meetingComplete ? "JA" : "NEIN"));
 		if (savedInstanceState.getBoolean("LOADING_HIDDEN"))
 			loadingProgress.setVisibility(View.GONE);
+
+		// Zustand der Seekbars laden
+		ArrayList<SeekBarState> seekBarStates = savedInstanceState
+				.getParcelableArrayList("seekbarStates");
+		for (SeekBarState s : seekBarStates) {
+			seekBarState.put(s.getIdentifier(), s.getProgress());
+		}
+
 		updateView();
 	}
 
@@ -380,9 +411,9 @@ public class AttendeeActivity extends ServiceActivity {
 		@Override
 		public void onProgressChanged(SeekBar seekBar, int progress,
 				boolean fromUser) {
-			Question q = questionActionSeekBar.get(seekBar);
+			Question q = seekbarToQuestion.get(seekBar);
 			// Aktuellen Wert anzeigen
-			TextView currVal = questionActionCurrentValue.get(seekBar);
+			TextView currVal = seekbarToCurrentValueTextView.get(seekBar);
 			currVal.setText("" + q.getValueAt(progress / 100.0));
 		}
 
@@ -393,9 +424,11 @@ public class AttendeeActivity extends ServiceActivity {
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
 			// Frage
-			Question q = questionActionSeekBar.get(seekBar);
+			Question q = seekbarToQuestion.get(seekBar);
 			// Rating berechnen
 			Integer value = q.getValueAt(seekBar.getProgress() / 100.0);
+			// Speichern
+			seekBarState.put(q.getId(), seekBar.getProgress());
 			// Vote absetzen
 			createAnswer(q, String.valueOf(value));
 			Toast.makeText(

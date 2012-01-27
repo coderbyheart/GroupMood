@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<color name="gallery_item">#0775EA</color>
+	<color name="action">#55C3DC</color>
+	<color name="action_light">#83D3E6</color>
+	<color name="action_text">#333333</color>
+	<color name="action_text_lesser">#3C5A61</color>
+	<color name="bg_light">#343432</color>
+	<color name="bg_dark">#0A0A0A</color>
+	<color name="main_light">#AE1774</color>
+	<color name="main_dark">#97005D</color>
+	<color name="main_text">#EFEFEF</color>
+	<color name="sub_light">#6E0044</color>
+	<color name="sub_dark">#370022</color>
+	<color name="sub_text">#EFEFEF</color>
+	<color name="sub_light_lesser">#500031</color>
+	<color name="sub_dark_lesser">#2D001C</color>
 </resources>

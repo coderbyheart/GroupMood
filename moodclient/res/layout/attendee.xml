@@ -2,7 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:background="@drawable/background" 
+    >
 
     <ProgressBar
         android:id="@+id/groupMood_progressBar"
@@ -18,7 +20,7 @@
             <com.devsmart.android.ui.HorizontalListView
                 android:id="@+id/groupMood_gallery"
                 android:layout_width="fill_parent"
-                android:layout_height="100dp" >
+                android:layout_height="98dp" >
 
                 <!-- Die Gallery wird mit topic_item.xml befüllt -->
 

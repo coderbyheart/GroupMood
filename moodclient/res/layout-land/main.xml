@@ -4,6 +4,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="@drawable/background"
      >
 
     <ImageView
@@ -11,17 +12,27 @@
         android:layout_height="100dp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/logo" />
-
+    
     <TextView
-        android:layout_width="300dp"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="@string/intro" />
+        android:text="@string/intro"
+        android:layout_margin="10dp" 
+        android:background="@drawable/bg_main"
+        android:textColor="@color/main_text"
+        android:padding="5dp"
+        />
 
     <Button
         android:id="@+id/groupMood_scan_button"
-        android:layout_width="300dp"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/scan" />
+        android:text="@string/scan"
+        android:background="@drawable/button"
+        android:layout_margin="10dp"
+        android:textColor="@color/action_text"
+        android:textStyle="bold"
+        android:padding="10dp"
+        />
 
 </LinearLayout>

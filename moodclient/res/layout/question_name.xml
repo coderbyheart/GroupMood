@@ -2,17 +2,49 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="horizontal" 
+    android:background="@drawable/bg_sub"
+    >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="5dp" 
+        android:background="@drawable/bg_sub_lesser"
+        >
+
+        <TextView
+            android:id="@+id/groupMood_question_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="99"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/sub_text"
+            android:textStyle="bold" 
+            />
+
+        <TextView
+            android:id="@+id/groupMood_question_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="von 99"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/sub_text" />
+    </LinearLayout>
 
     <TextView
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/groupMood_question_text"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="{question.name}"
+        android:layout_weight="7"
         android:gravity="center_vertical"
         android:paddingLeft="5dp"
+        android:text="{question.name}"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/sub_text"
+         
         />
 
 </LinearLayout>

@@ -10,8 +10,7 @@
            android:layout_height="wrap_content"
            android:text="{topic.name}"
            android:textAppearance="?android:attr/textAppearanceLarge"
-           android:background="@drawable/bg_blue" 
-           android:layout_marginTop="2dp"
+           android:background="@drawable/bg_main" 
            android:layout_marginBottom="2dp"
            android:padding="5dp"
            />
@@ -20,7 +19,6 @@
             android:id="@+id/groupMood_questionsSwipe"
             android:layout_width="fill_parent"
             android:layout_height="100dp"
-            android:background="@drawable/bg_yellow"
             >
             <!-- Die Swipe-View enthält die Anzeige der Fragen: question_name.xml -->
         </uk.co.jasonfry.android.tools.ui.SwipeView>

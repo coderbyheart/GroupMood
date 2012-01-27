@@ -2,7 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:background="@drawable/background" 
+    >
 
     <ImageView
         android:layout_width="wrap_content"
@@ -15,12 +17,21 @@
         android:layout_height="wrap_content"
         android:text="@string/intro"
         android:layout_margin="10dp" 
+        android:background="@drawable/bg_main"
+        android:textColor="@color/main_text"
+        android:padding="5dp"
         />
 
     <Button
         android:id="@+id/groupMood_scan_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/scan" />
+        android:text="@string/scan"
+        android:background="@drawable/button"
+        android:layout_margin="10dp"
+        android:textColor="@color/action_text"
+        android:textStyle="bold"
+        android:padding="10dp"
+        />
 
 </LinearLayout>

@@ -8,18 +8,35 @@
         android:id="@+id/groupMood_questionActionRangeLayout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_yellow"
+        android:background="@drawable/bg_action"
         android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/groupMood_questionActionCurrentValue"
+        <LinearLayout
+            android:id="@+id/groupMood_questionActionRangeLayout"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:gravity="center"
-            android:text="{curVal}"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@android:color/white" />
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:text="@string/question_your_answer"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/action_text" />
+
+            <TextView
+                android:id="@+id/groupMood_questionActionCurrentValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:gravity="center"
+                android:text="{curVal}"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/action_text"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <SeekBar
             android:id="@+id/groupMood_questionActionSeekBar"
@@ -31,6 +48,9 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
             android:orientation="horizontal"
             android:weightSum="3" >
 
@@ -38,13 +58,11 @@
                 android:id="@+id/groupMood_questionActionMinLabel"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:layout_marginTop="5dp"
                 android:layout_weight="1"
                 android:gravity="left"
                 android:text="{minLabel}"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/white" />
+                android:textColor="@color/action_text_lesser" />
 
             <TextView
                 android:id="@+id/groupMood_questionActionMidLabel"
@@ -52,24 +70,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="2dp"
                 android:layout_marginRight="2dp"
-                android:layout_marginTop="5dp"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="{midLabel}"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/white" />
+                android:textColor="@color/action_text_lesser" />
 
             <TextView
                 android:id="@+id/groupMood_questionActionMaxLabel"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="5dp"
-                android:layout_marginTop="5dp"
                 android:layout_weight="1"
                 android:gravity="right"
                 android:text="{maxLabel}"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/white" />
+                android:textColor="@color/action_text_lesser" />
         </LinearLayout>
     </LinearLayout>
 
@@ -78,6 +93,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:text="@string/question_action_answer" />
+        android:background="@drawable/bg_action"
+        android:padding="10dp"
+        android:text="@string/question_action_answer"
+        android:textColor="@color/action_text"
+        android:textStyle="bold" />
 
 </LinearLayout>
