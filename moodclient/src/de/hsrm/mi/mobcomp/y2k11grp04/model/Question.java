@@ -4,13 +4,13 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
 public class Question extends BaseModel {
-	public static final String TYPE_SINGLECHOICE = "singlechoice";
-	public static final String TYPE_MULTIPLECHOICE = "multiplechoice";
+	public static final String TYPE_CHOICE = "choice";
 	public static final String TYPE_RANGE = "range";
 	public static final String MODE_SINGLE = "single";
 	public static final String MODE_AVERAGE = "avg";
@@ -160,6 +160,29 @@ public class Question extends BaseModel {
 		this.numAnswers = numAnswers;
 	}
 
+	
+	/**
+	 * Gibt den Min-Wert zurück, falls vorhanden
+	 * 
+	 * @return
+	 */
+	public Integer getMinChoices() {
+		return Integer
+				.parseInt(getOption(QuestionOption.OPTION_MIN_CHOICES));
+	}
+
+	/**
+	 * Gibt Max-Wert zurück, falls vorhanden
+	 * 
+	 * @return
+	 */
+	public Integer getMaxChoices() {
+		return Integer
+				.parseInt(getOption(QuestionOption.OPTION_MAX_CHOICES));
+	}
+	
+	
+	
 	/**
 	 * Gibt den Min-Wert zurück, falls vorhanden
 	 * 
@@ -240,4 +263,5 @@ public class Question extends BaseModel {
 					"progress must be between 0 and 1");
 		return (int) (getMinOption() + (getMaxOption() - getMinOption()) * d);
 	}
+
 }

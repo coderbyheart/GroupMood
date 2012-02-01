@@ -3,14 +3,20 @@ package de.hsrm.mi.mobcomp.y2k11grp04;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import uk.co.jasonfry.android.tools.ui.PageControl;
 import uk.co.jasonfry.android.tools.ui.SwipeView;
 import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -169,11 +175,11 @@ public class AttendeeActivity extends ServiceActivity {
 
 				// Fertige View merken
 				topicViews.put(currentTopic, topicQuestionsLayout);
-				
+
 				// Zur aktuellen Frage springen
 				if (currentQuestion != null) {
 					int page = 0;
-					for(Question q: currentTopic.getQuestions()) {
+					for (Question q : currentTopic.getQuestions()) {
 						if (currentQuestion.equals(q)) {
 							mSwipeView.scrollToPage(page);
 						}
@@ -201,19 +207,19 @@ public class AttendeeActivity extends ServiceActivity {
 		return view;
 	}
 
-	private LinearLayout createQuestionAction(Question q) {
+	private LinearLayout createQuestionAction(final Question q) {
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout) layoutInflater.inflate(
 				R.layout.question_action, null);
-		Button b = (Button) view
-				.findViewById(R.id.groupMood_questionActionButton);
-		SeekBar s = (SeekBar) view
-				.findViewById(R.id.groupMood_questionActionSeekBar);
-		if (seekBarState.containsKey(q.getId())) {
-			s.setProgress(seekBarState.get(q.getId()));
-		}
+		
 		if (q.getType().equals(Question.TYPE_RANGE)) {
-			view.removeView(b);
+			view.removeView(view
+					.findViewById(R.id.groupMood_questionActionButton));
+			SeekBar s = (SeekBar) view
+					.findViewById(R.id.groupMood_questionActionSeekBar);
+			if (seekBarState.containsKey(q.getId())) {
+				s.setProgress(seekBarState.get(q.getId()));
+			}
 			// Min/Max aus Question ziehen, da eine Seekbar IMMER bei 0 anfängt.
 			// Also merken, wird dann später im SeekBarChangeListener verwendet
 			seekbarToQuestion.put(s, q);
@@ -240,7 +246,73 @@ public class AttendeeActivity extends ServiceActivity {
 			// Listener
 			s.setOnSeekBarChangeListener(questionActionSeekBarListener);
 		} else {
-			view.removeView(s);
+			view.removeView(view.findViewById(R.id.groupMood_questionActionRangeLayout));
+			
+
+			final CharSequence[] questionOptionNames = new CharSequence[q
+					.getOptions().size()];
+			for (int i = 0; i < q.getOptions().size(); i++) {
+				questionOptionNames[i] = q.getOptions().get(i).getValue();
+			}
+			
+			Button b = (Button) view.findViewById(R.id.groupMood_questionActionButton);
+
+			b.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					Builder ad = new AlertDialog.Builder(AttendeeActivity.this);
+					ad.setIcon(R.drawable.alert_dialog_icon);
+					ad.setTitle(q.getName());
+
+					if (q.getMaxChoices().equals(1)) {
+						ad.setSingleChoiceItems(questionOptionNames, 0,
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// TODO Auto-generated method stub
+
+									}
+								});
+					} else {
+						ad.setMultiChoiceItems(
+								questionOptionNames,
+								new boolean[] { false, true, false, true,
+										false, false, false },
+								new DialogInterface.OnMultiChoiceClickListener() {
+									public void onClick(DialogInterface dialog,
+											int whichButton, boolean isChecked) {
+
+										/*
+										 * User clicked on a check box do some
+										 * stuff
+										 */
+									}
+								});
+					}
+					ad.setPositiveButton(R.string.alert_dialog_ok,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+
+									/* User clicked Yes so do some stuff */
+								}
+							});
+					ad.setNegativeButton(R.string.alert_dialog_cancel,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int whichButton) {
+
+									/* User clicked No so do some stuff */
+								}
+							});
+					ad.create();
+					ad.show();
+
+				}
+
+			});
 		}
 		return view;
 	}

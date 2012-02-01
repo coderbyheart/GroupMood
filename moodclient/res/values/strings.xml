@@ -12,4 +12,6 @@
     <string name="question_your_answer">Deine Antwort:</string>
     <string name="question_answered">Antwort gespeichert: %s</string>
     <string name="question_total">von %d</string>
+    <string name="alert_dialog_ok">OK</string>
+    <string name="alert_dialog_cancel">Abbrechen</string>
 </resources>

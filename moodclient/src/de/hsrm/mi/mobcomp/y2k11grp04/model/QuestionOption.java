@@ -13,6 +13,8 @@ public class QuestionOption extends BaseModel {
 	public static final String OPTION_RANGE_LABEL_MAX_VALUE = "label_max_value";
 	public static final String OPTION_RANGE_MIN_VALUE = "min_value";
 	public static final String OPTION_RANGE_MAX_VALUE = "max_value";
+	public static final String OPTION_MIN_CHOICES = "min_choices";
+	public static final String OPTION_MAX_CHOICES = "max_choices";
 
 	public QuestionOption() {
 	}
