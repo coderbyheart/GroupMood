@@ -16,7 +16,7 @@ contexthref = 'http://groupmood.net/jsonld'
 modelRelations = {
     Meeting: [(Topic, True, '@id/topics')],
     Topic: [(Question, True, '@id/questions')],
-    Question: [(Answer, True, '@id/answers'), (QuestionOption, True, '@id/options')],
+    Question: [(Answer, True, '@id/answers'), (QuestionOption, True, '@id/options'), (Choice, True, '@id/choices')],
 }
 
 def getUser(request):
@@ -228,6 +228,12 @@ def question_options(request, id):
     question = get_object_or_404(Question, pk=id)
     return jsonResponse(request, modelsToJson(request, QuestionOption.objects.filter(question=question)))
     
+def question_choices(request, id):
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    question = get_object_or_404(Question, pk=id)
+    return jsonResponse(request, modelsToJson(request, Choice.objects.filter(question=question)))
+
 @csrf_exempt
 def answer_create(request, id):
     if request.method == 'POST':

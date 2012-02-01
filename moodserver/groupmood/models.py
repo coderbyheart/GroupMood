@@ -311,6 +311,13 @@ class Choice(BaseModel):
     def __unicode__(self):
         return "Choice #%d: %s on %s" % (self.id, self.name, unicode(self.question))
 
+    def toJsonDict(self):
+        return {
+            'id': self.id, 
+            'name': self.name,
+            'creationDate': self.creation_date.isoformat(),
+        }
+
 class Answer(BaseModel):
     """
     

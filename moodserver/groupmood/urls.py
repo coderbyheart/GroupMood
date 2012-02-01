@@ -13,4 +13,5 @@ urlpatterns = patterns('',
    url(r'^question/(?P<id>\d+)$', 'groupmood.views.question_entry'),
    url(r'^question/(?P<id>\d+)/answers$', 'groupmood.views.answer_create'),   
    url(r'^question/(?P<id>\d+)/options$', 'groupmood.views.question_options'),
+   url(r'^question/(?P<id>\d+)/choices$', 'groupmood.views.question_choices'),
 )
