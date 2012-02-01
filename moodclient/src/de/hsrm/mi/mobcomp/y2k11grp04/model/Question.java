@@ -4,7 +4,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
@@ -22,6 +21,7 @@ public class Question extends BaseModel {
 	private int avg;
 	private int numAnswers;
 	private List<QuestionOption> options = new ArrayList<QuestionOption>();
+	private List<Choice> choices = new ArrayList<Choice>();
 
 	public Question() {
 	}
@@ -43,6 +43,11 @@ public class Question extends BaseModel {
 			options.add((QuestionOption) q);
 			((QuestionOption) q).setQuestion(this);
 		}
+		for (Parcelable c : in.readParcelableArray(Choice.class
+				.getClassLoader())) {
+			choices.add((Choice) c);
+			((Choice) c).setQuestion(this);
+		}
 	}
 
 	@Override
@@ -55,6 +60,7 @@ public class Question extends BaseModel {
 		out.writeInt(numAnswers);
 		out.writeParcelableArray(
 				options.toArray(new QuestionOption[options.size()]), 0);
+		out.writeParcelableArray(choices.toArray(new Choice[choices.size()]), 0);
 	}
 
 	public static final Parcelable.Creator<Question> CREATOR = new Parcelable.Creator<Question>() {
@@ -102,6 +108,14 @@ public class Question extends BaseModel {
 	public List<QuestionOption> getOptions() {
 		return options;
 	}
+	
+	public List<Choice> getChoices() {
+		return choices;
+	}
+
+	public void setChoices(List<Choice> choices) {
+		this.choices = choices;
+	}
 
 	/**
 	 * Gibt die Option mit dem Namen name zurück, existiert diese Option nicht,
@@ -139,6 +153,12 @@ public class Question extends BaseModel {
 				options.add((QuestionOption) m);
 				((QuestionOption) m).setQuestion(this);
 			}
+		} else if (relation.getModel() == Choice.class) {
+			choices = new ArrayList<Choice>();
+			for (StateModel m : items) {
+				choices.add((Choice) m);
+				((Choice) m).setQuestion(this);
+			}
 		} else {
 			super.setRelationItems(relation, items);
 		}
@@ -160,15 +180,13 @@ public class Question extends BaseModel {
 		this.numAnswers = numAnswers;
 	}
 
-	
 	/**
 	 * Gibt den Min-Wert zurück, falls vorhanden
 	 * 
 	 * @return
 	 */
 	public Integer getMinChoices() {
-		return Integer
-				.parseInt(getOption(QuestionOption.OPTION_MIN_CHOICES));
+		return Integer.parseInt(getOption(QuestionOption.OPTION_MIN_CHOICES));
 	}
 
 	/**
@@ -177,12 +195,9 @@ public class Question extends BaseModel {
 	 * @return
 	 */
 	public Integer getMaxChoices() {
-		return Integer
-				.parseInt(getOption(QuestionOption.OPTION_MAX_CHOICES));
+		return Integer.parseInt(getOption(QuestionOption.OPTION_MAX_CHOICES));
 	}
-	
-	
-	
+
 	/**
 	 * Gibt den Min-Wert zurück, falls vorhanden
 	 * 
@@ -212,6 +227,7 @@ public class Question extends BaseModel {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + numAnswers;
 		result = prime * result + ((options == null) ? 0 : options.hashCode());
+		result = prime * result + ((choices == null) ? 0 : choices.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -243,6 +259,11 @@ public class Question extends BaseModel {
 			if (other.options != null)
 				return false;
 		} else if (!options.equals(other.options))
+			return false;
+		if (choices == null) {
+			if (other.choices!= null)
+				return false;
+		} else if (!choices.equals(other.choices))
 			return false;
 		if (topic == null) {
 			if (other.topic != null)

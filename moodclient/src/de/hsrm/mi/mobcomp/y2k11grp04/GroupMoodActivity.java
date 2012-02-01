@@ -144,9 +144,9 @@ public class GroupMoodActivity extends ServiceActivity {
 				u.path("/groupmood/meeting" + groupMoodUri.getPath());
 				loadMeeting(u.build());
 			}
-		}
+		} 
 	}
-
+	
 	/**
 	 * Wenn die Activity beendet wird, merken wir uns wichtige Objekte, damit
 	 * wird diese nicht mehr neu laden müssen.

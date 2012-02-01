@@ -3,7 +3,6 @@ package de.hsrm.mi.mobcomp.y2k11grp04;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import uk.co.jasonfry.android.tools.ui.PageControl;
@@ -15,8 +14,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -211,7 +208,7 @@ public class AttendeeActivity extends ServiceActivity {
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout) layoutInflater.inflate(
 				R.layout.question_action, null);
-		
+
 		if (q.getType().equals(Question.TYPE_RANGE)) {
 			view.removeView(view
 					.findViewById(R.id.groupMood_questionActionButton));
@@ -246,73 +243,20 @@ public class AttendeeActivity extends ServiceActivity {
 			// Listener
 			s.setOnSeekBarChangeListener(questionActionSeekBarListener);
 		} else {
-			view.removeView(view.findViewById(R.id.groupMood_questionActionRangeLayout));
-			
+			view.removeView(view
+					.findViewById(R.id.groupMood_questionActionRangeLayout));
 
 			final CharSequence[] questionOptionNames = new CharSequence[q
-					.getOptions().size()];
-			for (int i = 0; i < q.getOptions().size(); i++) {
-				questionOptionNames[i] = q.getOptions().get(i).getValue();
+					.getChoices().size()];
+			for (int i = 0; i < q.getChoices().size(); i++) {
+				questionOptionNames[i] = q.getChoices().get(i).getName();
 			}
-			
-			Button b = (Button) view.findViewById(R.id.groupMood_questionActionButton);
 
-			b.setOnClickListener(new View.OnClickListener() {
+			Button b = (Button) view
+					.findViewById(R.id.groupMood_questionActionButton);
 
-				@Override
-				public void onClick(View v) {
-					Builder ad = new AlertDialog.Builder(AttendeeActivity.this);
-					ad.setIcon(R.drawable.alert_dialog_icon);
-					ad.setTitle(q.getName());
-
-					if (q.getMaxChoices().equals(1)) {
-						ad.setSingleChoiceItems(questionOptionNames, 0,
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										// TODO Auto-generated method stub
-
-									}
-								});
-					} else {
-						ad.setMultiChoiceItems(
-								questionOptionNames,
-								new boolean[] { false, true, false, true,
-										false, false, false },
-								new DialogInterface.OnMultiChoiceClickListener() {
-									public void onClick(DialogInterface dialog,
-											int whichButton, boolean isChecked) {
-
-										/*
-										 * User clicked on a check box do some
-										 * stuff
-										 */
-									}
-								});
-					}
-					ad.setPositiveButton(R.string.alert_dialog_ok,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-									/* User clicked Yes so do some stuff */
-								}
-							});
-					ad.setNegativeButton(R.string.alert_dialog_cancel,
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int whichButton) {
-
-									/* User clicked No so do some stuff */
-								}
-							});
-					ad.create();
-					ad.show();
-
-				}
-
-			});
+			b.setOnClickListener(new AnswerChoiceSelectListener(q,
+					questionOptionNames));
 		}
 		return view;
 	}
@@ -471,6 +415,74 @@ public class AttendeeActivity extends ServiceActivity {
 			return super.onCreateDialog(id);
 		}
 
+	}
+
+	/**
+	 * Kümmert sich um die Fragen-Auswahl bei Single- oder
+	 * Multiple-Choice-Fragen
+	 * 
+	 * @author Coralie Reuter
+	 */
+	private final class AnswerChoiceSelectListener implements
+			View.OnClickListener {
+		private final Question q;
+		private final CharSequence[] questionOptionNames;
+
+		private AnswerChoiceSelectListener(Question q,
+				CharSequence[] questionOptionNames) {
+			this.q = q;
+			this.questionOptionNames = questionOptionNames;
+		}
+
+		@Override
+		public void onClick(View v) {
+			Builder ad = new AlertDialog.Builder(AttendeeActivity.this);
+			ad.setIcon(R.drawable.alert_dialog_icon);
+			ad.setTitle(q.getName());
+
+			if (q.getMaxChoices().equals(1)) {
+				ad.setSingleChoiceItems(questionOptionNames, 0,
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// TODO Auto-generated method stub
+
+							}
+						});
+			} else {
+				ad.setMultiChoiceItems(questionOptionNames, new boolean[] {
+						false, true, false, true, false, false, false },
+						new DialogInterface.OnMultiChoiceClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton, boolean isChecked) {
+
+								/*
+								 * User clicked on a check box do some stuff
+								 */
+							}
+						});
+			}
+			ad.setPositiveButton(R.string.alert_dialog_ok,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+
+							/* User clicked Yes so do some stuff */
+						}
+					});
+			ad.setNegativeButton(R.string.alert_dialog_cancel,
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog,
+								int whichButton) {
+
+							/* User clicked No so do some stuff */
+						}
+					});
+			ad.create();
+			ad.show();
+
+		}
 	}
 
 	/**
