@@ -232,8 +232,30 @@ def question_options(request, id):
 def answer_create(request, id):
     if request.method == 'POST':
         question = get_object_or_404(Question, pk=id)
-        # Antwort dazu
-        answer = Answer.objects.create(question=question, user=getUser(request), answer=request.POST['answer'])
+        
+        if (question.type == Question.TYPE_RANGE):
+            answerValue = request.POST['answer']
+            minValue = question.getMin()
+            maxValue = question.getMax()
+            if minValue != None and int(minValue) > int(answerValue):
+                return HttpResponseBadRequest("%d is greater than %d" % (int(answerValue), int(minValue)))                    
+            if maxValue != None and int(maxValue) < int(answerValue):
+                return HttpResponseBadRequest("%d is smaller than %d" % (int(answerValue), int(maxValue)))
+            answer = Answer.objects.create(question=question, user=getUser(request), answer=answerValue)
+        else: # (question.type == Question.TYPE_CHOICE):
+            answers = []
+            for answerValue in request.POST.getlist('answer[]'):
+                answers.append(answerValue)
+            minChoices = question.getMinChoices()
+            maxChoices = question.getMaxChoices()
+            if minChoices != None and int(minChoices) > len(answers):
+                return HttpResponseBadRequest("Too few choices. %d given, %d required" % (len(answers), int(minChoices)))
+            if maxChoices != None and int(maxChoices) < len(answers):
+                return HttpResponseBadRequest("Too many choices. %d given, %d allowed" % (len(answers), int(maxChoices)))
+            for answerValue in answers:
+                answer = Answer.objects.create(question=question, user=getUser(request), answer=answerValue)
+        
+        # URL zu letzter Antwort zurückgeben
         resp = jsonResponse(request, modelToJson(request, answer))
         resp['Location'] = getModelUrl(request, answer)
         resp.status_code = 201;

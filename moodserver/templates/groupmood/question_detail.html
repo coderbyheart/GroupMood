@@ -37,4 +37,29 @@
     <button type="submit">absenden</button>
 </form>
 {% endif %}
+{% if question.type == "choice" %}
+<h2>Antwort-Möglichkeiten</h2>
+<dl>
+<dt>Mindestens</dt>
+<dd>{{ question.getMinChoices }}</dd>
+<dt>Maximal</dt>
+<dd>{{ question.getMaxChoices }}</dd>
+</dl>
+<form method="POST" action="/groupmood/question/{{ question.id }}/answers">
+<p>
+	{% if question.getMaxChoices == "1" %}
+	{% for choice in question.choice_set.all %}
+	<input type="radio" name="answer" value="{{ choice.name }}" id="choice-{{ choice.id }}" />
+	<label for="choice-{{ choice.id }}">{{ choice.name }}</label>
+	{% endfor %}	
+	{% else %}
+	{% for choice in question.choice_set.all %}
+	<input type="checkbox" name="answer[]" value="{{ choice.name }}" id="choice-{{ choice.id }}" />
+	<label for="choice-{{ choice.id }}">{{ choice.name }}</label>
+	{% endfor %}
+	{% endif %}
+	</p>
+	<button type="submit">absenden</button> 
+</form>
+{% endif %}
 {% endblock %}

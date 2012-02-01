@@ -85,7 +85,7 @@ class Topic(BaseModel):
     context = 'topic'
     meeting = models.ForeignKey(Meeting)
     name = models.CharField(max_length=200)
-    image = models.URLField(null=True)
+    image = models.URLField(null=True,blank=True)
     
     class Meta:
         unique_together = (("meeting", "name"),)
@@ -162,15 +162,13 @@ class Question(BaseModel):
     context = 'question'
     topic = models.ForeignKey(Topic)
     name = models.CharField(max_length=200)
-    TYPE_SINGLECHOICE = 'singlechoice'
-    TYPE_MULTIPLECHOICE = 'multiplechoice'
+    TYPE_CHOICE = 'choice'
     TYPE_RANGE = 'range'
     TYPES = (
-        (TYPE_SINGLECHOICE, 'Single-Choice'),
-        (TYPE_MULTIPLECHOICE, 'Multiple-Choice'),
+        (TYPE_CHOICE, 'Choice'),
         (TYPE_RANGE, 'Range')
     )
-    type = models.CharField(max_length=20, choices=TYPES, default=TYPE_SINGLECHOICE)
+    type = models.CharField(max_length=20, choices=TYPES, default=TYPE_CHOICE)
     MODE_SINGLE = 'single'
     MODE_AVERAGE = 'avg'
     MODES = (
@@ -178,6 +176,15 @@ class Question(BaseModel):
         (MODE_AVERAGE, 'Average-Vote')
     )
     mode = models.CharField(max_length=20, choices=MODES, default=MODE_AVERAGE)
+
+    OPTION_RANGE_MIN_VALUE = "min_value"
+    OPTION_RANGE_MAX_VALUE = "max_value"
+    OPTION_RANGE_LABEL_MIN_VALUE = "label_min_value"
+    OPTION_RANGE_LABEL_MID_VALUE = "label_mid_value"
+    OPTION_RANGE_LABEL_MAX_VALUE = "label_max_value"
+
+    OPTION_MIN_CHOICES = "min_choices"
+    OPTION_MAX_CHOICES = "max_choices"
     
     def answers(self):
         return Answer.objects.filter(question=self.id)
@@ -211,12 +218,6 @@ class Question(BaseModel):
             sum += int(v.answer)
         return sum / len(votes)
 
-    OPTION_RANGE_MIN_VALUE = "min_value"
-    OPTION_RANGE_MAX_VALUE = "max_value"
-    OPTION_RANGE_LABEL_MIN_VALUE = "label_min_value"
-    OPTION_RANGE_LABEL_MID_VALUE = "label_mid_value"
-    OPTION_RANGE_LABEL_MAX_VALUE = "label_max_value"
-    
     def getMin(self, default=None):
         """Gibt den Min-Wert der Range zurück"""
         return self.getOption(self.OPTION_RANGE_MIN_VALUE, default);
@@ -236,11 +237,22 @@ class Question(BaseModel):
     def getMaxLabel(self):
         """Gibt das Label für den Max-Wert zurück"""
         return self.getOption(self.OPTION_RANGE_LABEL_MAX_VALUE);
+    
+    def getMinChoices(self, default=None):
+        """Gibt die Anzahl der Optionen zurück, die mindestens ausgewählt werden müssen"""
+        return self.getOption(self.OPTION_MIN_CHOICES, default);
+        
+    def getMaxChoices(self, default=None):
+        """Gibt die Anzahl der Optionen zurück, die maximal ausgewählt werden dürfen"""
+        return self.getOption(self.OPTION_MAX_CHOICES, default);
         
     def getOption(self, name, default=None):
         """Gibt eine Option dieser Frage zurück"""
         v = QuestionOption.objects.filter(question=self, key=name)
         return v[0].value if v else default
+    
+    def __unicode__(self):
+        return "Frage #%d: %s of %s" % (self.id, self.name, unicode(self.topic))
     
 class QuestionOption(BaseModel):
     """
@@ -278,11 +290,11 @@ class QuestionOption(BaseModel):
 
 class Choice(BaseModel):
     """
-    Definiert die Antwort-Option bei Single- und Multiple-Choice-Fragen
+    Definiert die Antwort-Option bei Choice-Fragen
     
     >>> meeting = Meeting.objects.create(name="Meeting with Topics")
     >>> topic = Topic.objects.create(meeting=meeting, name="Frage 1")
-    >>> question = Question.objects.create(topic=topic, name="Was ist blau?", type=Question.TYPE_SINGLECHOICE, mode=Question.MODE_SINGLE)
+    >>> question = Question.objects.create(topic=topic, name="Was ist blau?", type=Question.TYPE_CHOICE, mode=Question.MODE_SINGLE)
     >>> choice1 = Choice.objects.create(question=question, name="Feuer")
     >>> choice1.name
     'Feuer'
