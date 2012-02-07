@@ -44,7 +44,6 @@
         android:text="{question.name}"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="@color/sub_text"
-         
         />
 
 </LinearLayout>

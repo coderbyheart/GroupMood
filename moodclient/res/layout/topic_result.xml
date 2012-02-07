@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <LinearLayout
+        android:id="@+id/groupMood_topicResult_topic"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:orientation="horizontal" />
+
+    <uk.co.jasonfry.android.tools.ui.SwipeView
+        android:id="@+id/groupMood_topicResult_questionsSwipe"
+        android:layout_width="fill_parent"
+        android:layout_height="94dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="2dp"
+        />
+
+</LinearLayout>

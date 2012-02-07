@@ -27,7 +27,7 @@ public class LaunchActivity extends ServiceActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+		setContentView(R.layout.launch);
 
 		((Button) findViewById(R.id.groupMood_scan_button))
 				.setOnClickListener(new OnClickListener() {
@@ -106,7 +106,7 @@ public class LaunchActivity extends ServiceActivity {
 					// Starte Activity entsprechend dem vorher ausgewählten
 					// Schema.
 					Intent next = new Intent(getApplicationContext(),
-							MainActivity.class);
+							QuestionActivity.class);
 					next.putExtras(b);
 					startActivity(next);
 					finish();

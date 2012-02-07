@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">GroupMood</string>
     <string name="scan">QR-Code scannen</string>
+    <string name="comment">Kommentar hinzufügen</string>
     <string name="loading_meeting">Lade Daten des Meetings …</string>
     <string name="check_meeting">Prüfe Meeting …</string>
     <string name="label_settings">Einstellungen</string>

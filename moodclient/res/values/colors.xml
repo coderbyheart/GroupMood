@@ -5,8 +5,14 @@
 	<color name="action_light">#83D3E6</color>
 	<color name="action_text">#333333</color>
 	<color name="action_text_lesser">#3C5A61</color>
+	<color name="comment">#DCDCDC</color>
+	<color name="comment_light">#E6E6E6</color>
+	<color name="comment_text">#333333</color>
+	<color name="comment_text_lesser">#616161</color>
 	<color name="bg_light">#343432</color>
 	<color name="bg_dark">#0A0A0A</color>
+	<color name="actionbar_light">#79004A</color>
+	<color name="actionbar_dark">#3C0025</color>
 	<color name="main_light">#AE1774</color>
 	<color name="main_dark">#97005D</color>
 	<color name="main_text">#EFEFEF</color>

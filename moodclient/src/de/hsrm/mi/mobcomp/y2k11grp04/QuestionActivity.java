@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import uk.co.jasonfry.android.tools.ui.PageControl;
 import uk.co.jasonfry.android.tools.ui.SwipeView;
 import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
 import android.app.AlertDialog;
@@ -15,12 +14,15 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -28,6 +30,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -43,7 +46,9 @@ import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
 
-public class QuestionActivity extends ServiceActivity { 
+public class QuestionActivity extends ServiceActivity {
+
+	public static final int DIALOG_LOADING = 1;
 
 	protected ProgressBar loadingProgress;
 	protected Meeting meeting;
@@ -59,12 +64,19 @@ public class QuestionActivity extends ServiceActivity {
 	private Map<SeekBar, TextView> seekbarToCurrentValueTextView = new HashMap<SeekBar, TextView>();
 	private Map<Integer, Integer> seekBarState = new HashMap<Integer, Integer>();
 	private OnSeekBarChangeListener questionActionSeekBarListener;
+	private Button questionsButton;
+	private Button commentsButton;
+	private Button resultsButton;
+
+	private Button actionBarActiveButton;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(getLayout());
+
+		initActionBar();
 
 		loadingProgress = (ProgressBar) findViewById(R.id.groupMood_progressBar);
 
@@ -80,6 +92,28 @@ public class QuestionActivity extends ServiceActivity {
 		questionActionSeekBarListener = new QuestionSeekBarListener();
 
 		updateView();
+	}
+
+	/**
+	 * Initialisiert die ActionBar
+	 */
+	private void initActionBar() {
+		((Button) findViewById(R.id.groupMood_actionbar_logo))
+				.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						startActivity(new Intent(getApplicationContext(),
+								LaunchActivity.class));
+					}
+				});
+		ActionBarClickListener abcl = new ActionBarClickListener();
+		questionsButton = (Button) findViewById(R.id.groupMood_actionbar_button_questions);
+		commentsButton = (Button) findViewById(R.id.groupMood_actionbar_button_comments);
+		resultsButton = (Button) findViewById(R.id.groupMood_actionbar_button_results);
+		questionsButton.setOnClickListener(abcl);
+		commentsButton.setOnClickListener(abcl);
+		resultsButton.setOnClickListener(abcl);
+		actionBarActiveButton = questionsButton;
 	}
 
 	/**
@@ -102,11 +136,37 @@ public class QuestionActivity extends ServiceActivity {
 			lv.setOnItemLongClickListener(topicGalleryClickListener);
 		}
 
+		// Ergebnisse ausblenden
+		ScrollView resultScrollView = (ScrollView) findViewById(R.id.groupMood_topicResultScrollView);
+		resultScrollView.setVisibility(View.GONE);
+
+		// Ergebnis-Views erzeugen
+		LinearLayout resultLayout = (LinearLayout) findViewById(R.id.groupMood_topicResultLayout);
+		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		for (Topic t : meeting.getTopics()) {
+			LinearLayout topicResultLayout = (LinearLayout) layoutInflater
+					.inflate(R.layout.topic_result, resultScrollView, false);
+			// Icon erzeugen
+			((ViewGroup) topicResultLayout
+					.findViewById(R.id.groupMood_topicResult_topic))
+					.addView(topicGalleryAdapter.createTopicView(
+							resultScrollView, t));
+			resultLayout.addView(topicResultLayout);
+			// Fragen zum Durchblättern erzeugen
+			SwipeView mSwipeView = (SwipeView) topicResultLayout
+					.findViewById(R.id.groupMood_topicResult_questionsSwipe);
+			int num = 0;
+			for (Question q : t.getQuestions()) {
+				View questionView = createQuestionView(q, ++num);
+				mSwipeView.addView(questionView);
+			}
+		}
+
 		updateTopic();
 	}
 
 	protected int getLayout() {
-		return R.layout.attendee;
+		return R.layout.question;
 	}
 
 	private void updateTopic() {
@@ -164,11 +224,9 @@ public class QuestionActivity extends ServiceActivity {
 					}
 				}
 
-				// Pager für die SwipeView erst initialisieren, wenn alle Fragen
-				// drin sind
-				PageControl mPageControl = (PageControl) topicQuestionsLayout
-						.findViewById(R.id.groupMood_questionsSwipePager);
-				mSwipeView.setPageControl(mPageControl);
+				// Comments ausblenden
+				topicQuestionsLayout.findViewById(R.id.groupMood_topicComments)
+						.setVisibility(View.GONE);
 
 				// Fertige View merken
 				topicViews.put(currentTopic, topicQuestionsLayout);
@@ -375,11 +433,13 @@ public class QuestionActivity extends ServiceActivity {
 					.setProgress(seekBarState.get(questionId)));
 		}
 		outState.putParcelableArrayList("seekbarStates", seekBarStates);
+
+		// Aktive view merken
+		outState.putInt("actionBarActiveButton", actionBarActiveButton.getId());
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		Log.v(getClass().getCanonicalName(), "onRestoreInstanceState");
 		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
 			meeting = savedInstanceState
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
@@ -400,9 +460,11 @@ public class QuestionActivity extends ServiceActivity {
 		}
 
 		updateView();
-	}
 
-	public static final int DIALOG_LOADING = 1;
+		// Aktive view laden
+		setActionBarActiveButton((Button) findViewById(savedInstanceState
+				.getInt("actionBarActiveButton")));
+	}
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -415,6 +477,78 @@ public class QuestionActivity extends ServiceActivity {
 			return super.onCreateDialog(id);
 		}
 
+	}
+
+	/**
+	 * Kümmert sich um die Clicks auf die Icons in der ActionBar
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 * 
+	 */
+	private final class ActionBarClickListener implements OnClickListener {
+		@Override
+		public void onClick(View v) {
+			setActionBarActiveButton((Button) v);
+		}
+	}
+
+	/**
+	 * Setzt den aktuell aktiven Button in der ActionBar
+	 * 
+	 * @param b
+	 */
+	public void setActionBarActiveButton(Button b) {
+		Resources res = getResources();
+		actionBarActiveButton = b;
+		// Die View des aktuellen Topics holen
+		View topicView = topicViews.get(getCurrentTopic());
+
+		topicView.findViewById(R.id.groupMood_topicComments).setVisibility(
+				View.GONE);
+		topicView.findViewById(R.id.groupMood_questionsSwipe).setVisibility(
+				View.GONE);
+		topicView.findViewById(R.id.groupMood_questionsActions).setVisibility(
+				View.GONE);
+		findViewById(R.id.groupMood_topicResultScrollView).setVisibility(
+				View.GONE);
+		findViewById(R.id.groupMood_topicFramesLayout).setVisibility(View.GONE);
+
+		// Question-Icon
+		if (actionBarActiveButton.equals(questionsButton)) {
+			questionsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_checkmark_white_tab));
+			topicView.findViewById(R.id.groupMood_questionsSwipe)
+					.setVisibility(View.VISIBLE);
+			topicView.findViewById(R.id.groupMood_questionsActions)
+					.setVisibility(View.VISIBLE);
+			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
+					View.VISIBLE);
+		} else {
+			questionsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_tab_checkmark));
+		}
+		// Comments-Icon
+		if (actionBarActiveButton.equals(commentsButton)) {
+			commentsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_bubble_white_tab));
+			topicView.findViewById(R.id.groupMood_topicComments).setVisibility(
+					View.VISIBLE);
+			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
+					View.VISIBLE);
+		} else {
+			commentsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_tab_bubble));
+		}
+		// Results-Icon
+		if (actionBarActiveButton.equals(resultsButton)) {
+			resultsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_chart_white_tab));
+			findViewById(R.id.groupMood_topicResultScrollView).setVisibility(
+					View.VISIBLE);
+		} else {
+			resultsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_tab_chart));
+		}
 	}
 
 	/**

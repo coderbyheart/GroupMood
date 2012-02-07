@@ -4,38 +4,37 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-        <TextView
-           android:id="@+id/groupMood_topicName"
-           android:layout_width="fill_parent"
-           android:layout_height="wrap_content"
-           android:text="{topic.name}"
-           android:textAppearance="?android:attr/textAppearanceLarge"
-           android:background="@drawable/bg_main" 
-           android:layout_marginBottom="2dp"
-           android:padding="5dp"
-           />
+    <TextView
+        android:id="@+id/groupMood_topicName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:background="@drawable/bg_main"
+        android:padding="5dp"
+        android:text="{topic.name}"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-        <uk.co.jasonfry.android.tools.ui.SwipeView
-            android:id="@+id/groupMood_questionsSwipe"
-            android:layout_width="fill_parent"
-            android:layout_height="100dp"
-            >
-            <!-- Die Swipe-View enthält die Anzeige der Fragen: question_name.xml -->
-        </uk.co.jasonfry.android.tools.ui.SwipeView>
+    <uk.co.jasonfry.android.tools.ui.SwipeView
+        android:id="@+id/groupMood_questionsSwipe"
+        android:layout_width="fill_parent"
+        android:layout_height="100dp" >
+
+        <!-- Die Swipe-View enthält die Anzeige der Fragen: question_name.xml -->
+    </uk.co.jasonfry.android.tools.ui.SwipeView>
+
+    <LinearLayout
+        android:id="@+id/groupMood_questionsActions"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <!-- Hier rein werden die Antwort-Möglichkeiten gerendert: question_action.xml -->
+    </LinearLayout>
     
-    	<uk.co.jasonfry.android.tools.ui.PageControl
-	        android:id="@+id/groupMood_questionsSwipePager"
-	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:gravity="center_horizontal"
-	        android:orientation="horizontal" />
-	        
-        <LinearLayout
-            android:id="@+id/groupMood_questionsActions"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
+    <include
+        android:id="@+id/groupMood_topicComments"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/topic_comments" />
 
-            <!-- Hier rein werden die Antwort-Möglichkeiten gerendert: question_action.xml -->
-        </LinearLayout>
 </LinearLayout>
