@@ -55,7 +55,7 @@ public class TopicGalleryAdapter extends BaseAdapter {
 		return createTopicView(parent, topic);
 	}
 
-	public View createTopicView(ViewGroup parent, Topic topic) {
+	protected View createTopicView(ViewGroup parent, Topic topic) {
 		ViewGroup view = (ViewGroup) LayoutInflater.from(parent.getContext())
 				.inflate(R.layout.topic_item, parent, false);
 

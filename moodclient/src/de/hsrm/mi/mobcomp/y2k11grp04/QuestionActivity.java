@@ -22,7 +22,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -30,7 +29,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -43,8 +41,10 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
+import de.hsrm.mi.mobcomp.y2k11grp04.view.QuestionView;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
+import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicResultAdapter;
 
 public class QuestionActivity extends ServiceActivity {
 
@@ -137,30 +137,11 @@ public class QuestionActivity extends ServiceActivity {
 		}
 
 		// Ergebnisse ausblenden
-		ScrollView resultScrollView = (ScrollView) findViewById(R.id.groupMood_topicResultScrollView);
-		resultScrollView.setVisibility(View.GONE);
-
-		// Ergebnis-Views erzeugen
-		LinearLayout resultLayout = (LinearLayout) findViewById(R.id.groupMood_topicResultLayout);
-		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		for (Topic t : meeting.getTopics()) {
-			LinearLayout topicResultLayout = (LinearLayout) layoutInflater
-					.inflate(R.layout.topic_result, resultScrollView, false);
-			// Icon erzeugen
-			((ViewGroup) topicResultLayout
-					.findViewById(R.id.groupMood_topicResult_topic))
-					.addView(topicGalleryAdapter.createTopicView(
-							resultScrollView, t));
-			resultLayout.addView(topicResultLayout);
-			// Fragen zum Durchblättern erzeugen
-			SwipeView mSwipeView = (SwipeView) topicResultLayout
-					.findViewById(R.id.groupMood_topicResult_questionsSwipe);
-			int num = 0;
-			for (Question q : t.getQuestions()) {
-				View questionView = createQuestionView(q, ++num);
-				mSwipeView.addView(questionView);
-			}
-		}
+		TopicResultAdapter topicResultAdapter = new TopicResultAdapter(
+				meeting.getTopics());
+		ListView resultView = (ListView) findViewById(R.id.groupMood_topicResult);
+		resultView.setVisibility(View.GONE);
+		resultView.setAdapter(topicResultAdapter);
 
 		updateTopic();
 	}
@@ -205,7 +186,8 @@ public class QuestionActivity extends ServiceActivity {
 				int num = 0;
 				for (Question q : currentTopic.getQuestions()) {
 					// Die Anzeige des Frage-Textes erfolgt in der SwipeView
-					View questionView = createQuestionView(q, ++num);
+					View questionView = QuestionView.create(layoutInflater,
+							getResources(), q, ++num);
 					mSwipeView.addView(questionView);
 					// Die Frage-Aktion wird in einer anderen View angzeigt,
 					// damit man z.B. den SeekBar bedienen kann
@@ -245,21 +227,6 @@ public class QuestionActivity extends ServiceActivity {
 			// Die View zum aktuellen Topic Anzeigen
 			allTopicQuestionsLayout.addView(topicViews.get(currentTopic));
 		}
-	}
-
-	private LinearLayout createQuestionView(Question q, Integer number) {
-		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		LinearLayout view = (LinearLayout) layoutInflater.inflate(
-				R.layout.question_name, null);
-		((TextView) view.findViewById(R.id.groupMood_question_text)).setText(q
-				.getName());
-		((TextView) view.findViewById(R.id.groupMood_question_number))
-				.setText("" + number);
-		((TextView) view.findViewById(R.id.groupMood_question_total))
-				.setText(String.format(
-						getResources().getString(R.string.question_total), q
-								.getTopic().getQuestions().size()));
-		return view;
 	}
 
 	private LinearLayout createQuestionAction(final Question q) {
@@ -509,8 +476,7 @@ public class QuestionActivity extends ServiceActivity {
 				View.GONE);
 		topicView.findViewById(R.id.groupMood_questionsActions).setVisibility(
 				View.GONE);
-		findViewById(R.id.groupMood_topicResultScrollView).setVisibility(
-				View.GONE);
+		findViewById(R.id.groupMood_topicResult).setVisibility(View.GONE);
 		findViewById(R.id.groupMood_topicFramesLayout).setVisibility(View.GONE);
 
 		// Question-Icon
@@ -543,8 +509,8 @@ public class QuestionActivity extends ServiceActivity {
 		if (actionBarActiveButton.equals(resultsButton)) {
 			resultsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_chart_white_tab));
-			findViewById(R.id.groupMood_topicResultScrollView).setVisibility(
-					View.VISIBLE);
+			findViewById(R.id.groupMood_topicResult)
+					.setVisibility(View.VISIBLE);
 		} else {
 			resultsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_chart));

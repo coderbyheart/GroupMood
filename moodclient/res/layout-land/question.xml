@@ -42,18 +42,9 @@
 
     <!-- Hier werden die Ergebnisse der Fragen angezeigt -->
 
-    <ScrollView
-        android:id="@+id/groupMood_topicResultScrollView"
+    <ListView
+        android:id="@+id/groupMood_topicResult"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="0dp"
-        android:scrollbars="vertical" >
-
-        <LinearLayout
-            android:id="@+id/groupMood_topicResultLayout"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
+        android:layout_height="wrap_content" />
 
 </LinearLayout>
