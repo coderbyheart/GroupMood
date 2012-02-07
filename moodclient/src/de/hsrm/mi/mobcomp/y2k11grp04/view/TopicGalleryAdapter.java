@@ -1,9 +1,14 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.view;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,16 +80,38 @@ public class TopicGalleryAdapter extends BaseAdapter {
 				ImageView topicImage = (ImageView) view
 						.findViewById(R.id.groupMood_topicItem_Image);
 
-				Bitmap bm = BitmapFactory.decodeFile(topic.getImageFile()
-						.getAbsolutePath());
-				Bitmap thumb = Bitmap.createScaledBitmap(bm, 150, 150, true);
-				bm.recycle();
-				System.gc();
-				topicImage.setImageBitmap(thumb);
+				File thumbFile = getThumbFile(topic.getImageFile());
+				// Bitmap erzeugen und lokal abspeichern
+				if (!thumbFile.exists()) {
+					Bitmap bm = BitmapFactory.decodeFile(topic.getImageFile()
+							.getAbsolutePath());
+					Bitmap thumb = Bitmap
+							.createScaledBitmap(bm, 150, 150, true);
+					try {
+						OutputStream stream = new FileOutputStream(
+								thumbFile.getAbsolutePath());
+						thumb.compress(CompressFormat.PNG, 75, stream);
+						stream.close();
+					} catch (Exception e) {
+						Log.e(getClass().getCanonicalName(), e.getMessage());
+					}
+					thumb.recycle();
+					bm.recycle();
+					System.gc();
+				}
+				// Bitmap laden
+				topicImage.setImageBitmap(BitmapFactory.decodeFile(thumbFile.getAbsolutePath()));
 				view.removeView(view
 						.findViewById(R.id.groupMood_topicItem_Image_Loading));
 			}
 		}
 		return view;
+	}
+
+	private File getThumbFile(File imageFile) {
+
+		String path = imageFile.getAbsolutePath();
+		String pathWithoutExt = path.substring(0, path.lastIndexOf("."));
+		return new File(pathWithoutExt + "-thumb.png");
 	}
 }
