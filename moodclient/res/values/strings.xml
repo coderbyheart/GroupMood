@@ -14,4 +14,7 @@
     <string name="question_total">von %d</string>
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Abbrechen</string>
+    <string name="tab_questions">Fragen</string>
+    <string name="tab_comments">Kommentare</string>
+    <string name="tab_result">Ergebnisse</string>
 </resources>

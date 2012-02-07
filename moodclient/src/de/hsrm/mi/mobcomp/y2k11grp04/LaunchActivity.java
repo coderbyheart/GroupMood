@@ -20,7 +20,7 @@ import com.google.zxing.integration.android.IntentResult;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
-public class GroupMoodActivity extends ServiceActivity {
+public class LaunchActivity extends ServiceActivity {
 	BaseModel currentMeeting;
 
 	/** Called when the activity is first created. */
@@ -28,7 +28,7 @@ public class GroupMoodActivity extends ServiceActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
+
 		((Button) findViewById(R.id.groupMood_scan_button))
 				.setOnClickListener(new OnClickListener() {
 
@@ -39,7 +39,7 @@ public class GroupMoodActivity extends ServiceActivity {
 									.parse("grpmd://login3.mi.hs-rm.de:8001/4")));
 						} else {
 							IntentIntegrator integrator = new IntentIntegrator(
-									GroupMoodActivity.this);
+									LaunchActivity.this);
 							integrator.initiateScan();
 						}
 					}
@@ -80,8 +80,8 @@ public class GroupMoodActivity extends ServiceActivity {
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case DIALOG_LOADING:
-			return ProgressDialog.show(GroupMoodActivity.this, "",
-					getResources().getString(R.string.check_meeting), true);
+			return ProgressDialog.show(LaunchActivity.this, "", getResources()
+					.getString(R.string.check_meeting), true);
 		default:
 			return super.onCreateDialog(id);
 		}
@@ -106,7 +106,7 @@ public class GroupMoodActivity extends ServiceActivity {
 					// Starte Activity entsprechend dem vorher ausgewählten
 					// Schema.
 					Intent next = new Intent(getApplicationContext(),
-							AttendeeActivity.class);
+							MainActivity.class);
 					next.putExtras(b);
 					startActivity(next);
 					finish();
@@ -137,16 +137,15 @@ public class GroupMoodActivity extends ServiceActivity {
 			if (currentMeeting == null) {
 				showDialog(DIALOG_LOADING);
 				// Uri umwandeln
-				Builder u = groupMoodUri
-						.buildUpon()
-						.scheme(groupMoodUri.toString().contains("+https") ? "https"
+				Builder u = groupMoodUri.buildUpon().scheme(
+						groupMoodUri.toString().contains("+https") ? "https"
 								: "http");
 				u.path("/groupmood/meeting" + groupMoodUri.getPath());
 				loadMeeting(u.build());
 			}
-		} 
+		}
 	}
-	
+
 	/**
 	 * Wenn die Activity beendet wird, merken wir uns wichtige Objekte, damit
 	 * wird diese nicht mehr neu laden müssen.

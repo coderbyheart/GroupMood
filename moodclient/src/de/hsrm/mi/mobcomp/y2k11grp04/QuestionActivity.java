@@ -43,7 +43,7 @@ import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
 
-public class AttendeeActivity extends ServiceActivity {
+public class QuestionActivity extends ServiceActivity { 
 
 	protected ProgressBar loadingProgress;
 	protected Meeting meeting;
@@ -409,7 +409,7 @@ public class AttendeeActivity extends ServiceActivity {
 		Log.v(getClass().getCanonicalName(), "onCreateDialog");
 		switch (id) {
 		case DIALOG_LOADING:
-			return ProgressDialog.show(AttendeeActivity.this, "",
+			return ProgressDialog.show(QuestionActivity.this, "",
 					getResources().getString(R.string.loading_meeting), true);
 		default:
 			return super.onCreateDialog(id);
@@ -436,7 +436,7 @@ public class AttendeeActivity extends ServiceActivity {
 
 		@Override
 		public void onClick(View v) {
-			Builder ad = new AlertDialog.Builder(AttendeeActivity.this);
+			Builder ad = new AlertDialog.Builder(QuestionActivity.this);
 			ad.setIcon(R.drawable.alert_dialog_icon);
 			ad.setTitle(q.getName());
 
@@ -516,7 +516,7 @@ public class AttendeeActivity extends ServiceActivity {
 			// Vote absetzen
 			createAnswer(q, String.valueOf(value));
 			Toast.makeText(
-					AttendeeActivity.this,
+					QuestionActivity.this,
 					String.format(
 							getResources()
 									.getString(R.string.question_answered), ""

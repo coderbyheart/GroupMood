@@ -101,7 +101,12 @@ abstract public class ServiceActivity extends MenuActivity {
 	private void connect() {
 		if (!serviceBound) {
 			Intent intent = new Intent(this, MoodServerService.class);
-			serviceBound = bindService(intent, sConn, Context.BIND_AUTO_CREATE);
+			// Es ist wichtig getApplicationContext().bindService() und
+			// getApplicationContext().unbindService() zu verwenden.
+			// Wird die Activiy als Inhalt eines Tabs verwendet kann sonst keine
+			// Verbindung zum Service hergestellt werden
+			serviceBound = getApplicationContext().bindService(intent, sConn,
+					Context.BIND_AUTO_CREATE);
 			if (!serviceBound) {
 				Log.e(getClass().getCanonicalName(),
 						"Konnte nicht zum Service verbinden.");
@@ -117,7 +122,7 @@ abstract public class ServiceActivity extends MenuActivity {
 
 	private void disconnect() {
 		if (serviceBound) {
-			unbindService(sConn);
+			getApplicationContext().unbindService(sConn);
 			serviceBound = false;
 		}
 	}

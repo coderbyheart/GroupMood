@@ -1,35 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="de.hsrm.mi.mobcomp.y2k11grp04" android:versionCode="1"
-	android:versionName="1.0">
+    package="de.hsrm.mi.mobcomp.y2k11grp04"
+    android:versionCode="1"
+    android:versionName="1.0" >
 
-	<uses-sdk android:minSdkVersion="7" />
+    <uses-sdk android:minSdkVersion="7" />
 
-	<application android:icon="@drawable/ic_launcher"
-		android:label="@string/app_name">
-		<activity android:name=".GroupMoodActivity" android:label="@string/app_name">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" >
+        <activity
+            android:name=".LaunchActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-				<category android:name="android.intent.category.DEFAULT" />
-				<category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
-				<data android:scheme="grpmd" />
-				<data android:scheme="grpmd+https" />
-			</intent-filter>
-		</activity>
-		<activity android:name=".AttendeeActivity" android:label="@string/app_name">
-		</activity>
-		<service android:name=".service.MoodServerService"
-			android:process=":process" />
-	</application>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+                <data android:scheme="grpmd" />
+                <data android:scheme="grpmd+https" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".service.MoodServerService"
+            android:process=":process" />
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        
+        <activity
+            android:name=".QuestionActivity"
+            android:label="@string/app_name"
+            />
+        
+        <activity
+            android:name=".CommentActivity"
+            android:label="@string/app_name"
+            />
+        
+        <activity
+            android:name=".ResultActivity"
+            android:label="@string/app_name"
+            />
+    </application>
 
 </manifest>
