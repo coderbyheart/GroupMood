@@ -7,12 +7,9 @@ import java.util.Map;
 
 import uk.co.jasonfry.android.tools.ui.SwipeView;
 import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -25,10 +22,12 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -66,6 +65,7 @@ public class QuestionActivity extends ServiceActivity {
 	private Map<SeekBar, Question> seekbarToQuestion = new HashMap<SeekBar, Question>();
 	private Map<SeekBar, TextView> seekbarToCurrentValueTextView = new HashMap<SeekBar, TextView>();
 	private Map<Integer, Integer> seekBarState = new HashMap<Integer, Integer>();
+	private Map<Button, ListView> questionState = new HashMap<Button, ListView>();
 	private OnSeekBarChangeListener questionActionSeekBarListener;
 	private Button questionsButton;
 	private Button commentsButton;
@@ -274,19 +274,62 @@ public class QuestionActivity extends ServiceActivity {
 			view.removeView(view
 					.findViewById(R.id.groupMood_questionActionRangeLayout));
 
-			final CharSequence[] questionOptionNames = new CharSequence[q
-					.getChoices().size()];
-			for (int i = 0; i < q.getChoices().size(); i++) {
-				questionOptionNames[i] = q.getChoices().get(i).getName();
-			}
+			ListView lv = new ListView(this);
+			lv.setItemsCanFocus(false);
 
-			Button b = (Button) view
+			final Button b = (Button) view
 					.findViewById(R.id.groupMood_questionActionButton);
 
-			b.setOnClickListener(new AnswerChoiceSelectListener(q,
-					questionOptionNames));
+			b.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+
+					for (int i = 0; i < questionState.get(b).getCount(); i++) {
+						if (questionState.get(b).isItemChecked(i)) {
+							Log.d("ChoiceQuestionChecked: ", i + ") " + questionState.get(b).getItemAtPosition(i).toString() + " "
+									+ questionState.get(b).isItemChecked(i)
+									+ "");
+						} else {
+							Log.d("ChoiceQuestionChecked: ", i + ") "
+									+ questionState.get(b).isItemChecked(i)
+									+ " !!! ");
+						}
+					}
+				}
+			});
+
+			final ArrayList<String> questionOptionNames = new ArrayList<String>();
+
+			for (int i = 0; i < q.getChoices().size(); i++) {
+				questionOptionNames.add(q.getChoices().get(i).getName());
+			}
+
+			// Question-Type Single-Choice
+			if (q.getMaxChoices().equals(1)) {
+				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
+						android.R.layout.simple_list_item_single_choice,
+						questionOptionNames));
+				lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			}
+			// Question-Type Multiple-Choice
+			else {
+				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
+						android.R.layout.simple_list_item_multiple_choice,
+						questionOptionNames));
+				lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+			}
+			view.addView(lv);
+			questionState.put(b, lv);
+
 		}
 		return view;
+	}
+
+	public void onRadioButtonClick(View v) {
+		RadioButton button = (RadioButton) v;
+		Toast.makeText(QuestionActivity.this,
+				button.getText() + " was chosen.", Toast.LENGTH_SHORT).show();
 	}
 
 	private Topic getCurrentTopic() {
@@ -562,73 +605,7 @@ public class QuestionActivity extends ServiceActivity {
 		return relation;
 	}
 
-	/**
-	 * Kümmert sich um die Fragen-Auswahl bei Single- oder
-	 * Multiple-Choice-Fragen
-	 * 
-	 * @author Coralie Reuter
-	 */
-	private final class AnswerChoiceSelectListener implements
-			View.OnClickListener {
-		private final Question q;
-		private final CharSequence[] questionOptionNames;
 
-		private AnswerChoiceSelectListener(Question q,
-				CharSequence[] questionOptionNames) {
-			this.q = q;
-			this.questionOptionNames = questionOptionNames;
-		}
-
-		@Override
-		public void onClick(View v) {
-			Builder ad = new AlertDialog.Builder(QuestionActivity.this);
-			ad.setIcon(R.drawable.alert_dialog_icon);
-			ad.setTitle(q.getName());
-
-			if (q.getMaxChoices().equals(1)) {
-				ad.setSingleChoiceItems(questionOptionNames, 0,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								// TODO Auto-generated method stub
-
-							}
-						});
-			} else {
-				ad.setMultiChoiceItems(questionOptionNames, new boolean[] {
-						false, true, false, true, false, false, false },
-						new DialogInterface.OnMultiChoiceClickListener() {
-							public void onClick(DialogInterface dialog,
-									int whichButton, boolean isChecked) {
-
-								/*
-								 * User clicked on a check box do some stuff
-								 */
-							}
-						});
-			}
-			ad.setPositiveButton(R.string.alert_dialog_ok,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
-
-							/* User clicked Yes so do some stuff */
-						}
-					});
-			ad.setNegativeButton(R.string.alert_dialog_cancel,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int whichButton) {
-
-							/* User clicked No so do some stuff */
-						}
-					});
-			ad.create();
-			ad.show();
-
-		}
-	}
 
 	/**
 	 * Kümmert sich um Änderungen an Vote-Seekbars

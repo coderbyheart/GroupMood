@@ -36,7 +36,7 @@ public class LaunchActivity extends ServiceActivity {
 						if ("google_sdk".equals(Build.PRODUCT)) {
 							// Geht auf Debug nicht
 							startActivity(new Intent(Intent.ACTION_VIEW, Uri
-									.parse("grpmd://login3.mi.hs-rm.de:8001/4")));
+									.parse("grpmd://login3.mi.hs-rm.de:8001/3")));
 						} else {
 							IntentIntegrator integrator = new IntentIntegrator(
 									LaunchActivity.this);
