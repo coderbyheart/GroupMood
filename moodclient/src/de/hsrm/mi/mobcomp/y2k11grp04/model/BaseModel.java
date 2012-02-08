@@ -1,6 +1,7 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import android.net.Uri;
@@ -11,19 +12,26 @@ import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 abstract public class BaseModel implements StateModel, Parcelable {
 
 	private int id;
-	private String creationDate;
+	private Date creationDate;
 	private Uri uri;
 	private List<Relation> relations = new ArrayList<Relation>();
 
 	public void writeToParcel(Parcel out, int flags) {
 		out.writeInt(id);
-		out.writeString(creationDate);
+		if (creationDate != null) {
+			out.writeLong(creationDate.getTime());
+		} else {
+			out.writeLong(0);
+		}
 		out.writeString(uri.toString());
 	}
 
 	protected void readFromParcel(Parcel in) {
 		id = in.readInt();
-		creationDate = in.readString();
+		long dateTime = in.readLong();
+		if (dateTime > 0) {
+			creationDate = new Date(dateTime);
+		}
 		uri = Uri.parse(in.readString());
 	}
 
@@ -39,11 +47,11 @@ abstract public class BaseModel implements StateModel, Parcelable {
 		this.id = id;
 	}
 
-	public String getCreationDate() {
+	public Date getCreationDate() {
 		return creationDate;
 	}
 
-	public void setCreationDate(String creationDate) {
+	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
 
@@ -66,10 +74,13 @@ abstract public class BaseModel implements StateModel, Parcelable {
 	}
 
 	@Override
-	public void setRelationItems(Relation relation, List<? extends StateModel> items) {
+	public void setRelationItems(Relation relation,
+			List<? extends StateModel> items) {
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -85,7 +96,9 @@ abstract public class BaseModel implements StateModel, Parcelable {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override

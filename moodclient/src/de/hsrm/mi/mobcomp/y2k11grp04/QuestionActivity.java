@@ -15,15 +15,19 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -39,10 +43,8 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
-import de.hsrm.mi.mobcomp.y2k11grp04.model.StateModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
-import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.QuestionView;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
@@ -212,6 +214,26 @@ public class QuestionActivity extends ServiceActivity {
 				// Comments ausblenden
 				topicQuestionsLayout.findViewById(R.id.groupMood_topicComments)
 						.setVisibility(View.GONE);
+				((Button) topicQuestionsLayout
+						.findViewById(R.id.groupMood_newcomment_button))
+						.setOnClickListener(new OnClickListener() {
+							@Override
+							public void onClick(View v) {
+								ViewGroup parent = (ViewGroup) v.getParent();
+								EditText commentText = (EditText) parent
+										.findViewById(R.id.groupMood_newcomment_text);
+								addComment(commentText.getText().toString());
+								commentText.setText("");
+								// Keyboard ausblendend
+								InputMethodManager inputManager = (InputMethodManager) getApplicationContext()
+										.getSystemService(
+												Context.INPUT_METHOD_SERVICE);
+								inputManager.hideSoftInputFromWindow(
+										v.getApplicationWindowToken(),
+										InputMethodManager.HIDE_NOT_ALWAYS);
+								
+							}
+						});
 
 				// Fertige View merken
 				topicViews.put(currentTopic, topicQuestionsLayout);
@@ -409,6 +431,78 @@ public class QuestionActivity extends ServiceActivity {
 					}
 				}
 			};
+		case MoodServerService.MSG_TOPIC_COMMENTS_RESULT:
+			// Wird aufgerufen, wenn der Service die Kommentare zu einem Topic
+			// geladen hat
+			return new ServiceMessageRunnable(message) {
+				@Override
+				public void run() {
+					Bundle b = serviceMessage.getData();
+					b.setClassLoader(getClassLoader());
+					ArrayList<Comment> comments = b
+							.getParcelableArrayList(MoodServerService.KEY_COMMENT_MODEL);
+					// Finde topic
+					Uri topicUri = Uri.parse(b
+							.getString(MoodServerService.KEY_TOPIC_URI));
+					Topic theTopic = null;
+
+					for (Topic t : meeting.getTopics()) {
+						if (t.getUri().equals(topicUri))
+							theTopic = t;
+					}
+					if (theTopic == null) {
+						Log.e(getClass().getCanonicalName(),
+								"Topic for comments uri " + topicUri.toString()
+										+ " not found.");
+						return;
+					}
+
+					// Loading ausblenden
+					topicViews.get(theTopic)
+							.findViewById(R.id.groupMood_comments_loading)
+							.setVisibility(View.GONE);
+
+					// Kommentare rendern
+					LinearLayout commentsList = (LinearLayout) topicViews.get(
+							theTopic)
+							.findViewById(R.id.groupMood_comments_list);
+					LinearLayout noComments = (LinearLayout) topicViews.get(
+							theTopic).findViewById(
+							R.id.groupMood_comments_nocomments);
+
+					if (comments.size() > 0) {
+						noComments.setVisibility(View.GONE);
+						commentsList.setVisibility(View.VISIBLE);
+
+						LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+						commentsList.removeAllViews();
+						for (Comment comment : comments) {
+							ViewGroup view = (ViewGroup) layoutInflater
+									.inflate(R.layout.comment_item,
+											commentsList, false);
+							((TextView) view
+									.findViewById(R.id.groupMood_comment_user_text))
+									.setText(comment.getUser());
+							((TextView) view
+									.findViewById(R.id.groupMood_comment_time_text))
+									.setText(DateUtils
+											.getRelativeDateTimeString(
+													getApplicationContext(),
+													comment.getCreationDate()
+															.getTime(),
+													DateUtils.MINUTE_IN_MILLIS,
+													DateUtils.WEEK_IN_MILLIS, 0));
+							((TextView) view
+									.findViewById(R.id.groupMood_comment_text))
+									.setText(comment.getComment());
+							commentsList.addView(view);
+						}
+					} else {
+						commentsList.setVisibility(View.GONE);
+						noComments.setVisibility(View.VISIBLE);
+					}
+				}
+			};
 		default:
 			return super.getServiceMessageRunnable(message);
 		}
@@ -570,41 +664,31 @@ public class QuestionActivity extends ServiceActivity {
 	 * Lädt / aktualisiert die Kommentare des aktuellen Topics
 	 */
 	private void loadComments() {
-
-		try {
-			// Suche Comment-Relation dieses Meetings
-			Relation commentRelation = getRelated(getCurrentTopic(),
-					Comment.class);
-			Message m = Message.obtain(null,
-					MoodServerService.MSG_TOPIC_COMMENTS);
-			Bundle data = new Bundle();
-			data.putString(MoodServerService.KEY_TOPIC_COMMENTS_URI,
-					commentRelation.getHref().toString());
-			m.setData(data);
-			sendMessage(m);
-		} catch (Exception e) {
-			Log.e(getClass().getCanonicalName(), e.getMessage());
-		}
+		topicViews.get(getCurrentTopic())
+				.findViewById(R.id.groupMood_comments_loading)
+				.setVisibility(View.VISIBLE);
+		Message m = Message.obtain(null, MoodServerService.MSG_TOPIC_COMMENTS);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic()
+				.getUri().toString());
+		m.setData(data);
+		sendMessage(m);
 	}
 
 	/**
-	 * Sucht auf einem Model die Beziehung zur Klasse relatedClass
-	 * 
-	 * @param relatedClass
-	 * @return
-	 * @throws Exception
+	 * Erzeugt ein neues Kommentar
 	 */
-	private Relation getRelated(StateModel obj,
-			Class<? extends StateModel> relatedClass) throws Exception {
-		Relation relation = null;
-		for (Relation rel : obj.getRelations()) {
-			if (rel.getModel().equals(relatedClass))
-				relation = rel;
-		}
-		if (relation == null)
-			throw new Exception(obj.getClass().getCanonicalName()
-					+ " has no related " + relatedClass.getCanonicalName());
-		return relation;
+	protected void addComment(String comment) {
+		topicViews.get(getCurrentTopic())
+				.findViewById(R.id.groupMood_comments_loading)
+				.setVisibility(View.VISIBLE);
+		Message m = Message.obtain(null, MoodServerService.MSG_TOPIC_COMMENT);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic()
+				.getUri().toString());
+		data.putString(MoodServerService.KEY_COMMENT_COMMENT, comment);
+		m.setData(data);
+		sendMessage(m);
 	}
 
 

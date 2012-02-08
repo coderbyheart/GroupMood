@@ -3,23 +3,30 @@ package de.hsrm.mi.mobcomp.y2k11grp04.service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +34,7 @@ import org.json.JSONTokener;
 
 import android.net.Uri;
 import android.util.Log;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Model;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
@@ -199,6 +207,33 @@ public class MoodServerApi {
 									+ m.getName()
 									+ "(String) did not work.");
 						}
+					} else if (param == Date.class) {
+						String value;
+						try {
+							value = objectData.getString(key);
+						} catch (JSONException e) {
+							throw new ApiException(
+									"Failed to get string value for " + key);
+						}
+						String y = value.substring(0, 4);
+						String mon = value.substring(5, 7);
+						String d = value.substring(8, 10);
+						String h = value.substring(11, 13);
+						String min = value.substring(14, 16);
+						String s = value.substring(17, 19);
+						GregorianCalendar commentDate = new GregorianCalendar(
+								Integer.parseInt(y), Integer.parseInt(mon) - 1,
+								Integer.parseInt(d), Integer.parseInt(h),
+								Integer.parseInt(min), Integer.parseInt(s));
+						try {
+							m.invoke(objectInstance, commentDate.getTime());
+						} catch (IllegalArgumentException e) {
+							throw new ApiException(objectInstance.getClass()
+									.toString()
+									+ "#"
+									+ m.getName()
+									+ "(Date) did not work.");
+						}
 					} else {
 						// TODO: support all Types
 						Log.d(getClass().getCanonicalName(), "Skipped value "
@@ -344,6 +379,14 @@ public class MoodServerApi {
 		return meeting;
 	}
 
+	public Topic getTopic(Uri topicUri) throws ApiException {
+		HttpGet request = new HttpGet(topicUri.toString());
+		JSONObject response = execute(request);
+		Topic topic = new JSONReader<Topic>(response, Topic.class,
+				JSONReader.KEY_RESULT).get();
+		return topic;
+	}
+
 	private JSONObject execute(HttpUriRequest request) throws ApiException {
 		HttpResponse response;
 		request.setHeader("Accept", "application/json");
@@ -352,7 +395,11 @@ public class MoodServerApi {
 			response = client.execute(request);
 
 			StatusLine status = response.getStatusLine();
-			if (status.getStatusCode() != 200) {
+			switch (status.getStatusCode()) {
+			case 200: // OK
+			case 201: // Created
+				break;
+			default:
 				throw new ApiException("Invalid response from server: "
 						+ status.toString());
 			}
@@ -403,16 +450,7 @@ public class MoodServerApi {
 	 * @throws ApiException
 	 */
 	public ArrayList<Topic> getTopics(Meeting meeting) throws ApiException {
-		// Suche Topic-Relation dieses Meetings
-		Relation topicRelation = null;
-		for (Relation rel : meeting.getRelations()) {
-			if (rel.getModel().equals(Topic.class))
-				topicRelation = rel;
-		}
-		// FIXME: Relations müssen auch serialisiert werden
-		topicRelation = new Relation();
-		topicRelation.setHref(Uri
-				.parse(meeting.getUri().toString() + "/topics"));
+		Relation topicRelation = getRelated(meeting, Topic.class);
 		HttpGet request = new HttpGet(topicRelation.getHref().toString());
 		JSONObject response = execute(request);
 
@@ -432,12 +470,47 @@ public class MoodServerApi {
 		return topics;
 	}
 
+	public ArrayList<Comment> getComments(Topic topic) throws ApiException {
+		Relation commentRelation = getRelated(topic, Comment.class);
+		HttpGet request = new HttpGet(commentRelation.getHref().toString());
+		JSONObject response = execute(request);
+
+		ArrayList<Comment> comments = new ArrayList<Comment>();
+
+		try {
+			JSONArray items = response.getJSONArray(JSONReader.KEY_RESULT);
+			for (int i = 0; i < items.length(); i++) {
+				Comment comment = new JSONReader<Comment>(Comment.class,
+						items.getJSONObject(i)).get();
+				comments.add(comment);
+			}
+		} catch (JSONException e) {
+			throw new ApiException("Failed to read comments from "
+					+ commentRelation.getHref().toString());
+		}
+		return comments;
+	}
+
+	public Comment addComment(Topic topic, String comment) throws ApiException {
+		Relation commentRelation = getRelated(topic, Comment.class);
+		HttpPost request = new HttpPost(commentRelation.getHref().toString());
+		List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+		params.add(new BasicNameValuePair("comment", comment));
+		try {
+			request.setEntity(new UrlEncodedFormEntity(params));
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException(e.getMessage());
+		}
+		JSONObject response = execute(request);
+		Comment c = new JSONReader<Comment>(response, Comment.class,
+				JSONReader.KEY_RESULT).get();
+		return c;
+
+	}
+
 	public ArrayList<Question> getQuestionsWithExtras(Topic topic)
 			throws ApiException {
-		// FIXME: Relations müssen auch serialisiert werden
-		Relation questionRelation = new Relation();
-		questionRelation.setHref(Uri.parse(topic.getUri().toString()
-				+ "/questions"));
+		Relation questionRelation = getRelated(topic, Question.class);
 		HttpGet request = new HttpGet(questionRelation.getHref().toString());
 		JSONObject response = execute(request);
 
@@ -455,5 +528,25 @@ public class MoodServerApi {
 					+ questionRelation.getHref().toString());
 		}
 		return questions;
+	}
+
+	/**
+	 * Sucht auf einem Model die Beziehung zur Klasse relatedClass
+	 * 
+	 * @param relatedClass
+	 * @return
+	 * @throws Exception
+	 */
+	private Relation getRelated(StateModel obj,
+			Class<? extends Model> relatedClass) throws ApiException {
+		Relation relation = null;
+		for (Relation rel : obj.getRelations()) {
+			if (rel.getModel().equals(relatedClass))
+				relation = rel;
+		}
+		if (relation == null)
+			throw new ApiException(obj.getClass().getCanonicalName()
+					+ " has no related " + relatedClass.getCanonicalName());
+		return relation;
 	}
 }

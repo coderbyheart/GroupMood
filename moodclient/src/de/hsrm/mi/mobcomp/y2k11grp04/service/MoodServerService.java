@@ -1,6 +1,7 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.service;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -24,6 +25,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Choice;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
@@ -47,6 +49,7 @@ public class MoodServerService extends Service {
 	public static final int MSG_TOPIC_IMAGE_RESULT = 14;
 	public static final int MSG_TOPIC_COMMENTS = 15;
 	public static final int MSG_TOPIC_COMMENTS_RESULT = 16;
+	public static final int MSG_TOPIC_COMMENT = 17;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
@@ -56,12 +59,12 @@ public class MoodServerService extends Service {
 	public static final String KEY_ANSWER = "answer.answer";
 	public static final String KEY_TOPIC_ID = "topic.id";
 	public static final String KEY_TOPIC_IMAGE = "topic.image";
-	public static final String KEY_TOPIC_COMMENTS_URI = "topic.comments";
+	public static final String KEY_TOPIC_URI = "topic.uri";
+	public static final String KEY_COMMENT_COMMENT = "comment.comment";
 
 	public static final String KEY_TOPIC_MODEL = "model.Topic";
 	public static final String KEY_QUESTION_MODEL = "model.Question";
-	
-	
+	public static final String KEY_COMMENT_MODEL = "model.Comment";
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
@@ -83,6 +86,12 @@ public class MoodServerService extends Service {
 				switch (request.what) {
 				case MSG_MEETING:
 					fetchMeeting(request);
+					break;
+				case MSG_TOPIC_COMMENTS:
+					fetchTopicComments(request);
+					break;
+				case MSG_TOPIC_COMMENT:
+					createComment(request);
 					break;
 				case MSG_MEETING_COMPLETE:
 					fetchMeetingComplete(request);
@@ -119,6 +128,46 @@ public class MoodServerService extends Service {
 				KEY_MEETING_URI)));
 		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_RESULT);
 	}
+
+	/**
+	 * Lädt die Commentare eines Topics
+	 * 
+	 * @param request
+	 * @throws ApiException
+	 */
+	public void fetchTopicComments(Message request) throws ApiException {
+		Message info = Message.obtain(null, MSG_TOPIC_COMMENTS_RESULT);
+
+		Topic topic = api.getTopic(Uri.parse(request.getData().getString(
+				KEY_TOPIC_URI)));
+
+		ArrayList<Comment> comments = api.getComments(topic);
+
+		Uri uri = Uri.parse(request.getData().getString(
+				MoodServerService.KEY_TOPIC_URI));
+		Bundle b = new Bundle();
+		b.putString(MoodServerService.KEY_TOPIC_URI, uri.toString());
+		b.putParcelableArrayList(MoodServerService.KEY_COMMENT_MODEL, comments);
+		info.setData(b);
+
+		sendMsg(request.replyTo, info);
+	}
+
+	/**
+	 * Erzeugt ein neues Kommentar zu einem Topic
+	 * 
+	 * @param request
+	 * @return 
+	 * @throws ApiException 
+	 */
+	public void createComment(Message request) throws ApiException {
+		Topic topic = api.getTopic(Uri.parse(request.getData().getString(
+				KEY_TOPIC_URI)));
+		api.addComment(topic, request.getData().getString(KEY_COMMENT_COMMENT));
+		// Also Antwort Liste der Kommentare schicken
+		fetchTopicComments(request);
+	}
+
 
 	/**
 	 * @param request
@@ -259,6 +308,8 @@ public class MoodServerService extends Service {
 				Uri.parse("http://groupmood.net/jsonld/questionoption"));
 		api.registerModel(Choice.class,
 				Uri.parse("http://groupmood.net/jsonld/choice"));
+		api.registerModel(Comment.class,
+				Uri.parse("http://groupmood.net/jsonld/comment"));
 		startTimer();
 	}
 
