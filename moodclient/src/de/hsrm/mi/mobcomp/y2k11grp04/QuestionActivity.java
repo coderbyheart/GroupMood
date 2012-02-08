@@ -284,17 +284,19 @@ public class QuestionActivity extends ServiceActivity {
 
 				@Override
 				public void onClick(View v) {
-
+					ArrayList<String> selectedValues = new ArrayList<String>();
 					for (int i = 0; i < questionState.get(b).getCount(); i++) {
 						if (questionState.get(b).isItemChecked(i)) {
-							Log.d("ChoiceQuestionChecked: ", i + ") " + questionState.get(b).getItemAtPosition(i).toString() + " "
-									+ questionState.get(b).isItemChecked(i)
-									+ "");
-						} else {
-							Log.d("ChoiceQuestionChecked: ", i + ") "
-									+ questionState.get(b).isItemChecked(i)
-									+ " !!! ");
+							selectedValues.add(questionState.get(b).getItemAtPosition(i).toString());
 						}
+					}
+					
+					
+					if(q.getMaxChoices().equals(1)){
+						Log.d("Selektierte Werte: ", selectedValues.get(0));
+					}
+					else{
+						Log.d("Selektierte Werte: ", selectedValues.toArray(new String[selectedValues.size()]).length+"");
 					}
 				}
 			});
