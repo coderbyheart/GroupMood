@@ -19,6 +19,7 @@
 	<color name="sub_light">#6E0044</color>
 	<color name="sub_dark">#370022</color>
 	<color name="sub_text">#EFEFEF</color>
+	<color name="sub_text_lesser">#AF789A</color>
 	<color name="sub_light_lesser">#500031</color>
 	<color name="sub_dark_lesser">#2D001C</color>
 </resources>
