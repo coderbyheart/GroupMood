@@ -42,6 +42,9 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 		for (Question q : topic.getQuestions()) {
 			View questionView = QuestionView.create(layoutInflater,
 					parent.getResources(), q, ++num);
+			// Anzeige des Ergebnisses einblenden
+			questionView.findViewById(R.id.groupMood_question_resultLayout)
+					.setVisibility(View.VISIBLE);
 			mSwipeView.addView(questionView);
 		}
 		return topicResultLayout;

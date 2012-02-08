@@ -18,4 +18,9 @@
     <string name="tab_questions">Fragen</string>
     <string name="tab_comments">Kommentare</string>
     <string name="tab_result">Ergebnisse</string>
+    <string name="label_result_avg">Ergebnis: %d</string>
+    <plurals name="label_result_numvotes">
+        <item quantity="one">1 Stimme</item>
+        <item quantity="other">%d Stimmen</item>
+    </plurals>
 </resources>
