@@ -75,6 +75,8 @@ public class QuestionActivity extends ServiceActivity {
 
 	private Button actionBarActiveButton;
 
+	private NewCommentClickListener nccl;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -95,6 +97,9 @@ public class QuestionActivity extends ServiceActivity {
 		// Kümmert sich um das Setzen der Antwort, falls diese einen
 		// Slider verwendet
 		questionActionSeekBarListener = new QuestionSeekBarListener();
+
+		// Kümmer sich um das Anlegen von neuen Kommentaren
+		nccl = new NewCommentClickListener();
 
 		updateView();
 	}
@@ -216,24 +221,7 @@ public class QuestionActivity extends ServiceActivity {
 						.setVisibility(View.GONE);
 				((Button) topicQuestionsLayout
 						.findViewById(R.id.groupMood_newcomment_button))
-						.setOnClickListener(new OnClickListener() {
-							@Override
-							public void onClick(View v) {
-								ViewGroup parent = (ViewGroup) v.getParent();
-								EditText commentText = (EditText) parent
-										.findViewById(R.id.groupMood_newcomment_text);
-								addComment(commentText.getText().toString());
-								commentText.setText("");
-								// Keyboard ausblendend
-								InputMethodManager inputManager = (InputMethodManager) getApplicationContext()
-										.getSystemService(
-												Context.INPUT_METHOD_SERVICE);
-								inputManager.hideSoftInputFromWindow(
-										v.getApplicationWindowToken(),
-										InputMethodManager.HIDE_NOT_ALWAYS);
-								
-							}
-						});
+						.setOnClickListener(nccl);
 
 				// Fertige View merken
 				topicViews.put(currentTopic, topicQuestionsLayout);
@@ -309,16 +297,19 @@ public class QuestionActivity extends ServiceActivity {
 					ArrayList<String> selectedValues = new ArrayList<String>();
 					for (int i = 0; i < questionState.get(b).getCount(); i++) {
 						if (questionState.get(b).isItemChecked(i)) {
-							selectedValues.add(questionState.get(b).getItemAtPosition(i).toString());
+							selectedValues.add(questionState.get(b)
+									.getItemAtPosition(i).toString());
 						}
 					}
-					
-					
-					if(q.getMaxChoices().equals(1)){
+
+					if (q.getMaxChoices().equals(1)) {
 						Log.d("Selektierte Werte: ", selectedValues.get(0));
-					}
-					else{
-						Log.d("Selektierte Werte: ", selectedValues.toArray(new String[selectedValues.size()]).length+"");
+					} else {
+						Log.d("Selektierte Werte: ",
+								selectedValues
+										.toArray(new String[selectedValues
+												.size()]).length
+										+ "");
 					}
 				}
 			});
@@ -375,134 +366,13 @@ public class QuestionActivity extends ServiceActivity {
 	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
 		switch (message.what) {
 		case MoodServerService.MSG_MEETING_COMPLETE_PROGRESS:
-			// Wird aufgerufen, wenn der Server Fortschritt beim Laden des
-			// Meetings hat
-			return new ServiceMessageRunnable(message) {
-				@Override
-				public void run() {
-					loadingProgress.setMax(serviceMessage.arg2);
-					loadingProgress.setProgress(serviceMessage.arg1);
-					if (loadingProgress.getProgress() >= loadingProgress
-							.getMax()) {
-						loadingProgress.setVisibility(View.GONE);
-					} else {
-						loadingProgress.setVisibility(View.VISIBLE);
-					}
-				}
-			};
+			return new MeetingProgressHandler(message);
 		case MoodServerService.MSG_MEETING_COMPLETE_RESULT:
-			// Wird aufgerufen, wenn das Meeting vollständig geladen ist
-			return new ServiceMessageRunnable(message) {
-				@Override
-				public void run() {
-					Bundle b = serviceMessage.getData();
-					b.setClassLoader(getClassLoader());
-					meeting = b
-							.getParcelable(MoodServerService.KEY_MEETING_MODEL);
-					meetingComplete = true;
-					dismissDialog(DIALOG_LOADING);
-					// If you are using onCreateDialog(int) to manage the state
-					// of your dialogs, then every time your dialog is
-					// dismissed, the state of the Dialog object is retained by
-					// the Activity. If you decide that you will no longer need
-					// this object or it's important that the state is cleared,
-					// then you should call removeDialog(int). This will remove
-					// any internal references to the object and if the dialog
-					// is showing, it will dismiss it.
-					removeDialog(DIALOG_LOADING);
-					updateView();
-				}
-			};
+			return new MeetingCompleteHandler(message);
 		case MoodServerService.MSG_TOPIC_IMAGE_RESULT:
-			// Wird aufgerufen, wenn der Service das Bild zu einem Topic geladen
-			// hat
-			return new ServiceMessageRunnable(message) {
-				@Override
-				public void run() {
-					// Und Bild aus Datei setzen
-					Integer topicId = serviceMessage.getData().getInt(
-							MoodServerService.KEY_TOPIC_ID);
-					for (Topic t : meeting.getTopics()) {
-						if (t.getId() == topicId) {
-							t.setImageFile(new File(serviceMessage.getData()
-									.getString(
-											MoodServerService.KEY_TOPIC_IMAGE)));
-						}
-					}
-				}
-			};
+			return new TopicImageHandler(message);
 		case MoodServerService.MSG_TOPIC_COMMENTS_RESULT:
-			// Wird aufgerufen, wenn der Service die Kommentare zu einem Topic
-			// geladen hat
-			return new ServiceMessageRunnable(message) {
-				@Override
-				public void run() {
-					Bundle b = serviceMessage.getData();
-					b.setClassLoader(getClassLoader());
-					ArrayList<Comment> comments = b
-							.getParcelableArrayList(MoodServerService.KEY_COMMENT_MODEL);
-					// Finde topic
-					Uri topicUri = Uri.parse(b
-							.getString(MoodServerService.KEY_TOPIC_URI));
-					Topic theTopic = null;
-
-					for (Topic t : meeting.getTopics()) {
-						if (t.getUri().equals(topicUri))
-							theTopic = t;
-					}
-					if (theTopic == null) {
-						Log.e(getClass().getCanonicalName(),
-								"Topic for comments uri " + topicUri.toString()
-										+ " not found.");
-						return;
-					}
-
-					// Loading ausblenden
-					topicViews.get(theTopic)
-							.findViewById(R.id.groupMood_comments_loading)
-							.setVisibility(View.GONE);
-
-					// Kommentare rendern
-					LinearLayout commentsList = (LinearLayout) topicViews.get(
-							theTopic)
-							.findViewById(R.id.groupMood_comments_list);
-					LinearLayout noComments = (LinearLayout) topicViews.get(
-							theTopic).findViewById(
-							R.id.groupMood_comments_nocomments);
-
-					if (comments.size() > 0) {
-						noComments.setVisibility(View.GONE);
-						commentsList.setVisibility(View.VISIBLE);
-
-						LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-						commentsList.removeAllViews();
-						for (Comment comment : comments) {
-							ViewGroup view = (ViewGroup) layoutInflater
-									.inflate(R.layout.comment_item,
-											commentsList, false);
-							((TextView) view
-									.findViewById(R.id.groupMood_comment_user_text))
-									.setText(comment.getUser());
-							((TextView) view
-									.findViewById(R.id.groupMood_comment_time_text))
-									.setText(DateUtils
-											.getRelativeDateTimeString(
-													getApplicationContext(),
-													comment.getCreationDate()
-															.getTime(),
-													DateUtils.MINUTE_IN_MILLIS,
-													DateUtils.WEEK_IN_MILLIS, 0));
-							((TextView) view
-									.findViewById(R.id.groupMood_comment_text))
-									.setText(comment.getComment());
-							commentsList.addView(view);
-						}
-					} else {
-						commentsList.setVisibility(View.GONE);
-						noComments.setVisibility(View.VISIBLE);
-					}
-				}
-			};
+			return new TopicCommentsHandler(message);
 		default:
 			return super.getServiceMessageRunnable(message);
 		}
@@ -513,11 +383,11 @@ public class QuestionActivity extends ServiceActivity {
 		Log.v(getClass().getCanonicalName(), "onConnect");
 		super.onConnect();
 		// Meeting vollständig laden
-		Log.v(getClass().getCanonicalName(), "meetingComplete in onConnect(): "
-				+ (meetingComplete ? "JA" : "NEIN"));
 		if (!meetingComplete) {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
+		} else {
+			loadComments();
 		}
 	}
 
@@ -589,6 +459,176 @@ public class QuestionActivity extends ServiceActivity {
 	}
 
 	/**
+	 * Wird aufgerufen, wenn der Service die Kommentare zu einem Topic geladen
+	 * hat
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class TopicCommentsHandler extends ServiceMessageRunnable {
+		private TopicCommentsHandler(Message serviceMessage) {
+			super(serviceMessage);
+		}
+
+		@Override
+		public void run() {
+			Bundle b = serviceMessage.getData();
+			b.setClassLoader(getClassLoader());
+			ArrayList<Comment> comments = b
+					.getParcelableArrayList(MoodServerService.KEY_COMMENT_MODEL);
+			// Finde topic
+			Uri topicUri = Uri.parse(b
+					.getString(MoodServerService.KEY_TOPIC_URI));
+			Topic theTopic = null;
+
+			for (Topic t : meeting.getTopics()) {
+				if (t.getUri().equals(topicUri))
+					theTopic = t;
+			}
+			if (theTopic == null) {
+				Log.e(getClass().getCanonicalName(), "Topic for comments uri "
+						+ topicUri.toString() + " not found.");
+				return;
+			}
+
+			// Loading ausblenden
+			topicViews.get(theTopic)
+					.findViewById(R.id.groupMood_comments_loading)
+					.setVisibility(View.GONE);
+
+			// Kommentare rendern
+			LinearLayout commentsList = (LinearLayout) topicViews.get(theTopic)
+					.findViewById(R.id.groupMood_comments_list);
+			LinearLayout noComments = (LinearLayout) topicViews.get(theTopic)
+					.findViewById(R.id.groupMood_comments_nocomments);
+
+			if (comments.size() > 0) {
+				noComments.setVisibility(View.GONE);
+				commentsList.setVisibility(View.VISIBLE);
+
+				LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				commentsList.removeAllViews();
+				for (Comment comment : comments) {
+					ViewGroup view = (ViewGroup) layoutInflater.inflate(
+							R.layout.comment_item, commentsList, false);
+					((TextView) view
+							.findViewById(R.id.groupMood_comment_user_text))
+							.setText(comment.getUser());
+					((TextView) view
+							.findViewById(R.id.groupMood_comment_time_text))
+							.setText(DateUtils.getRelativeDateTimeString(
+									getApplicationContext(), comment
+											.getCreationDate().getTime(),
+									DateUtils.MINUTE_IN_MILLIS,
+									DateUtils.WEEK_IN_MILLIS, 0));
+					((TextView) view.findViewById(R.id.groupMood_comment_text))
+							.setText(comment.getComment());
+					commentsList.addView(view);
+				}
+			} else {
+				commentsList.setVisibility(View.GONE);
+				noComments.setVisibility(View.VISIBLE);
+			}
+		}
+	}
+
+	/**
+	 * Wird aufgerufen, wenn der Service das Bild zu einem Topic geladen hat
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class TopicImageHandler extends ServiceMessageRunnable {
+		private TopicImageHandler(Message serviceMessage) {
+			super(serviceMessage);
+		}
+
+		@Override
+		public void run() {
+			// Und Bild aus Datei setzen
+			Integer topicId = serviceMessage.getData().getInt(
+					MoodServerService.KEY_TOPIC_ID);
+			for (Topic t : meeting.getTopics()) {
+				if (t.getId() == topicId) {
+					t.setImageFile(new File(serviceMessage.getData().getString(
+							MoodServerService.KEY_TOPIC_IMAGE)));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Wird aufgerufen, wenn das Meeting vollständig geladen ist
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class MeetingCompleteHandler extends ServiceMessageRunnable {
+		private MeetingCompleteHandler(Message serviceMessage) {
+			super(serviceMessage);
+		}
+
+		@Override
+		public void run() {
+			Bundle b = serviceMessage.getData();
+			b.setClassLoader(getClassLoader());
+			meeting = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+			meetingComplete = true;
+			dismissDialog(DIALOG_LOADING);
+			// If you are using onCreateDialog(int) to manage the state
+			// of your dialogs, then every time your dialog is
+			// dismissed, the state of the Dialog object is retained by
+			// the Activity. If you decide that you will no longer need
+			// this object or it's important that the state is cleared,
+			// then you should call removeDialog(int). This will remove
+			// any internal references to the object and if the dialog
+			// is showing, it will dismiss it.
+			removeDialog(DIALOG_LOADING);
+			updateView();
+		}
+	}
+
+	/**
+	 * Wird aufgerufen, wenn der Server Fortschritt beim Laden des Meetings hat
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class MeetingProgressHandler extends ServiceMessageRunnable {
+		private MeetingProgressHandler(Message serviceMessage) {
+			super(serviceMessage);
+		}
+
+		@Override
+		public void run() {
+			loadingProgress.setMax(serviceMessage.arg2);
+			loadingProgress.setProgress(serviceMessage.arg1);
+			if (loadingProgress.getProgress() >= loadingProgress.getMax()) {
+				loadingProgress.setVisibility(View.GONE);
+			} else {
+				loadingProgress.setVisibility(View.VISIBLE);
+			}
+		}
+	}
+
+	/**
+	 * Kümmert sich um das Erstellen von neuen Kommentaren
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>@author mtack001
+	 */
+	private final class NewCommentClickListener implements OnClickListener {
+		@Override
+		public void onClick(View v) {
+			ViewGroup parent = (ViewGroup) v.getParent();
+			EditText commentText = (EditText) parent
+					.findViewById(R.id.groupMood_newcomment_text);
+			addComment(commentText.getText().toString());
+			commentText.setText("");
+			// Keyboard ausblendend
+			InputMethodManager inputManager = (InputMethodManager) getApplicationContext()
+					.getSystemService(Context.INPUT_METHOD_SERVICE);
+			inputManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),
+					InputMethodManager.HIDE_NOT_ALWAYS);
+		}
+	}
+
+	/**
 	 * Kümmert sich um die Clicks auf die Icons in der ActionBar
 	 * 
 	 * @author Markus Tacker <m@coderbyheart.de>
@@ -643,7 +683,8 @@ public class QuestionActivity extends ServiceActivity {
 					View.VISIBLE);
 			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
 					View.VISIBLE);
-			loadComments();
+			if (isServiceBound())
+				loadComments();
 		} else {
 			commentsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_bubble));
@@ -690,8 +731,6 @@ public class QuestionActivity extends ServiceActivity {
 		m.setData(data);
 		sendMessage(m);
 	}
-
-
 
 	/**
 	 * Kümmert sich um Änderungen an Vote-Seekbars

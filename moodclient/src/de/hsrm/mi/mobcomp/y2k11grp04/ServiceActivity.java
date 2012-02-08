@@ -187,4 +187,8 @@ abstract public class ServiceActivity extends MenuActivity {
 		m.setData(data);
 		sendMessage(m);
 	}
+
+	public boolean isServiceBound() {
+		return serviceBound;
+	}
 }
