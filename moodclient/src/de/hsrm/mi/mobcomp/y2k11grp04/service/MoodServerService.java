@@ -45,6 +45,8 @@ public class MoodServerService extends Service {
 	public static final int MSG_ANSWER = 12;
 	public static final int MSG_ANSWER_RESULT = 13;
 	public static final int MSG_TOPIC_IMAGE_RESULT = 14;
+	public static final int MSG_TOPIC_COMMENTS = 15;
+	public static final int MSG_TOPIC_COMMENTS_RESULT = 16;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
@@ -54,9 +56,12 @@ public class MoodServerService extends Service {
 	public static final String KEY_ANSWER = "answer.answer";
 	public static final String KEY_TOPIC_ID = "topic.id";
 	public static final String KEY_TOPIC_IMAGE = "topic.image";
+	public static final String KEY_TOPIC_COMMENTS_URI = "topic.comments";
 
 	public static final String KEY_TOPIC_MODEL = "model.Topic";
 	public static final String KEY_QUESTION_MODEL = "model.Question";
+	
+	
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;

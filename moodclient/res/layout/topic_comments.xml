@@ -35,38 +35,69 @@
                 android:textColor="@color/main_text"
                 android:textStyle="bold" />
         </LinearLayout>
+        
+         <LinearLayout
+         	android:id="@+id/groupMood_comments_loading"
+       		android:layout_width="fill_parent"
+        	android:layout_height="wrap_content"
+        	android:layout_marginTop="1dp"
+        	android:background="@drawable/bg_comment"
+        	android:orientation="horizontal"
+        	android:padding="5dp"
+        	 
+        	>
+            
+            <ProgressBar  
+            	android:layout_width="wrap_content" 
+            	android:layout_height="wrap_content"
+            	style="@android:style/Widget.ProgressBar.Small.Inverse"
+            	android:layout_gravity="center_vertical"
+            	 />
+            
+            <TextView
+            	android:id="@+id/groupMood_comment_text"
+            	android:layout_width="fill_parent"
+            	android:layout_height="wrap_content"
+            	android:text="@string/loading_comments"
+            	android:textColor="@color/comment_text_lesser"
+            	android:textSize="14dp"
+            	android:layout_gravity="center_vertical"
+            	android:layout_marginLeft="5dp" 
+            	/>
 
-        <!-- Hier rein werden die Kommentare gerendert: comment_item.xml -->
+    	</LinearLayout>
+    	
+    	<LinearLayout
+         	android:id="@+id/groupMood_comments_nocomments"
+       		android:layout_width="fill_parent"
+        	android:layout_height="wrap_content"
+        	android:layout_marginTop="1dp"
+        	android:background="@drawable/bg_comment"
+        	android:orientation="horizontal"
+        	android:padding="5dp"
+        	android:visibility="gone"
+        	>
+            
+            <TextView
+            	android:id="@+id/groupMood_comment_text"
+            	android:layout_width="fill_parent"
+            	android:layout_height="wrap_content"
+            	android:text="@string/no_comments"
+            	android:textColor="@color/comment_text_lesser"
+            	android:textSize="14dp"
+            	android:layout_gravity="center_vertical"
+            	android:layout_marginLeft="5dp" 
+            	/>
 
-        <include
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            layout="@layout/comment_item" />
+    	</LinearLayout>
+        
+        <LinearLayout
+        	android:id="@+id/groupMood_comments_list"
+        	android:layout_width="fill_parent"
+        	android:layout_height="wrap_content"
+        	android:orientation="vertical" 
+        	/>
 
-        <include
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            layout="@layout/comment_item" />
-
-        <include
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            layout="@layout/comment_item" />
-
-        <include
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            layout="@layout/comment_item" />
-
-        <include
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            layout="@layout/comment_item" />
-
-        <include
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            layout="@layout/comment_item" />
     </LinearLayout>
 
 </ScrollView>

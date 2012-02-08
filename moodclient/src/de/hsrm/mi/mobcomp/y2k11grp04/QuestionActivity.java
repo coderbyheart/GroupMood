@@ -36,11 +36,14 @@ import android.widget.Toast;
 
 import com.devsmart.android.ui.HorizontalListView;
 
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.StateModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
+import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.QuestionView;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
@@ -501,6 +504,7 @@ public class QuestionActivity extends ServiceActivity {
 					View.VISIBLE);
 			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
 					View.VISIBLE);
+			loadComments();
 		} else {
 			commentsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_bubble));
@@ -515,6 +519,47 @@ public class QuestionActivity extends ServiceActivity {
 			resultsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_chart));
 		}
+	}
+
+	/**
+	 * Lädt / aktualisiert die Kommentare des aktuellen Topics
+	 */
+	private void loadComments() {
+
+		try {
+			// Suche Comment-Relation dieses Meetings
+			Relation commentRelation = getRelated(getCurrentTopic(),
+					Comment.class);
+			Message m = Message.obtain(null,
+					MoodServerService.MSG_TOPIC_COMMENTS);
+			Bundle data = new Bundle();
+			data.putString(MoodServerService.KEY_TOPIC_COMMENTS_URI,
+					commentRelation.getHref().toString());
+			m.setData(data);
+			sendMessage(m);
+		} catch (Exception e) {
+			Log.e(getClass().getCanonicalName(), e.getMessage());
+		}
+	}
+
+	/**
+	 * Sucht auf einem Model die Beziehung zur Klasse relatedClass
+	 * 
+	 * @param relatedClass
+	 * @return
+	 * @throws Exception
+	 */
+	private Relation getRelated(StateModel obj,
+			Class<? extends StateModel> relatedClass) throws Exception {
+		Relation relation = null;
+		for (Relation rel : obj.getRelations()) {
+			if (rel.getModel().equals(relatedClass))
+				relation = rel;
+		}
+		if (relation == null)
+			throw new Exception(obj.getClass().getCanonicalName()
+					+ " has no related " + relatedClass.getCanonicalName());
+		return relation;
 	}
 
 	/**
