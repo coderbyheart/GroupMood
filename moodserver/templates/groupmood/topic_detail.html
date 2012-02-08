@@ -27,4 +27,23 @@
 	{% endif %}
 	</dd>
 </dl>
+<h2>Kommentare</h2>
+<form method="POST" action="/groupmood/topic/{{ topic.id }}/comments">
+<p>
+	<input type="text" name="comment" placeholder="Dein Kommentar" required><br />
+	<button type="submit">Kommentar eintragen</button>
+</p>
+</form>
+{% for comment in comments %}
+{% if forloop.first %}
+<ul>
+{% endif %}
+	<li>
+		<small>vor {{ comment.creation_date|timesince }}:</small><br />
+		<a href="/groupmood/comment/{{ comment.id }}">#1</a> {{ comment.comment }}
+	</li>
+{% if forloop.last %}
+</ul>
+{% endif %}
+{% endfor %}
 {% endblock %}

@@ -195,6 +195,7 @@ def topic_questions(request, id):
     topic = get_object_or_404(Topic, pk=id)
     return jsonResponse(request, modelsToJson(request, Question.objects.filter(topic=topic)))
 
+@csrf_exempt
 def topic_comments(request, id):
     if request.method not in ('GET', 'POST'):
         return HttpResponseBadRequest()
@@ -223,7 +224,7 @@ def topic_entry(request, id):
     if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
         return jsonResponse(request, modelToJson(request, topic))
     else:
-        return render_to_response('groupmood/topic_detail.html', {'topic': topic})
+        return render_to_response('groupmood/topic_detail.html', {'topic': topic, 'comments': Comment.objects.filter(topic=topic).order_by('-creation_date')})
 
 def question_entry(request, id):
     if request.method == 'GET':
