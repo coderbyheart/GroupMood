@@ -40,7 +40,7 @@
 {% endif %}
 	<li>
 		<small>vor {{ comment.creation_date|timesince }}:</small><br />
-		<a href="/groupmood/comment/{{ comment.id }}">#1</a> {{ comment.comment }}
+		<a href="/groupmood/comment/{{ comment.id }}">#{{ comment.id }}</a> {{ comment.comment }}
 	</li>
 {% if forloop.last %}
 </ul>
