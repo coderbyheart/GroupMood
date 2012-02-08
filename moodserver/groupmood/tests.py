@@ -54,3 +54,26 @@ class MeetingTest(Base):
         self.assertEquals(65, info['result']['avg'])
         self.assertEquals(2, info['result']['numAnswers'])
         
+    def test_topic_comment(self):
+        response = self.client.post('/groupmood/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
+        info = simplejson.loads(response.content)
+        meeting = info['result']
+        
+        response = self.client.get(get_related('topic', meeting)['href'], Accept='application/json')
+        self.assertEqual(response.status_code, 200)
+        info = simplejson.loads(response.content)
+        topics = info['result']
+        self.assertEquals('http://groupmood.net/jsonld/topic', topics[0]['@context'])
+        
+        response = self.client.post(get_related('comment', topics[0])['href'], {'comment': "Test-Comment"}, Accept='application/json')
+        self.assertEqual(response.status_code, 201)
+        response = self.client.post(get_related('comment', topics[0])['href'], {'comment': "Test-Comment 2"}, Accept='application/json')
+        self.assertEqual(response.status_code, 201)
+        
+        response = self.client.get(get_related('comment', topics[0])['href'], Accept='application/json')
+        info = simplejson.loads(response.content)
+        
+        self.assertEquals(2, len(info['result']))
+        # Neueste Kommentare zuerst
+        self.assertEquals("Test-Comment 2", info['result'][0]['comment'])
+        self.assertEquals("Test-Comment", info['result'][1]['comment'])

@@ -15,7 +15,7 @@ import mimetypes
 contexthref = 'http://groupmood.net/jsonld'
 modelRelations = {
     Meeting: [(Topic, True, '@id/topics')],
-    Topic: [(Question, True, '@id/questions')],
+    Topic: [(Question, True, '@id/questions'), (Comment, True, '@id/comments')],
     Question: [(Answer, True, '@id/answers'), (QuestionOption, True, '@id/options'), (Choice, True, '@id/choices')],
 }
 
@@ -194,6 +194,19 @@ def topic_questions(request, id):
         return HttpResponseBadRequest()
     topic = get_object_or_404(Topic, pk=id)
     return jsonResponse(request, modelsToJson(request, Question.objects.filter(topic=topic)))
+
+def topic_comments(request, id):
+    if request.method not in ('GET', 'POST'):
+        return HttpResponseBadRequest()
+    topic = get_object_or_404(Topic, pk=id)
+    if request.method == 'GET':
+        return jsonResponse(request, modelsToJson(request, Comment.objects.filter(topic=topic).order_by('-creation_date')))
+    else: # if request.method == 'POST':
+        comment = Comment.objects.create(topic=topic, user=getUser(request), comment=request.POST['comment'])
+        resp = jsonResponse(request, modelToJson(request, comment))
+        resp['Location'] = getModelUrl(request, comment)
+        resp.status_code = 201;
+        return resp        
 
 def topic_image(request, id):
     if request.method != 'GET':

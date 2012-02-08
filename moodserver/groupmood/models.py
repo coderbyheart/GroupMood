@@ -132,13 +132,21 @@ class Comment(BaseModel):
     2
     
     """
-    context = 'topiccomment'
+    context = 'comment'
     topic = models.ForeignKey(Topic)
     user = models.ForeignKey(User)
     comment = models.CharField(max_length=200)
     
     def __unicode__(self):
         return "Comment #%d: %s on %s" % (self.id, self.comment, unicode(self.slide))
+    
+    def toJsonDict(self):
+        return {
+            'id': self.id, 
+            'comment': self.comment, 
+            'creationDate': self.creation_date.isoformat(),
+            'user': self.user.ip
+        }
 
 class Question(BaseModel):
     """
