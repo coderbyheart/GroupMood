@@ -16,6 +16,9 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
  */
 public class TopicResultAdapter extends TopicGalleryAdapter {
 
+	/**
+	 * @param topics
+	 */
 	public TopicResultAdapter(List<Topic> topics) {
 		super(topics);
 	}
@@ -27,24 +30,19 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 		if (topic == null)
 			return null;
 
-		LayoutInflater layoutInflater = LayoutInflater
-				.from(parent.getContext());
-		LinearLayout topicResultLayout = (LinearLayout) layoutInflater.inflate(
-				R.layout.topic_result, parent, false);
+		LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+		LinearLayout topicResultLayout = (LinearLayout) layoutInflater.inflate(R.layout.topic_result, parent, false);
 		// Icon erzeugen
-		((ViewGroup) topicResultLayout
-				.findViewById(R.id.groupMood_topicResult_topic))
-				.addView(createTopicView(parent, topic));
+		((ViewGroup) topicResultLayout.findViewById(R.id.groupMood_topicResult_topic)).addView(createTopicView(parent,
+				topic));
 		// Fragen zum Durchblättern erzeugen
-		SwipeView mSwipeView = (SwipeView) topicResultLayout
-				.findViewById(R.id.groupMood_topicResult_questionsSwipe);
+		SwipeView mSwipeView = (SwipeView) topicResultLayout.findViewById(R.id.groupMood_topicResult_questionsSwipe);
+
 		int num = 0;
 		for (Question q : topic.getQuestions()) {
-			View questionView = QuestionView.create(layoutInflater,
-					parent.getResources(), q, ++num);
+			View questionView = QuestionView.create(layoutInflater, parent.getResources(), q, ++num);
 			// Anzeige des Ergebnisses einblenden
-			questionView.findViewById(R.id.groupMood_question_resultLayout)
-					.setVisibility(View.VISIBLE);
+			questionView.findViewById(R.id.groupMood_question_resultLayout).setVisibility(View.VISIBLE);
 			mSwipeView.addView(questionView);
 		}
 		return topicResultLayout;
