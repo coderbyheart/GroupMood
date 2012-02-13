@@ -316,7 +316,7 @@ public class MoodServerApi {
 						Log.d(getClass().getCanonicalName(),
 								"Context not accepted: "
 										+ relation.getRelatedcontext()
-												.toString());
+												.toString() + " on " + top.getClass().getCanonicalName());
 						continue;
 					}
 					if (relation.isList()) {

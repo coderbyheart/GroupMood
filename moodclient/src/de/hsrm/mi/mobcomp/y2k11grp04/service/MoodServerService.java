@@ -23,6 +23,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Answer;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Choice;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
@@ -329,6 +330,8 @@ public class MoodServerService extends Service {
 				Uri.parse("http://groupmood.net/jsonld/choice"));
 		api.registerModel(Comment.class,
 				Uri.parse("http://groupmood.net/jsonld/comment"));
+		api.registerModel(Answer.class,
+				Uri.parse("http://groupmood.net/jsonld/answer"));
 		startTimer();
 	}
 
