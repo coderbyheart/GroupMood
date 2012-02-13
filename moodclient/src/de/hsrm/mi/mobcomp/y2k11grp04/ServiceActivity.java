@@ -188,6 +188,19 @@ abstract public class ServiceActivity extends MenuActivity {
 		sendMessage(m);
 	}
 
+	/**
+	 * Erzeugt eine Antwort zu einer Frage, wobei die Antwort aus mehreren
+	 * Werten besteht (Multiple Choice).
+	 */
+	protected void createAnswer(Question q, String[] answers) {
+		Message m = Message.obtain(null, MoodServerService.MSG_ANSWER);
+		Bundle data = new Bundle();
+		data.putStringArray(MoodServerService.KEY_ANSWER, answers);
+		data.putParcelable(MoodServerService.KEY_QUESTION_MODEL, q);
+		m.setData(data);
+		sendMessage(m);
+	}
+
 	public boolean isServiceBound() {
 		return serviceBound;
 	}

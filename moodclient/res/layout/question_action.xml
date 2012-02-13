@@ -93,10 +93,12 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:background="@drawable/bg_action"
+        android:background="@drawable/button"
         android:padding="10dp"
         android:text="@string/question_action_answer"
         android:textColor="@color/action_text"
-        android:textStyle="bold" />
+        android:textStyle="bold" 
+        android:enabled="false"
+        />
 
 </LinearLayout>

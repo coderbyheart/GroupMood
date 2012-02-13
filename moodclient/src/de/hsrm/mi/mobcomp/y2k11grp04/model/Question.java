@@ -92,6 +92,14 @@ public class Question extends BaseModel {
 	public String getType() {
 		return type;
 	}
+	
+	public boolean isRangeType() {
+		return getType().equals(TYPE_RANGE);
+	}
+	
+	public boolean isChoiceType() {
+		return getType().equals(TYPE_CHOICE);
+	}
 
 	public void setType(String type) {
 		this.type = type;

@@ -2,6 +2,7 @@
 <resources>
 	<color name="gallery_item">#0775EA</color>
 	<color name="action">#55C3DC</color>
+	<color name="action_disabled">#555555</color>
 	<color name="action_light">#83D3E6</color>
 	<color name="action_text">#333333</color>
 	<color name="action_text_lesser">#3C5A61</color>
