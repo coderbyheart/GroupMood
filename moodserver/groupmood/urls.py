@@ -1,8 +1,10 @@
 from django.conf.urls.defaults import *
 from django.views.generic import DetailView, ListView
 from groupmood.models import *
+from django.views.generic.simple import redirect_to
 
 urlpatterns = patterns('',
+   url(r'^$', redirect_to, {'url': '/groupmood/meeting'}),
    url(r'^meeting$', 'groupmood.views.meeting_list'),
    url(r'^meeting/(?P<id>\d+)$', 'groupmood.views.meeting_entry'),
    url(r'^meeting/(?P<id>\d+)/topics$', 'groupmood.views.meeting_topics'),
