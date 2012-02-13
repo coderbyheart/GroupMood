@@ -183,7 +183,8 @@ abstract public class ServiceActivity extends MenuActivity {
 		Message m = Message.obtain(null, MoodServerService.MSG_ANSWER);
 		Bundle data = new Bundle();
 		data.putString(MoodServerService.KEY_ANSWER, answer);
-		data.putParcelable(MoodServerService.KEY_QUESTION_MODEL, q);
+		data.putString(MoodServerService.KEY_QUESTION_URI, q.getUri()
+				.toString());
 		m.setData(data);
 		sendMessage(m);
 	}
@@ -196,7 +197,8 @@ abstract public class ServiceActivity extends MenuActivity {
 		Message m = Message.obtain(null, MoodServerService.MSG_ANSWER);
 		Bundle data = new Bundle();
 		data.putStringArray(MoodServerService.KEY_ANSWER, answers);
-		data.putParcelable(MoodServerService.KEY_QUESTION_MODEL, q);
+		data.putString(MoodServerService.KEY_QUESTION_URI, q.getUri()
+				.toString());
 		m.setData(data);
 		sendMessage(m);
 	}

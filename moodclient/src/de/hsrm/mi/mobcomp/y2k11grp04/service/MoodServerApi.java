@@ -34,10 +34,12 @@ import org.json.JSONTokener;
 
 import android.net.Uri;
 import android.util.Log;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Answer;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Model;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.StateModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
@@ -55,6 +57,7 @@ public class MoodServerApi {
 		public static final String KEY_STATUS = "status";
 		public static final String KEY_RESULT = "result";
 		private JSONObject objectData;
+		private List<Class<? extends Model>> acceptedModels;
 
 		public JSONReader(JSONObject jsonData, Class<T> objectClass,
 				String dataKey) throws ApiException {
@@ -308,6 +311,14 @@ public class MoodServerApi {
 												.toString());
 						continue;
 					}
+					if (acceptedModels != null
+							&& !acceptedModels.contains(relation.getModel())) {
+						Log.d(getClass().getCanonicalName(),
+								"Context not accepted: "
+										+ relation.getRelatedcontext()
+												.toString());
+						continue;
+					}
 					if (relation.isList()) {
 						HttpGet request = new HttpGet(relation.getHref()
 								.toString());
@@ -353,6 +364,13 @@ public class MoodServerApi {
 		private Uri getObjectInstanceContext() {
 			return modelToContext.get(this.objectInstance.getClass());
 		}
+
+		public void setRecursiveModels(Class<? extends Model>... models) {
+			acceptedModels = new ArrayList<Class<? extends Model>>();
+			for (Class<? extends Model> m : models) {
+				acceptedModels.add(m);
+			}
+		}
 	}
 
 	public MoodServerApi() {
@@ -385,6 +403,17 @@ public class MoodServerApi {
 		Topic topic = new JSONReader<Topic>(response, Topic.class,
 				JSONReader.KEY_RESULT).get();
 		return topic;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Question getQuestion(Uri questionUri) throws ApiException {
+		HttpGet request = new HttpGet(questionUri.toString());
+		JSONObject response = execute(request);
+		JSONReader<Question> reader = new JSONReader<Question>(response,
+				Question.class, JSONReader.KEY_RESULT);
+		reader.setRecursiveModels(QuestionOption.class);
+		Question question = reader.getRecursive();
+		return question;
 	}
 
 	private JSONObject execute(HttpUriRequest request) throws ApiException {
@@ -505,7 +534,28 @@ public class MoodServerApi {
 		Comment c = new JSONReader<Comment>(response, Comment.class,
 				JSONReader.KEY_RESULT).get();
 		return c;
+	}
 
+	public Answer addAnswer(Question question, String answer) throws ApiException {
+
+		Relation answerRelation = getRelated(question, Answer.class);
+		HttpPost request = new HttpPost(answerRelation.getHref().toString());
+		List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+		params.add(new BasicNameValuePair("answer", answer));
+		try {
+			request.setEntity(new UrlEncodedFormEntity(params));
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException(e.getMessage());
+		}
+		JSONObject response = execute(request);
+		Answer a = new JSONReader<Answer>(response, Answer.class,
+				JSONReader.KEY_RESULT).get();
+		return a;
+
+	}
+
+	public void addAnswer(Question question, String[] stringArray) {
+		// TODO: Implementieren
 	}
 
 	public ArrayList<Question> getQuestionsWithExtras(Topic topic)

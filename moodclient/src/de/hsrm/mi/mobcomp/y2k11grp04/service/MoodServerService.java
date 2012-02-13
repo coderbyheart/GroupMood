@@ -60,12 +60,12 @@ public class MoodServerService extends Service {
 	public static final String KEY_TOPIC_ID = "topic.id";
 	public static final String KEY_TOPIC_IMAGE = "topic.image";
 	public static final String KEY_TOPIC_URI = "topic.uri";
+	public static final String KEY_QUESTION_URI = "question.uri";
 	public static final String KEY_COMMENT_COMMENT = "comment.comment";
 
 	public static final String KEY_TOPIC_MODEL = "model.Topic";
 	public static final String KEY_QUESTION_MODEL = "model.Question";
 	public static final String KEY_COMMENT_MODEL = "model.Comment";
-	
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
@@ -102,6 +102,9 @@ public class MoodServerService extends Service {
 					break;
 				case MSG_MEETING_UNSUBSCRIBE:
 					unsubscribeMeeting(request);
+					break;
+				case MSG_ANSWER:
+					createAnswer(request);
 					break;
 				case MSG_PAUSE:
 					doPause(request);
@@ -158,8 +161,7 @@ public class MoodServerService extends Service {
 	 * Erzeugt ein neues Kommentar zu einem Topic
 	 * 
 	 * @param request
-	 * @return 
-	 * @throws ApiException 
+	 * @throws ApiException
 	 */
 	public void createComment(Message request) throws ApiException {
 		Topic topic = api.getTopic(Uri.parse(request.getData().getString(
@@ -169,6 +171,22 @@ public class MoodServerService extends Service {
 		fetchTopicComments(request);
 	}
 
+	/**
+	 * Erzeugt eine neue Antwort zu einer Frage
+	 * 
+	 * @param request
+	 * @throws ApiException
+	 */
+	private void createAnswer(Message request) throws ApiException {
+		Question question = api.getQuestion(Uri.parse(request.getData()
+				.getString(KEY_QUESTION_URI)));
+		if (question.isChoiceType() && question.getMaxOption() > 1) {
+			api.addAnswer(question, request.getData()
+					.getStringArray(KEY_ANSWER));
+		} else {
+			api.addAnswer(question, request.getData().getString(KEY_ANSWER));
+		}
+	}
 
 	/**
 	 * @param request
