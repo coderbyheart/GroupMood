@@ -67,6 +67,7 @@ public class MoodServerService extends Service {
 	public static final String KEY_TOPIC_MODEL = "model.Topic";
 	public static final String KEY_QUESTION_MODEL = "model.Question";
 	public static final String KEY_COMMENT_MODEL = "model.Comment";
+	public static final String KEY_ANSWER_MODEL = "model.Answer";
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
@@ -181,12 +182,22 @@ public class MoodServerService extends Service {
 	private void createAnswer(Message request) throws ApiException {
 		Question question = api.getQuestion(Uri.parse(request.getData()
 				.getString(KEY_QUESTION_URI)));
-		if (question.isChoiceType() && question.getMaxOption() > 1) {
-			api.addAnswer(question, request.getData()
-					.getStringArray(KEY_ANSWER));
+
+		Bundle b = new Bundle();
+		if (question.isChoiceType() && question.getMaxChoices() > 1) {
+			ArrayList<Answer> answers = api.addAnswers(question, request
+					.getData().getStringArray(KEY_ANSWER));
+			b.putParcelableArrayList(MoodServerService.KEY_ANSWER_MODEL,
+					answers);
 		} else {
-			api.addAnswer(question, request.getData().getString(KEY_ANSWER));
+			Answer answer = api.addAnswer(question, request.getData()
+					.getString(KEY_ANSWER));
+			b.putParcelable(MoodServerService.KEY_ANSWER_MODEL, answer);
 		}
+		Message info = Message.obtain(null, MSG_ANSWER_RESULT);
+		info.setData(b);
+		sendMsg(request.replyTo, info);
+
 	}
 
 	/**

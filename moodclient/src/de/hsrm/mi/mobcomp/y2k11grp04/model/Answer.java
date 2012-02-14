@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 public class Answer extends BaseModel {
 	private Question question;
-	private String user;
+	private User user;
 	private String answer;
 
 	public Answer() {
@@ -18,14 +18,14 @@ public class Answer extends BaseModel {
 	@Override
 	protected void readFromParcel(Parcel in) {
 		super.readFromParcel(in);
-		user = in.readString();
+		user = in.readParcelable(getClass().getClassLoader());
 		answer = in.readString();
 	}
 
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
 		super.writeToParcel(out, flags);
-		out.writeString(user);
+		out.writeParcelable(user, 0);
 		out.writeString(answer);
 	}
 
@@ -47,12 +47,12 @@ public class Answer extends BaseModel {
 		}
 	};
 
-	public String getUser() {
+	public User getUser() {
 		return user;
 	}
 
-	public void setUser(String key) {
-		this.user = key;
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public String getAnswer() {

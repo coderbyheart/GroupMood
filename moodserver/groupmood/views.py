@@ -19,6 +19,15 @@ modelRelations = {
     Question: [(Answer, True, '@id/answers'), (QuestionOption, True, '@id/options'), (Choice, True, '@id/choices')],
 }
 
+class NoRelationException(Exception):
+    pass
+
+def getModelRelation(modelType, relatedType):
+    for relation in modelRelations[modelType]:
+        if relation[0] == relatedType:
+            return relation
+    raise NoRelationException("No relation of " + relatedType +  " on " + modelType + " defined ")
+
 def getUser(request):
     userMatch = User.objects.filter(ip=request.META['REMOTE_ADDR'])
     if userMatch:
@@ -46,7 +55,10 @@ def modelToJson(request, model):
         '@id': getModelUrl(request, model)
     }
     for k in data:
-        modelJson[k] = data[k]
+        if isinstance(data[k], BaseModel):
+            modelJson[k] = modelToJson(request, data[k])
+        else:
+            modelJson[k] = data[k]
     if type(model) in modelRelations:
         modelJson['@relations'] = []
         for relation in modelRelations[type(model)]:
@@ -248,11 +260,27 @@ def question_choices(request, id):
     question = get_object_or_404(Question, pk=id)
     return jsonResponse(request, modelsToJson(request, Choice.objects.filter(question=question)))
 
+def createSingleAnswerResponse(request, answer):
+    """Gibt einen HTTP-Code 201 mit Daten zu einer Antwort zurück"""
+    resp = jsonResponse(request, modelToJson(request, answer))
+    resp['Location'] = getModelUrl(request, answer)
+    resp.status_code = 201;
+    return resp  
+
+def createMultipleAnswerResponse(request, question, answers):
+    """Gibt einen HTTP-Code 201 mit Daten zu mehreren Antwort zurück"""
+    resp = jsonResponse(request, modelsToJson(request, answers))
+    relatedModel, isList, href = getModelRelation(Question, Answer)
+    resp['Location'] = href.replace('@id', getModelUrl(request, question))
+    resp.status_code = 201;
+    return resp  
+
 @csrf_exempt
-def answer_create(request, id):
+def question_answers(request, id):
+    if request.method not in ('GET', 'POST'):
+        return HttpResponseBadRequest()
+    question = get_object_or_404(Question, pk=id)
     if request.method == 'POST':
-        question = get_object_or_404(Question, pk=id)
-        
         if (question.type == Question.TYPE_RANGE):
             answerValue = request.POST['answer']
             minValue = question.getMin()
@@ -262,26 +290,29 @@ def answer_create(request, id):
             if maxValue != None and int(maxValue) < int(answerValue):
                 return HttpResponseBadRequest("%d is smaller than %d" % (int(answerValue), int(maxValue)))
             answer = Answer.objects.create(question=question, user=getUser(request), answer=answerValue)
+            return createSingleAnswerResponse(request, answer)
         else: # (question.type == Question.TYPE_CHOICE):
-            answers = []
-            for answerValue in request.POST.getlist('answer[]'):
-                answers.append(answerValue)
             minChoices = question.getMinChoices()
             maxChoices = question.getMaxChoices()
-            if minChoices != None and int(minChoices) > len(answers):
-                return HttpResponseBadRequest("Too few choices. %d given, %d required" % (len(answers), int(minChoices)))
-            if maxChoices != None and int(maxChoices) < len(answers):
-                return HttpResponseBadRequest("Too many choices. %d given, %d allowed" % (len(answers), int(maxChoices)))
-            for answerValue in answers:
-                answer = Answer.objects.create(question=question, user=getUser(request), answer=answerValue)
-        
-        # URL zu letzter Antwort zurückgeben
-        resp = jsonResponse(request, modelToJson(request, answer))
-        resp['Location'] = getModelUrl(request, answer)
-        resp.status_code = 201;
-        return resp        
+            if maxChoices != None and int(maxChoices) == 1: # Single-Choice
+                answer = Answer.objects.create(question=question, user=getUser(request), answer=request.POST['answer'])
+                return createSingleAnswerResponse(request, answer)
+            else: # Multiple-Choice
+                answerValues = []
+                for answerValue in request.POST.getlist('answer[]'):
+                    answerValues.append(answerValue)
+                print answerValues
+                if minChoices != None and int(minChoices) > len(answerValues):
+                    return HttpResponseBadRequest("Too few choices. %d given, %d required" % (len(answerValues), int(minChoices)))
+                if maxChoices != None and int(maxChoices) < len(answerValues):
+                    return HttpResponseBadRequest("Too many choices. %d given, %d allowed" % (len(answerValues), int(maxChoices)))
+                answers = []
+                for answerValue in answerValues:
+                    answer = Answer.objects.create(question=question, user=getUser(request), answer=answerValue)
+                    answers.append(answer)
+                return createMultipleAnswerResponse(request, question, answers)
     else:
-        return HttpResponseBadRequest()
+        return jsonResponse(request, modelsToJson(request, Answer.objects.filter(question=question)))
 
 @csrf_exempt
 def meeting_vote(request, id):

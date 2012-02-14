@@ -48,6 +48,7 @@ class User(BaseModel):
     Aktuell wird keine Nutzer-Registrierung verwendet.
     
     """
+    context = 'user'
     ip = models.IPAddressField(unique=True)
     
     def toJsonDict(self):
@@ -351,4 +352,4 @@ class Answer(BaseModel):
         return "Answer #%d: %s on %s" % (self.id, self.answer, unicode(self.slide))
     
     def toJsonDict(self):
-        return {'id': self.id, 'answer': self.answer}
+        return {'id': self.id, 'answer': self.answer, 'user': self.user,  'creationDate': self.creation_date.isoformat()}

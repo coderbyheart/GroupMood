@@ -237,6 +237,30 @@ public class MoodServerApi {
 									+ m.getName()
 									+ "(Date) did not work.");
 						}
+					} else if (param.isInstance(StateModel.class)) {
+						if (!contextToModel.values().contains(param))
+							continue;
+						@SuppressWarnings("unchecked")
+						Class<StateModel> stateModelParam = param;
+						StateModel child;
+						try {
+							JSONObject childData = objectData
+									.getJSONObject(key);
+							child = new JSONReader<StateModel>(stateModelParam,
+									childData).get();
+						} catch (JSONException e) {
+							throw new ApiException(
+									"Failed to get object value for " + key);
+						}
+						try {
+							m.invoke(objectInstance, child);
+						} catch (IllegalArgumentException e) {
+							throw new ApiException(objectInstance.getClass()
+									.toString()
+									+ "#"
+									+ m.getName()
+									+ "(StateModel) did not work.");
+						}
 					} else {
 						// TODO: support all Types
 						Log.d(getClass().getCanonicalName(), "Skipped value "
@@ -316,7 +340,8 @@ public class MoodServerApi {
 						Log.d(getClass().getCanonicalName(),
 								"Context not accepted: "
 										+ relation.getRelatedcontext()
-												.toString() + " on " + top.getClass().getCanonicalName());
+												.toString() + " on "
+										+ top.getClass().getCanonicalName());
 						continue;
 					}
 					if (relation.isList()) {
@@ -333,8 +358,11 @@ public class MoodServerApi {
 											.get(Uri.parse(item
 													.getString(KEY_CONTEXT)));
 									@SuppressWarnings("rawtypes")
-									StateModel itemInstance = (StateModel) new JSONReader(
-											itemClass, item).getRecursive();
+									JSONReader<StateModel> reader = new JSONReader(
+											itemClass, item);
+									reader.setRecursiveModels(acceptedModels);
+									StateModel itemInstance = (StateModel) reader
+											.getRecursive();
 									instanceItems.add(itemInstance);
 								} catch (JSONException e) {
 									throw new ApiException(
@@ -370,6 +398,10 @@ public class MoodServerApi {
 			for (Class<? extends Model> m : models) {
 				acceptedModels.add(m);
 			}
+		}
+
+		public void setRecursiveModels(List<Class<? extends Model>> models) {
+			acceptedModels = models;
 		}
 	}
 
@@ -423,16 +455,6 @@ public class MoodServerApi {
 		try {
 			response = client.execute(request);
 
-			StatusLine status = response.getStatusLine();
-			switch (status.getStatusCode()) {
-			case 200: // OK
-			case 201: // Created
-				break;
-			default:
-				throw new ApiException("Invalid response from server: "
-						+ status.toString());
-			}
-
 			HttpEntity entity = response.getEntity();
 			InputStream inputStream = entity.getContent();
 			ByteArrayOutputStream content = new ByteArrayOutputStream();
@@ -442,6 +464,20 @@ public class MoodServerApi {
 				content.write(sBuffer, 0, readBytes);
 			}
 			dataAsString = new String(content.toByteArray());
+
+			StatusLine status = response.getStatusLine();
+			switch (status.getStatusCode()) {
+			case 200: // OK
+			case 201: // Created
+				break;
+			default:
+				Log.e(getClass().getCanonicalName(),
+						"Request failed: " + request.getMethod() + " "
+								+ request.getURI().toString() + ": "
+								+ dataAsString.replaceAll("<[^>]+>", ""));
+				throw new ApiException("Invalid response from server: "
+						+ status.toString());
+			}
 		} catch (ClientProtocolException e) {
 			throw new ApiException("Protocol error: " + e.toString());
 		} catch (IOException e) {
@@ -536,7 +572,8 @@ public class MoodServerApi {
 		return c;
 	}
 
-	public Answer addAnswer(Question question, String answer) throws ApiException {
+	public Answer addAnswer(Question question, String answer)
+			throws ApiException {
 
 		Relation answerRelation = getRelated(question, Answer.class);
 		HttpPost request = new HttpPost(answerRelation.getHref().toString());
@@ -554,8 +591,39 @@ public class MoodServerApi {
 
 	}
 
-	public void addAnswer(Question question, String[] stringArray) {
-		// TODO: Implementieren
+	public ArrayList<Answer> addAnswers(Question question, String[] answerValues)
+			throws ApiException {
+
+		// Antworten senden
+		Relation answerRelation = getRelated(question, Answer.class);
+		HttpPost request = new HttpPost(answerRelation.getHref().toString());
+		List<NameValuePair> params = new ArrayList<NameValuePair>(
+				answerValues.length);
+		for (String answerValue : answerValues) {
+			params.add(new BasicNameValuePair("answer[]", answerValue));
+		}
+		try {
+			request.setEntity(new UrlEncodedFormEntity(params));
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException(e.getMessage());
+		}
+		JSONObject response = execute(request);
+
+		// Liste mit erstellen Antworten laden
+		ArrayList<Answer> answers = new ArrayList<Answer>();
+		try {
+			JSONArray items = response.getJSONArray(JSONReader.KEY_RESULT);
+			for (int i = 0; i < items.length(); i++) {
+				Answer answer = new JSONReader<Answer>(Answer.class,
+						items.getJSONObject(i)).getRecursive();
+				answers.add(answer);
+			}
+		} catch (JSONException e) {
+			throw new ApiException("Failed to read answers from "
+					+ answerRelation.getHref().toString());
+		}
+
+		return answers;
 	}
 
 	public ArrayList<Question> getQuestionsWithExtras(Topic topic)

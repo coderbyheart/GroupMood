@@ -6,6 +6,7 @@ import java.util.List;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
 public class Question extends BaseModel {
@@ -137,6 +138,11 @@ public class Question extends BaseModel {
 		for (QuestionOption o : getOptions()) {
 			if (o.getKey().equals(name))
 				return o.getValue();
+		}
+		Log.w(getClass().getCanonicalName(), "No " + name + " option on question " + getUri());
+		Log.d(getClass().getCanonicalName(), "Available options are:");
+		for (QuestionOption o : getOptions()) {
+			Log.d(getClass().getCanonicalName(), o.getKey() + ": " + o.getValue() + " (" + o.getUri() + ")");	
 		}
 		return defaultValue;
 	}

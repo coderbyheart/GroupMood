@@ -15,6 +15,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,9 +38,11 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.devsmart.android.ui.HorizontalListView;
 
+import de.hsrm.mi.mobcomp.y2k11grp04.model.Answer;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
@@ -380,6 +383,8 @@ public class QuestionActivity extends ServiceActivity {
 			return new TopicImageHandler(message);
 		case MoodServerService.MSG_TOPIC_COMMENTS_RESULT:
 			return new TopicCommentsHandler(message);
+		case MoodServerService.MSG_ANSWER_RESULT:
+			return new AnswerCreatedHandler(message);
 		default:
 			return super.getServiceMessageRunnable(message);
 		}
@@ -523,6 +528,41 @@ public class QuestionActivity extends ServiceActivity {
 						q,
 						selectedValues.toArray(new String[selectedValues.size()]));
 			}
+		}
+	}
+
+	/**
+	 * Wird aufgerufen, wenn der Service die die Antwort erstellt hat
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private class AnswerCreatedHandler extends ServiceMessageRunnable {
+		private AnswerCreatedHandler(Message serviceMessage) {
+			super(serviceMessage);
+		}
+
+		@Override
+		public void run() {
+			Bundle b = serviceMessage.getData();
+			b.setClassLoader(getClassLoader());
+			String answer = "";
+			Answer singleAnswer = b
+					.getParcelable(MoodServerService.KEY_ANSWER_MODEL);
+			ArrayList<Answer> answers = b
+					.getParcelableArrayList(MoodServerService.KEY_ANSWER_MODEL);
+			if (singleAnswer != null) {
+				answer = singleAnswer.getAnswer();
+			} else if (answers != null) {
+				ArrayList<String> answerValues = new ArrayList<String>();
+				for (Answer a : answers) {
+					answerValues.add(a.getAnswer());
+				}
+				answer = TextUtils.join(", ", answerValues);
+			}
+			String text = String.format(getApplicationContext().getResources()
+					.getString(R.string.question_answered), answer);
+			Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG)
+					.show();
 		}
 	}
 
