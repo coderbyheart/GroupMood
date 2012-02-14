@@ -292,6 +292,7 @@ public class QuestionActivity extends ServiceActivity {
 			ListView lv = new ListView(this);
 			lv.setItemsCanFocus(false);
 			lv.setBackgroundResource(R.drawable.bg_action);
+
 			ArrayList<String> questionOptionNames = new ArrayList<String>();
 			for (int i = 0; i < q.getChoices().size(); i++) {
 				questionOptionNames.add(q.getChoices().get(i).getName());
@@ -479,6 +480,9 @@ public class QuestionActivity extends ServiceActivity {
 				createAnswer(q, selectedValues.get(0));
 			} else {
 				createAnswer(q, selectedValues.toArray(new String[selectedValues.size()]));
+			}
+			if (q.getMode().equals("single")) {
+				lv.setVisibility(lv.INVISIBLE);
 			}
 		}
 	}
