@@ -30,7 +30,7 @@
                 android:gravity="left"
                 android:text="@string/label_result_avg"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/sub_text_lesser" />
+                android:textColor="@color/sub_text" />
 
             <TextView
                 android:id="@+id/groupMood_question_resultNumVotes"
@@ -40,7 +40,7 @@
                 android:gravity="right"
                 android:text="@plurals/label_result_numvotes"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/sub_text_lesser" />
+                android:textColor="@color/sub_text" />
         </LinearLayout>
 
         <ProgressBar
