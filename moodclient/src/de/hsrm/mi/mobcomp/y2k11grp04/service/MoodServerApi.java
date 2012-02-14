@@ -562,7 +562,7 @@ public class MoodServerApi {
 		List<NameValuePair> params = new ArrayList<NameValuePair>(1);
 		params.add(new BasicNameValuePair("comment", comment));
 		try {
-			request.setEntity(new UrlEncodedFormEntity(params));
+			request.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			throw new ApiException(e.getMessage());
 		}
@@ -580,7 +580,7 @@ public class MoodServerApi {
 		List<NameValuePair> params = new ArrayList<NameValuePair>(1);
 		params.add(new BasicNameValuePair("answer", answer));
 		try {
-			request.setEntity(new UrlEncodedFormEntity(params));
+			request.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			throw new ApiException(e.getMessage());
 		}
@@ -603,7 +603,7 @@ public class MoodServerApi {
 			params.add(new BasicNameValuePair("answer[]", answerValue));
 		}
 		try {
-			request.setEntity(new UrlEncodedFormEntity(params));
+			request.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			throw new ApiException(e.getMessage());
 		}
