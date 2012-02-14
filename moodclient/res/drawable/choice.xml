@@ -4,12 +4,12 @@
     android:dither="true"
     android:variablePadding="false">
     <item
-        android:drawable="@drawable/bg_action_inside"
+        android:drawable="@drawable/bg_action_noround"
         android:state_pressed="false"
         android:state_enabled="true"
         />
     <item
-        android:drawable="@drawable/bg_action_inside_hover"
+        android:drawable="@drawable/bg_action_noround_hover"
         android:state_pressed="true"
         android:state_enabled="true"
         />

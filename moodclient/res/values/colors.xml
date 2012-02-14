@@ -5,6 +5,7 @@
 	<color name="action_disabled">#555555</color>
 	<color name="action_light">#83D3E6</color>
 	<color name="action_text">#333333</color>
+	<color name="action_text_inside">#83D3E6</color>
 	<color name="action_text_lesser">#3C5A61</color>
 	<color name="comment">#DCDCDC</color>
 	<color name="comment_light">#E6E6E6</color>

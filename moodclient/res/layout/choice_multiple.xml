@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@android:id/text1"
     android:layout_width="fill_parent"
-    android:layout_height="40dp"
-    android:background="@drawable/bg_action"
+    android:layout_height="wrap_content"
+    android:background="@drawable/choice"
     android:checkMark="?android:attr/listChoiceIndicatorMultiple"
     android:gravity="center_vertical"
-    android:paddingLeft="6dip"
-    android:paddingRight="6dip"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:text="{ answer }"
     android:textAppearance="?android:attr/textAppearanceSmall"
-    android:textColor="@android:color/black" />
+    android:textColor="@color/action_text" />

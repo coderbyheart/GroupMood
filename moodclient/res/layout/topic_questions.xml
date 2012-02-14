@@ -23,18 +23,24 @@
     </uk.co.jasonfry.android.tools.ui.SwipeView>
 
     <LinearLayout
-        android:id="@+id/groupMood_questionsActions"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
-        <!-- Hier rein werden die Antwort-Möglichkeiten gerendert: question_action.xml -->
+        <LinearLayout
+            android:id="@+id/groupMood_questionsActions"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <!-- Hier rein werden die Antwort-Möglichkeiten gerendert: question_action.xml -->
+        </LinearLayout>
+
+        <include
+            android:id="@+id/groupMood_topicComments"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            layout="@layout/topic_comments" />
     </LinearLayout>
-    
-    <include
-        android:id="@+id/groupMood_topicComments"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        layout="@layout/topic_comments" />
 
 </LinearLayout>

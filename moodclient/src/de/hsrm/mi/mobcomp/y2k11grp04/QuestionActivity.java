@@ -289,7 +289,7 @@ public class QuestionActivity extends ServiceActivity {
 
 		if (q.getType().equals(Question.TYPE_RANGE)) {
 			view.removeView(view
-					.findViewById(R.id.groupMood_questionActionButton));
+					.findViewById(R.id.groupMood_questionActionChoices));
 			SeekBar s = (SeekBar) view
 					.findViewById(R.id.groupMood_questionActionSeekBar);
 			if (seekBarState.containsKey(q.getId())) {
@@ -325,9 +325,12 @@ public class QuestionActivity extends ServiceActivity {
 			view.removeView(view
 					.findViewById(R.id.groupMood_questionActionRangeLayout));
 
-			// List-View für Choices anlegen
-			ListView lv = new ListView(this);
-			lv.setItemsCanFocus(false);
+			// List-View für Choices
+			ListView lv = (ListView) view
+					.findViewById(R.id.groupMood_questionActionChoices);
+			// lv.setItemsCanFocus(false);
+			lv.addHeaderView(layoutInflater.inflate(R.layout.choice_button,
+					null));
 
 			ArrayList<String> questionOptionNames = new ArrayList<String>();
 			for (int i = 0; i < q.getChoices().size(); i++) {
@@ -339,14 +342,11 @@ public class QuestionActivity extends ServiceActivity {
 				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
 						R.layout.choice_single, questionOptionNames));
 				lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-			}
-			// Question-Type Multiple-Choice
-			else {
+			} else { // Question-Type Multiple-Choice
 				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
 						R.layout.choice_multiple, questionOptionNames));
 				lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 			}
-			view.addView(lv);
 			lv.setOnItemSelectedListener(csl);
 			lv.setOnItemClickListener(csl);
 
@@ -524,11 +524,11 @@ public class QuestionActivity extends ServiceActivity {
 		@Override
 		public void onClick(View v) {
 			Button b = (Button) v;
+			b.setEnabled(false);
 			ListView lv = questionState.get(b);
 			Question q = buttonToQuestion.get(b);
 			ArrayList<String> selectedValues = listViewHelper
 					.getSelectedItems(lv);
-
 			if (q.getMaxChoices().equals(1)) {
 				createAnswer(q, selectedValues.get(0));
 			} else {
@@ -536,8 +536,11 @@ public class QuestionActivity extends ServiceActivity {
 						q,
 						selectedValues.toArray(new String[selectedValues.size()]));
 			}
-			if (q.getMode().equals("single")) {
-				lv.setVisibility(View.INVISIBLE);
+			if (q.getMode().equals(Question.MODE_SINGLE)) {
+				// TODO: Die wir aktuell keine Nutzer-Registrierung haben,
+				// können wir auch nicht exakt fest stellen, ob schon gevoted
+				// wurde
+				lv.setEnabled(false);
 			}
 		}
 	}
