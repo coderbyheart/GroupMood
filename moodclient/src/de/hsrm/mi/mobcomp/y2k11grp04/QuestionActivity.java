@@ -291,7 +291,6 @@ public class QuestionActivity extends ServiceActivity {
 			// List-View für Choices anlegen
 			ListView lv = new ListView(this);
 			lv.setItemsCanFocus(false);
-			lv.setBackgroundResource(R.drawable.bg_action);
 
 			ArrayList<String> questionOptionNames = new ArrayList<String>();
 			for (int i = 0; i < q.getChoices().size(); i++) {
@@ -300,14 +299,14 @@ public class QuestionActivity extends ServiceActivity {
 
 			// Question-Type Single-Choice
 			if (q.getMaxChoices().equals(1)) {
-				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
-						android.R.layout.simple_list_item_single_choice, questionOptionNames));
+				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this, R.layout.choice_single,
+						questionOptionNames));
 				lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 			}
 			// Question-Type Multiple-Choice
 			else {
-				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
-						android.R.layout.simple_list_item_multiple_choice, questionOptionNames));
+				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this, R.layout.choice_multiple,
+						questionOptionNames));
 				lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 			}
 			view.addView(lv);
