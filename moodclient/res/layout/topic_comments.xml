@@ -24,7 +24,7 @@
                 android:id="@+id/groupMood_newcomment_text"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textWebEditText|textAutoCorrect|textAutoComplete|textCapSentences"
+                android:inputType="text|textAutoCorrect|textAutoComplete|textCapSentences"
                 android:maxLines="1" />
 
             <Button

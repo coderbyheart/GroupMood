@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/groupMood_questionActionChoiceLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_action"
+    android:orientation="vertical"
+    android:padding="5dp" 
+    android:focusable="false"
+    >
+    <!-- Ein Spacer. -->
+</LinearLayout>

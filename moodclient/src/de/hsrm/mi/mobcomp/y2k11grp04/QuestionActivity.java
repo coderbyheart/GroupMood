@@ -328,9 +328,12 @@ public class QuestionActivity extends ServiceActivity {
 			// List-View für Choices
 			ListView lv = (ListView) view
 					.findViewById(R.id.groupMood_questionActionChoices);
-			// lv.setItemsCanFocus(false);
-			lv.addHeaderView(layoutInflater.inflate(R.layout.choice_button,
-					null));
+			lv.addHeaderView(
+					layoutInflater.inflate(R.layout.choice_button, null), null,
+					false);
+			lv.addFooterView(
+					layoutInflater.inflate(R.layout.choice_footer, null), null,
+					false);
 
 			ArrayList<String> questionOptionNames = new ArrayList<String>();
 			for (int i = 0; i < q.getChoices().size(); i++) {
