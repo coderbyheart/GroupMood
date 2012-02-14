@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/bg_sub"
+    android:gravity="center_vertical"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/groupMood_questionResult_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:gravity="center_vertical"
+        android:text="{question.name}"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/sub_text" />
+    
+    <LinearLayout
+        android:id="@+id/groupMood_questionResult_answers" 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+    	android:layout_marginRight="5dp"
+    	android:layout_marginBottom="5dp" 
+    	android:orientation="vertical"
+        >
+    
+    <!-- Hierher kommen je Antwort-Möglichkeit: question_result_answer.xml -->
+
+    </LinearLayout>
+
+</LinearLayout>

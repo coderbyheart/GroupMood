@@ -47,21 +47,43 @@
       "creation_date": "2011-12-01 00:00"
     }
   },
-      {
-        "pk": 2, 
-        "model": "groupmood.meeting", 
-        "fields": {
-            "name": "Meeting mit Choices", 
-            "creation_date": "2012-02-01 14:38:04"
-        }
-    }, 
+  {
+  "model": "groupmood.questionoption",
+    "pk": 3,
+    "fields": {
+      "question": 1,
+      "key": "label_min_value",
+      "value": "Mies",
+      "creation_date": "2011-12-01 00:00"
+    }
+  },
+  {
+  "model": "groupmood.questionoption",
+    "pk": 4,
+    "fields": {
+      "question": 1,
+      "key": "label_mid_value",
+      "value": "In Ordnung",
+      "creation_date": "2011-12-01 00:00"
+    }
+  },
+  {
+  "model": "groupmood.questionoption",
+    "pk": 5,
+    "fields": {
+      "question": 1,
+      "key": "label_max_value",
+      "value": "Hervorragend",
+      "creation_date": "2011-12-01 00:00"
+    }
+  },
     {
         "pk": 2, 
         "model": "groupmood.topic", 
         "fields": {
             "image": null, 
-            "meeting": 2, 
-            "name": "Erstes Topic", 
+            "meeting": 1, 
+            "name": "Choices Demo", 
             "creation_date": "2012-02-01 14:41:43"
         }
     }, 
@@ -88,7 +110,7 @@
         }
     }, 
     {
-        "pk": 3, 
+        "pk": 6, 
         "model": "groupmood.questionoption", 
         "fields": {
             "question": 2, 
@@ -98,7 +120,7 @@
         }
     },     
     {
-        "pk": 4, 
+        "pk": 7, 
         "model": "groupmood.questionoption", 
         "fields": {
             "question": 2, 
@@ -108,7 +130,7 @@
         }
     }, 
     {
-        "pk": 5, 
+        "pk": 8, 
         "model": "groupmood.questionoption", 
         "fields": {
             "question": 3, 
@@ -118,7 +140,7 @@
         }
     }, 
     {
-        "pk": 6, 
+        "pk": 9, 
         "model": "groupmood.questionoption", 
         "fields": {
             "question": 3, 

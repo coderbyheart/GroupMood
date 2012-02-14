@@ -23,6 +23,7 @@ public class Question extends BaseModel {
 	private int numAnswers;
 	private List<QuestionOption> options = new ArrayList<QuestionOption>();
 	private List<Choice> choices = new ArrayList<Choice>();
+	private List<AnswerAverage> answerAverages = new ArrayList<AnswerAverage>();
 
 	public Question() {
 	}
@@ -49,6 +50,11 @@ public class Question extends BaseModel {
 			choices.add((Choice) c);
 			((Choice) c).setQuestion(this);
 		}
+		for (Parcelable c : in.readParcelableArray(AnswerAverage.class
+				.getClassLoader())) {
+			answerAverages.add((AnswerAverage) c);
+			((AnswerAverage) c).setQuestion(this);
+		}
 	}
 
 	@Override
@@ -62,6 +68,8 @@ public class Question extends BaseModel {
 		out.writeParcelableArray(
 				options.toArray(new QuestionOption[options.size()]), 0);
 		out.writeParcelableArray(choices.toArray(new Choice[choices.size()]), 0);
+		out.writeParcelableArray(answerAverages
+				.toArray(new AnswerAverage[answerAverages.size()]), 0);
 	}
 
 	public static final Parcelable.Creator<Question> CREATOR = new Parcelable.Creator<Question>() {
@@ -93,11 +101,11 @@ public class Question extends BaseModel {
 	public String getType() {
 		return type;
 	}
-	
+
 	public boolean isRangeType() {
 		return getType().equals(TYPE_RANGE);
 	}
-	
+
 	public boolean isChoiceType() {
 		return getType().equals(TYPE_CHOICE);
 	}
@@ -117,13 +125,44 @@ public class Question extends BaseModel {
 	public List<QuestionOption> getOptions() {
 		return options;
 	}
-	
+
 	public List<Choice> getChoices() {
 		return choices;
 	}
 
 	public void setChoices(List<Choice> choices) {
 		this.choices = choices;
+	}
+
+	public List<AnswerAverage> getAnswerAverages() {
+		// TODO: Serverseitig implementieren
+		ArrayList<AnswerAverage> aavg = new ArrayList<AnswerAverage>();
+
+		AnswerAverage a1 = new AnswerAverage();
+		a1.setAnswer("Rot");
+		a1.setAverage(25);
+		a1.setNumVotes(3);
+
+		AnswerAverage a2 = new AnswerAverage();
+		a2.setAnswer("Gelb");
+		a2.setAverage(50);
+		a2.setNumVotes(5);
+
+		AnswerAverage a3 = new AnswerAverage();
+		a3.setAnswer("Grün");
+		a3.setAverage(75);
+		a3.setNumVotes(7);
+
+		aavg.add(a3);
+		aavg.add(a2);
+		aavg.add(a1);
+
+		return aavg;
+		// return answerAverages;
+	}
+
+	public void setAnswerAverages(List<AnswerAverage> answerAverages) {
+		this.answerAverages = answerAverages;
 	}
 
 	/**
@@ -139,10 +178,12 @@ public class Question extends BaseModel {
 			if (o.getKey().equals(name))
 				return o.getValue();
 		}
-		Log.w(getClass().getCanonicalName(), "No " + name + " option on question " + getUri());
+		Log.w(getClass().getCanonicalName(), "No " + name
+				+ " option on question " + getUri());
 		Log.d(getClass().getCanonicalName(), "Available options are:");
 		for (QuestionOption o : getOptions()) {
-			Log.d(getClass().getCanonicalName(), o.getKey() + ": " + o.getValue() + " (" + o.getUri() + ")");	
+			Log.d(getClass().getCanonicalName(),
+					o.getKey() + ": " + o.getValue() + " (" + o.getUri() + ")");
 		}
 		return defaultValue;
 	}
@@ -172,6 +213,12 @@ public class Question extends BaseModel {
 			for (StateModel m : items) {
 				choices.add((Choice) m);
 				((Choice) m).setQuestion(this);
+			}
+		} else if (relation.getModel() == AnswerAverage.class) {
+			answerAverages = new ArrayList<AnswerAverage>();
+			for (StateModel m : items) {
+				answerAverages.add((AnswerAverage) m);
+				((AnswerAverage) m).setQuestion(this);
 			}
 		} else {
 			super.setRelationItems(relation, items);
@@ -242,6 +289,8 @@ public class Question extends BaseModel {
 		result = prime * result + numAnswers;
 		result = prime * result + ((options == null) ? 0 : options.hashCode());
 		result = prime * result + ((choices == null) ? 0 : choices.hashCode());
+		result = prime * result
+				+ ((answerAverages == null) ? 0 : answerAverages.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -275,9 +324,14 @@ public class Question extends BaseModel {
 		} else if (!options.equals(other.options))
 			return false;
 		if (choices == null) {
-			if (other.choices!= null)
+			if (other.choices != null)
 				return false;
 		} else if (!choices.equals(other.choices))
+			return false;
+		if (answerAverages == null) {
+			if (other.answerAverages != null)
+				return false;
+		} else if (!answerAverages.equals(other.answerAverages))
 			return false;
 		if (topic == null) {
 			if (other.topic != null)
@@ -298,5 +352,4 @@ public class Question extends BaseModel {
 					"progress must be between 0 and 1");
 		return (int) (getMinOption() + (getMaxOption() - getMinOption()) * d);
 	}
-
 }

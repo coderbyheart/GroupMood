@@ -25,7 +25,9 @@
         <ListView
             android:id="@+id/groupMood_gallery"
             android:layout_width="100dp"
-            android:layout_height="fill_parent" >
+            android:layout_height="fill_parent"
+            android:dividerHeight="0dp" 
+            >
 
             <!-- Die Gallery wird mit topic_item.xml befüllt -->
         </ListView>
