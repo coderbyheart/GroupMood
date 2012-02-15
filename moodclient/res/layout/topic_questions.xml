@@ -17,7 +17,7 @@
     <uk.co.jasonfry.android.tools.ui.SwipeView
         android:id="@+id/groupMood_questionsSwipe"
         android:layout_width="fill_parent"
-        android:layout_height="100dp" >
+        android:layout_height="wrap_content" >
 
         <!-- Die Swipe-View enthält die Anzeige der Fragen: question_name.xml -->
     </uk.co.jasonfry.android.tools.ui.SwipeView>

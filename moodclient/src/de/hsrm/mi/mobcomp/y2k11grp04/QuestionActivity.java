@@ -83,6 +83,9 @@ public class QuestionActivity extends ServiceActivity {
 
 	private Button actionBarActiveButton;
 
+	// Merkt sich den aktuell ausgewählten Button der ActionBar
+	private int actionbarState = 0;
+
 	// Kümmert sich um das Setzen der Antwort, falls diese einen
 	// Slider verwendet
 	private OnSeekBarChangeListener questionActionSeekBarListener = new QuestionSeekBarListener();
@@ -142,6 +145,7 @@ public class QuestionActivity extends ServiceActivity {
 		questionsButton.setOnClickListener(abcl);
 		commentsButton.setOnClickListener(abcl);
 		resultsButton.setOnClickListener(abcl);
+
 		actionBarActiveButton = questionsButton;
 	}
 
@@ -822,6 +826,8 @@ public class QuestionActivity extends ServiceActivity {
 
 		// Question-Icon
 		if (actionBarActiveButton.equals(questionsButton)) {
+			actionbarState = 0;
+
 			questionsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_checkmark_white_tab));
 			topicView.findViewById(R.id.groupMood_questionsSwipe)
@@ -836,6 +842,8 @@ public class QuestionActivity extends ServiceActivity {
 		}
 		// Comments-Icon
 		if (actionBarActiveButton.equals(commentsButton)) {
+			actionbarState = 1;
+
 			commentsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_bubble_white_tab));
 			topicView.findViewById(R.id.groupMood_topicComments).setVisibility(
@@ -844,12 +852,15 @@ public class QuestionActivity extends ServiceActivity {
 					View.VISIBLE);
 			if (isServiceBound())
 				loadComments();
+
 		} else {
 			commentsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_bubble));
 		}
 		// Results-Icon
 		if (actionBarActiveButton.equals(resultsButton)) {
+			actionbarState = 2;
+
 			resultsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_chart_white_tab));
 			findViewById(R.id.groupMood_topicResult)
@@ -858,6 +869,7 @@ public class QuestionActivity extends ServiceActivity {
 			resultsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_chart));
 		}
+
 	}
 
 	/**
@@ -952,6 +964,19 @@ public class QuestionActivity extends ServiceActivity {
 				long id) {
 			setCurrentTopic(topicGalleryAdapter.getItem(position));
 			updateTopic();
+			Button b = new Button(QuestionActivity.this);
+			switch (actionbarState) {
+			case 0:
+				b = questionsButton;
+				break;
+			case 1:
+				b = commentsButton;
+				break;
+			case 2:
+				b = resultsButton;
+				break;
+			}
+			setActionBarActiveButton(b);
 		}
 
 		@Override
