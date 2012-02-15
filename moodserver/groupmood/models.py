@@ -214,7 +214,7 @@ class Question(BaseModel):
             'numAnswers': self.numAnswers(),
             'creationDate': self.creation_date.isoformat(),
             'avg': self.avg(),
-            'averageAnswers': map(lambda avgAnswer: avgAnswer.toJsonDict(), self.averageAnswers())
+            'averageAnswers': self.averageAnswers()
         }
         return d
     

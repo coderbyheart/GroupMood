@@ -52,13 +52,22 @@ def modelToJson(request, model):
     data = model.toJsonDict()
     modelJson = {
         '@context': '%s/%s' % (contexthref, model.context),
-        '@id': getModelUrl(request, model)
     }
+    try:
+        modelJson['@id'] = getModelUrl(request, model)
+    except AttributeError:
+        pass
+    
     for k in data:
-        try:
-            modelJson[k] = modelToJson(request, data[k])
-        except AttributeError:
-            modelJson[k] = data[k]
+        if type(data[k]) == list:
+            modelJson[k] = []
+            for j in data[k]:
+                modelJson[k].append(modelToJson(request, j))
+        else:
+            try:
+                modelJson[k] = modelToJson(request, data[k])
+            except AttributeError:
+                modelJson[k] = data[k]
     if type(model) in modelRelations:
         modelJson['@relations'] = []
         for relation in modelRelations[type(model)]:
