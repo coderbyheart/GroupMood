@@ -15,7 +15,9 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -65,14 +67,15 @@ public class QuestionActivity extends ServiceActivity {
 	private Topic currentTopic;
 	private Question currentQuestion;
 	private TopicGalleryAdapter topicGalleryAdapter;
-	private final Map<Topic, View> topicViews = new HashMap<Topic, View>();
-	private final Map<Question, LinearLayout> questionActionViews = new HashMap<Question, LinearLayout>();
-	private final Map<SeekBar, Question> seekbarToQuestion = new HashMap<SeekBar, Question>();
-	private final Map<SeekBar, TextView> seekbarToCurrentValueTextView = new HashMap<SeekBar, TextView>();
-	private final Map<Integer, Integer> seekBarState = new HashMap<Integer, Integer>();
-	private final Map<Button, ListView> questionState = new HashMap<Button, ListView>();
-	private final Map<Button, Question> buttonToQuestion = new HashMap<Button, Question>();
-	private final Map<ListView, Button> choicesToButton = new HashMap<ListView, Button>();
+	private Map<Topic, View> topicViews = new HashMap<Topic, View>();
+	private Map<Question, LinearLayout> questionActionViews = new HashMap<Question, LinearLayout>();
+	private Map<SeekBar, Question> seekbarToQuestion = new HashMap<SeekBar, Question>();
+	private Map<SeekBar, TextView> seekbarToCurrentValueTextView = new HashMap<SeekBar, TextView>();
+	private Map<Integer, Integer> seekBarState = new HashMap<Integer, Integer>();
+	private Map<Button, ListView> questionState = new HashMap<Button, ListView>();
+	private Map<Button, Question> buttonToQuestion = new HashMap<Button, Question>();
+	private Map<ListView, Button> choicesToButton = new HashMap<ListView, Button>();
+	private Map<Editable, Button> commentTextToButton = new HashMap<Editable, Button>();
 
 	private Button questionsButton;
 	private Button commentsButton;
@@ -82,23 +85,26 @@ public class QuestionActivity extends ServiceActivity {
 
 	// Kümmert sich um das Setzen der Antwort, falls diese einen
 	// Slider verwendet
-	private final OnSeekBarChangeListener questionActionSeekBarListener = new QuestionSeekBarListener();
+	private OnSeekBarChangeListener questionActionSeekBarListener = new QuestionSeekBarListener();
 
 	// Kümmert sich um das Anlegen von neuen Kommentaren
-	private final NewCommentClickListener nccl = new NewCommentClickListener();
+	private NewCommentClickListener nccl = new NewCommentClickListener();
+
+	// Kümmert sich um das deaktivieren des Kommentar-Buttons
+	private CommentTextWatcher ctw = new CommentTextWatcher();
 
 	// Kümmert sich um Klicks auf den Button für Auswahl-Fragen
-	private final ChoiceButtonClickListener cbcl = new ChoiceButtonClickListener();
+	private ChoiceButtonClickListener cbcl = new ChoiceButtonClickListener();
 
 	// Kümmert sich um das Wechseln der Fragen durch eine Swipe-Geste
-	private final OnPageChangedListener swipeChangeListener = new QuestionSwipeListener();
+	private OnPageChangedListener swipeChangeListener = new QuestionSwipeListener();
 
 	// Kümmert sich darum, den Button zum Abgeben der Antwort zu aktivieren bzw.
 	// zu deaktivieren je nach dem wieviele Choices ausgewählt wurden.
-	private final ChoiceSelectListener csl = new ChoiceSelectListener();
+	private ChoiceSelectListener csl = new ChoiceSelectListener();
 
 	// Stellt Hilfsfunktionen für ListViews zur Verfügung
-	private final ListViewHelper listViewHelper = new ListViewHelper();
+	private ListViewHelper listViewHelper = new ListViewHelper();
 
 	/** Called when the activity is first created. */
 	@Override
@@ -259,9 +265,14 @@ public class QuestionActivity extends ServiceActivity {
 				// Comments ausblenden
 				topicQuestionsLayout.findViewById(R.id.groupMood_topicComments)
 						.setVisibility(View.GONE);
-				((Button) topicQuestionsLayout
-						.findViewById(R.id.groupMood_newcomment_button))
-						.setOnClickListener(nccl);
+				Button newCommentButton = (Button) topicQuestionsLayout
+						.findViewById(R.id.groupMood_newcomment_button);
+				EditText newCommentText = (EditText) topicQuestionsLayout
+						.findViewById(R.id.groupMood_newcomment_text);
+				commentTextToButton.put(newCommentText.getEditableText(),
+						newCommentButton);
+				newCommentButton.setOnClickListener(nccl);
+				newCommentText.addTextChangedListener(ctw);
 
 				// Fertige View merken
 				topicViews.put(currentTopic, topicQuestionsLayout);
@@ -479,6 +490,25 @@ public class QuestionActivity extends ServiceActivity {
 			return super.onCreateDialog(id);
 		}
 
+	}
+
+	private final class CommentTextWatcher implements TextWatcher {
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+		}
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			Button b = commentTextToButton.get(s);
+			boolean hasText = s.length() > 0;
+			b.setEnabled(hasText);
+		}
 	}
 
 	/**
@@ -744,7 +774,7 @@ public class QuestionActivity extends ServiceActivity {
 			EditText commentText = (EditText) parent
 					.findViewById(R.id.groupMood_newcomment_text);
 			addComment(commentText.getText().toString());
-			commentText.setText("");
+			commentText.getEditableText().clear();
 			// Keyboard ausblendend
 			InputMethodManager inputManager = (InputMethodManager) getApplicationContext()
 					.getSystemService(Context.INPUT_METHOD_SERVICE);

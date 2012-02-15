@@ -35,6 +35,7 @@
                 android:padding="10dp"
                 android:text="@string/comment"
                 android:textColor="@color/main_text"
+                android:enabled="false"
                 android:textStyle="bold" />
         </LinearLayout>
 
