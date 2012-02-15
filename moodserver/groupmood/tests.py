@@ -100,8 +100,37 @@ class MeetingTest(Base):
         self.assertEquals(3, len(choices))
         self.assertEquals('http://groupmood.net/jsonld/choice', choices[0]['@context'])
         
-        answerRelation = get_related('answer', question)['href']
+        answerRelationHref = get_related('answer', question)['href']
         
         votes = [
-                 
+         'Rot',
+         'Rot',
+         'Rot',
+         'Gelb',
+         'Gelb',
+         'Grün',
         ]
+        
+        for a in votes:
+            response = self.client.post(answerRelationHref, {'answer': a}, Accept='application/json')
+            self.assertEqual(response.status_code, 201)
+            info = simplejson.loads(response.content)
+            answer = info['result']
+            self.assertEquals('http://groupmood.net/jsonld/answer', answer['@context'])
+            
+        # Question neu laden
+        response = self.client.get(question['@id'], Accept='application/json')
+        info = simplejson.loads(response.content)
+        question = info['result']
+        self.assertEquals(6, question['numAnswers'])
+        averageAnswers = question['averageAnswers']
+        self.assertEquals(3, len(averageAnswers))
+        self.assertEquals('Rot', averageAnswers[0]['answer'])
+        self.assertEquals(3, averageAnswers[0]['numVotes'])
+        self.assertEquals(50, averageAnswers[0]['average'])
+        self.assertEquals('Gelb', averageAnswers[1]['answer'])
+        self.assertEquals(2, averageAnswers[1]['numVotes'])
+        self.assertEquals(33, averageAnswers[1]['average'])
+        self.assertEquals(1, averageAnswers[2]['numVotes'])
+        self.assertEquals(16, averageAnswers[2]['average'])
+

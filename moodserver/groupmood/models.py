@@ -166,6 +166,8 @@ class Question(BaseModel):
     0
     >>> question.avg()
     0
+    >>> question.averageAnswers()
+    []
     
     """
     context = 'question'
@@ -212,6 +214,7 @@ class Question(BaseModel):
             'numAnswers': self.numAnswers(),
             'creationDate': self.creation_date.isoformat(),
             'avg': self.avg(),
+            'averageAnswers': map(lambda avgAnswer: avgAnswer.toJsonDict(), self.averageAnswers())
         }
         return d
     
@@ -226,6 +229,28 @@ class Question(BaseModel):
         for v in votes:
             sum += int(v.answer)
         return sum / len(votes)
+    
+    def averageAnswers(self):
+        """Berechnet für alle Abgegebenen Antworten einer Choice-Question die Durchschnittswerte"""
+        if self.type != self.TYPE_CHOICE:
+            return []
+        answerCount = []
+        # Choices laden
+        for choice in Choice.objects.filter(question=self):
+            numVotes = Answer.objects.filter(question=self, answer=choice.name).count()
+            answerCount.append({'name': choice.name, 'numVotes': numVotes})
+        totalVotes = reduce(lambda total, avgAnswer: total + avgAnswer['numVotes'], answerCount, 0)
+        avgAnswers = []
+        for a in answerCount:
+            avgAnswer = AnswerAverage()
+            avgAnswer.answer = a['name']
+            avgAnswer.numVotes = a['numVotes']
+            avgAnswer.average = int(a['numVotes'] / float(totalVotes) * 100.0) if totalVotes > 0 else 0
+            avgAnswer.question = self
+            avgAnswers.append(avgAnswer)
+            
+        # Sort by average
+        return sorted(avgAnswers, key=lambda avgAnswer: avgAnswer.average, reverse=True)
 
     def getMin(self, default=None):
         """Gibt den Min-Wert der Range zurück"""
@@ -335,8 +360,8 @@ class Answer(BaseModel):
     >>> meeting = Meeting.objects.create(name="Meeting with Topics")
     >>> voteTopic = Topic.objects.create(meeting=meeting, name="Wie bewerten Sie dieses Meeting?")
     >>> question = Question.objects.create(topic=voteTopic, name="Allgemeine Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
-    >>> questionOptionMin = QuestionOption.objects.create(question=question, key="min_value", value="0")
-    >>> questionOptionMax = QuestionOption.objects.create(question=question, key="max_value", value="100")
+    >>> o = QuestionOption.objects.create(question=question, key="min_value", value="0")
+    >>> o = QuestionOption.objects.create(question=question, key="max_value", value="100")
     >>> user = User.objects.create(ip="127.0.0.2")
     >>> answer = Answer.objects.create(question=question, user=user, answer="50")
     >>> answer.answer
@@ -349,7 +374,73 @@ class Answer(BaseModel):
     answer = models.CharField(max_length=200)
 
     def __unicode__(self):
-        return "Answer #%d: %s on %s" % (self.id, self.answer, unicode(self.slide))
+        return "Answer #%d: %s on %s" % (self.id, self.answer, unicode(self.question))
     
     def toJsonDict(self):
         return {'id': self.id, 'answer': self.answer, 'user': self.user,  'creationDate': self.creation_date.isoformat()}
+
+class AnswerAverage(object):
+    """
+    
+    Gibt an, wieviele abgebene Stimmen zu einer Frage diese Antwort hatte
+    
+    >>> meeting = Meeting.objects.create(name="Choice-Meeting")
+    >>> voteTopic = Topic.objects.create(meeting=meeting, name="Choices")
+    >>> singleChoiceQuestion = Question.objects.create(topic=voteTopic, name="Single-Choice", type=Question.TYPE_CHOICE, mode=Question.MODE_SINGLE)
+    >>> o = QuestionOption.objects.create(question=singleChoiceQuestion, key="min_choices", value="1")
+    >>> o = QuestionOption.objects.create(question=singleChoiceQuestion, key="max_choices", value="1")
+    >>> c = Choice.objects.create(question=singleChoiceQuestion, name="Rot")
+    >>> c = Choice.objects.create(question=singleChoiceQuestion, name="Gelb")
+    >>> c = Choice.objects.create(question=singleChoiceQuestion, name="Grün") 
+    >>> multipleChoiceQuestion = Question.objects.create(topic=voteTopic, name="Multiple-Choice", type=Question.TYPE_CHOICE, mode=Question.MODE_SINGLE)
+    >>> o = QuestionOption.objects.create(question=multipleChoiceQuestion, key="min_choices", value="1")
+    >>> o = QuestionOption.objects.create(question=multipleChoiceQuestion, key="max_choices", value="2")
+    >>> c = Choice.objects.create(question=multipleChoiceQuestion, name="Rot")
+    >>> c = Choice.objects.create(question=multipleChoiceQuestion, name="Gelb")
+    >>> c = Choice.objects.create(question=multipleChoiceQuestion, name="Grün")
+    >>> user = User.objects.create(ip="127.0.0.3")
+    >>> a = Answer.objects.create(question=singleChoiceQuestion, user=user, answer="Rot")
+    >>> a = Answer.objects.create(question=singleChoiceQuestion, user=user, answer="Rot")
+    >>> a = Answer.objects.create(question=singleChoiceQuestion, user=user, answer="Rot")
+    >>> a = Answer.objects.create(question=singleChoiceQuestion, user=user, answer="Gelb")
+    >>> a = Answer.objects.create(question=singleChoiceQuestion, user=user, answer="Gelb")
+    >>> a = Answer.objects.create(question=singleChoiceQuestion, user=user, answer="Grün")
+    >>> singleChoiceQuestion.numAnswers()
+    6
+    >>> avgAnswers = singleChoiceQuestion.averageAnswers()
+    >>> len(avgAnswers)
+    3
+    >>> avgAnswers[0].answer
+    u'Rot'
+    >>> avgAnswers[0].numVotes
+    3
+    >>> avgAnswers[0].average
+    50
+    >>> avgAnswers[0].question.id == singleChoiceQuestion.id
+    True
+    >>> avgAnswers[1].answer
+    u'Gelb'
+    >>> avgAnswers[1].numVotes
+    2
+    >>> avgAnswers[1].average
+    33
+    >>> avgAnswers[2].numVotes
+    1
+    >>> avgAnswers[2].average
+    16
+    
+    """
+    context = 'answeraverage'
+    question = None
+    answer = None
+    numVotes = None
+    average = None
+
+    def __unicode__(self):
+        return "AverageAnswer: %s (Votes: %d, Average: %d) on %s" % (self.answer, self.numVotes, self.average, unicode(self.question))
+    
+    def __repr__(self, *args, **kwargs):
+        return self.__unicode__()
+    
+    def toJsonDict(self):
+        return {'answer': self.answer, 'numVotes': self.numVotes, 'average': self.average}

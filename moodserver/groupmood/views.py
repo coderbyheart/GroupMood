@@ -55,9 +55,9 @@ def modelToJson(request, model):
         '@id': getModelUrl(request, model)
     }
     for k in data:
-        if isinstance(data[k], BaseModel):
+        try:
             modelJson[k] = modelToJson(request, data[k])
-        else:
+        except AttributeError:
             modelJson[k] = data[k]
     if type(model) in modelRelations:
         modelJson['@relations'] = []
