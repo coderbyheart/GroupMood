@@ -492,7 +492,12 @@ public class QuestionActivity extends ServiceActivity {
 
 	}
 
-	private final class CommentTextWatcher implements TextWatcher {
+	/**
+	 * Kümmert sich um das deaktivieren des Kommentar-Buttons
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private class CommentTextWatcher implements TextWatcher {
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before,
 				int count) {
