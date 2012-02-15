@@ -8,24 +8,22 @@
 	<dd>{{ question.type }}</dd>
 	<dt>Mode</dt>
 	<dd>{{ question.mode }}</dd>
-	<dt>Answers</dt>
+	
+	{% if question.type == "choice" %}
+	<dt>AverageAnswers</dt>
 	<dd>
-	{% if question.answer_set %}
-	{% for answer in question.answer_set.all %}
-	{% if forloop.first %}
-	<ul>
-	{% endif %}
-		<li>
-			{{ answer.answer }}
-		</li>
-	{% if forloop.last %}
-	</ul>
-	{% endif %}
-	{% endfor %}
-	{% else %}
-	No Answers, yet.
-	{% endif %}
+		{% for averageAnswer in question.averageAnswers %}
+		{% if forloop.first %}
+		<ol>
+		{% endif %}
+			<li>{{ averageAnswer.answer }}: {{ averageAnswer.average }}% ({{ averageAnswer.numVotes }} Stimmen)</li>
+		{% if forloop.last %}
+		</ol>
+		{% endif %}
+		{% endfor %}
 	</dd>
+	{% endif %}
+	
 	{% if question.type == "range" %}
 	<dt>AvgVote</dt>
 	<dd>{{ question.avg }}</dd>
