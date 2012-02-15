@@ -7,6 +7,7 @@ import java.util.List;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+import de.hsrm.mi.mobcomp.y2k11grp04.service.RelatedModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
 public class Question extends BaseModel {
@@ -134,35 +135,14 @@ public class Question extends BaseModel {
 		this.choices = choices;
 	}
 
-	public List<AnswerAverage> getAnswerAverages() {
-		// TODO: Serverseitig implementieren
-		ArrayList<AnswerAverage> aavg = new ArrayList<AnswerAverage>();
-
-		AnswerAverage a1 = new AnswerAverage();
-		a1.setAnswer("Rot");
-		a1.setAverage(25);
-		a1.setNumVotes(3);
-
-		AnswerAverage a2 = new AnswerAverage();
-		a2.setAnswer("Gelb");
-		a2.setAverage(50);
-		a2.setNumVotes(5);
-
-		AnswerAverage a3 = new AnswerAverage();
-		a3.setAnswer("Grün");
-		a3.setAverage(75);
-		a3.setNumVotes(7);
-
-		aavg.add(a3);
-		aavg.add(a2);
-		aavg.add(a1);
-
-		return aavg;
-		// return answerAverages;
+	public List<AnswerAverage> getAverageAnswers() {
+		return answerAverages;
 	}
 
-	public void setAnswerAverages(List<AnswerAverage> answerAverages) {
-		this.answerAverages = answerAverages;
+	@SuppressWarnings("unchecked")
+	public void setAverageAnswers(
+			@SuppressWarnings("rawtypes") @RelatedModel(model = AnswerAverage.class) List answerAverages) {
+		this.answerAverages = (List<AnswerAverage>) answerAverages;
 	}
 
 	/**
@@ -351,5 +331,9 @@ public class Question extends BaseModel {
 			throw new InvalidParameterException(
 					"progress must be between 0 and 1");
 		return (int) (getMinOption() + (getMaxOption() - getMinOption()) * d);
+	}
+
+	public void setOptions(List<QuestionOption> options) {
+		this.options = options;
 	}
 }

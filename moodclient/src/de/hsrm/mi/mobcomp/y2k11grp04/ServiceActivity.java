@@ -203,6 +203,30 @@ abstract public class ServiceActivity extends MenuActivity {
 		sendMessage(m);
 	}
 
+	/**
+	 * Bestellt Updates am Meeting ab
+	 */
+	protected void unsubscribeMeeting() {
+		Log.d(getClass().getCanonicalName(), "Stoppe Meeting-Updates");
+		Message m = Message.obtain(null,
+				MoodServerService.MSG_MEETING_UNSUBSCRIBE);
+		sendMessage(m);
+	}
+
+	/**
+	 * Abonniert Updates am Meeting
+	 */
+	protected void subscribeMeeting(Meeting meeting) {
+		Log.d(getClass().getCanonicalName(), "Starte Meeting-Updates");
+		Message m = Message.obtain(null,
+				MoodServerService.MSG_MEETING_SUBSCRIBE);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri()
+				.toString());
+		m.setData(data);
+		sendMessage(m);
+	}
+
 	public boolean isServiceBound() {
 		return serviceBound;
 	}

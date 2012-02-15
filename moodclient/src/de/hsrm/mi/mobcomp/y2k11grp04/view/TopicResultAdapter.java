@@ -79,10 +79,10 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 
 				answersLayout.addView(rangeAnswerView);
 			} else {
-				// TODO: Echte Daten verwenden
-				for(AnswerAverage aa: q.getAnswerAverages()) {
+				for (AnswerAverage aa : q.getAverageAnswers()) {
 					View choiceAnswerView = createAnswerView(layoutInflater,
-							res, aa.getAnswer(), aa.getAverage(), aa.getNumVotes());
+							res, aa.getAnswer(), aa.getAverage(),
+							aa.getNumVotes());
 					choiceAnswerView.findViewById(
 							R.id.groupMood_question_resultLabel_layout)
 							.setVisibility(View.GONE);

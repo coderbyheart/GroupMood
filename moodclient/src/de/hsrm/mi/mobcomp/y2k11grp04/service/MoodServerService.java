@@ -24,6 +24,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Answer;
+import de.hsrm.mi.mobcomp.y2k11grp04.model.AnswerAverage;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Choice;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
@@ -51,6 +52,7 @@ public class MoodServerService extends Service {
 	public static final int MSG_TOPIC_COMMENTS = 15;
 	public static final int MSG_TOPIC_COMMENTS_RESULT = 16;
 	public static final int MSG_TOPIC_COMMENT = 17;
+	public static final int MSG_MEETING_UPDATE_RESULT = 18;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
@@ -77,9 +79,9 @@ public class MoodServerService extends Service {
 			Executors.defaultThreadFactory());
 
 	/**
-	 * Wie oft der Vote abgeschickt wird (ms)
+	 * Wie oft das Meeting aktualisiert wird (ms)
 	 */
-	private int updateRate = 500;
+	private int updateRate = 10000;
 	private MoodServerApi api;
 
 	private class IncomingHandler extends Handler {
@@ -343,6 +345,8 @@ public class MoodServerService extends Service {
 				Uri.parse("http://groupmood.net/jsonld/comment"));
 		api.registerModel(Answer.class,
 				Uri.parse("http://groupmood.net/jsonld/answer"));
+		api.registerModel(AnswerAverage.class,
+				Uri.parse("http://groupmood.net/jsonld/answeraverage"));
 		startTimer();
 	}
 
@@ -368,13 +372,15 @@ public class MoodServerService extends Service {
 			public void run() {
 				// Alle registrierten Meeting-Watcher benachrichtigen
 				for (Messenger messenger : meetingSubscription.keySet()) {
-					BaseModel updatedMeeting;
+					Meeting updatedMeeting;
 					try {
-						updatedMeeting = api.getMeeting(meetingSubscription
-								.get(messenger).getUri());
+						updatedMeeting = api
+								.getUpdateMeeting(meetingSubscription.get(
+										messenger).getUri());
+
 						if (updatedMeeting != null)
 							sendMeetingTo(updatedMeeting, messenger,
-									MSG_MEETING_RESULT);
+									MSG_MEETING_UPDATE_RESULT);
 					} catch (ApiException e) {
 						sendError(messenger, e.getMessage());
 					}
@@ -385,7 +391,7 @@ public class MoodServerService extends Service {
 	}
 
 	/**
-	 * Hält den Straf-Timer an
+	 * Hält den Timer an
 	 */
 	private boolean stopTimer() {
 		if (timer == null)

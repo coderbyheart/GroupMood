@@ -3,7 +3,7 @@ package de.hsrm.mi.mobcomp.y2k11grp04.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class AnswerAverage extends BaseModel {
+public class AnswerAverage implements Model, Parcelable {
 	private Question question;
 	private int average;
 	private String answer;
@@ -16,17 +16,13 @@ public class AnswerAverage extends BaseModel {
 		readFromParcel(in);
 	}
 
-	@Override
 	protected void readFromParcel(Parcel in) {
-		super.readFromParcel(in);
 		average = in.readInt();
 		numVotes = in.readInt();
 		answer = in.readString();
 	}
 
-	@Override
 	public void writeToParcel(Parcel out, int flags) {
-		super.writeToParcel(out, flags);
 		out.writeInt(average);
 		out.writeInt(numVotes);
 		out.writeString(answer);
@@ -108,5 +104,10 @@ public class AnswerAverage extends BaseModel {
 		} else if (!question.equals(other.question))
 			return false;
 		return true;
+	}
+
+	@Override
+	public int describeContents() {
+		return 0;
 	}
 }

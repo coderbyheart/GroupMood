@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -26,7 +27,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
@@ -266,6 +266,50 @@ public class MoodServerApi {
 									+ m.getName()
 									+ "(StateModel) did not work.");
 						}
+					} else if (param == List.class) {
+						// Wenn ein Setter eine Liste als Parameter akzeptziert,
+						// untersuchen wir den Parameter ober die Annotation
+						// @RelatedModel besitzt, wenn ja lesen wir die Daten
+						// als Liste ein.
+						Annotation[][] paramAnnotations = m
+								.getParameterAnnotations();
+						if (paramAnnotations.length <= 0)
+							continue;
+						if (paramAnnotations[0].length <= 0)
+							continue;
+						Annotation a = paramAnnotations[0][0];
+						if (!(a instanceof RelatedModel))
+							continue;
+						@SuppressWarnings("rawtypes")
+						Class childs = ((RelatedModel) a).model();
+						if (!contextToModel.values().contains(childs))
+							continue;
+
+						@SuppressWarnings("rawtypes")
+						ArrayList childList = new ArrayList();
+						try {
+							JSONArray items = objectData.getJSONArray(key);
+							for (int i = 0; i < items.length(); i++) {
+								@SuppressWarnings({ "rawtypes", "unchecked" })
+								JSONReader reader = new JSONReader(childs,
+										items.getJSONObject(i));
+								childList.add(reader.get());
+							}
+						} catch (JSONException e) {
+							Log.e(getClass().getCanonicalName(), e.getMessage());
+							throw new ApiException("Failed to read items for "
+									+ key);
+						}
+						try {
+							m.invoke(objectInstance, childList);
+						} catch (IllegalArgumentException e) {
+							Log.e(getClass().getCanonicalName(), e.getMessage());
+							throw new ApiException(objectInstance.getClass()
+									.toString()
+									+ "#"
+									+ m.getName()
+									+ "(StateModel) did not work.");
+						}
 					} else {
 						// TODO: support all Types
 						Log.d(getClass().getCanonicalName(), "Skipped value "
@@ -427,6 +471,26 @@ public class MoodServerApi {
 		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
 				JSONReader.KEY_RESULT).get();
 		return meeting;
+	}
+
+	/**
+	 * Lädt ein Update-Datensatz eines Meetings
+	 * 
+	 * @param meeting
+	 * @return
+	 * @throws ApiException
+	 */
+	@SuppressWarnings("unchecked")
+	public Meeting getUpdateMeeting(Uri meetingUri) throws ApiException {
+
+		HttpGet request = new HttpGet(meetingUri.toString());
+		JSONObject response = execute(request);
+
+		JSONReader<Meeting> meetingReader = new JSONReader<Meeting>(response,
+				Meeting.class, JSONReader.KEY_RESULT);
+		meetingReader.setRecursiveModels(Topic.class, Question.class,
+				QuestionOption.class);
+		return meetingReader.getRecursive();
 	}
 
 	public Meeting getMeetingRecursive(Uri meetingUri) throws ApiException {

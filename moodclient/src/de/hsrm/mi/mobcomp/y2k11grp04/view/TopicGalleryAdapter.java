@@ -27,7 +27,7 @@ public class TopicGalleryAdapter extends BaseAdapter {
 
 	@SuppressWarnings("unused")
 	private static final String TAG = TopicGalleryAdapter.class.getSimpleName();
-	private final List<Topic> topics;
+	private List<Topic> topics;
 
 	/**
 	 * @param topics
@@ -38,12 +38,12 @@ public class TopicGalleryAdapter extends BaseAdapter {
 
 	@Override
 	public int getCount() {
-		return topics.size();
+		return getTopics().size();
 	}
 
 	@Override
 	public Topic getItem(int position) {
-		return topics.get(position);
+		return getTopics().get(position);
 	}
 
 	@Override
@@ -100,7 +100,8 @@ public class TopicGalleryAdapter extends BaseAdapter {
 					System.gc();
 				}
 				// Bitmap laden
-				topicImage.setImageBitmap(BitmapFactory.decodeFile(thumbFile.getAbsolutePath()));
+				topicImage.setImageBitmap(BitmapFactory.decodeFile(thumbFile
+						.getAbsolutePath()));
 				view.removeView(view
 						.findViewById(R.id.groupMood_topicItem_Image_Loading));
 			}
@@ -113,5 +114,13 @@ public class TopicGalleryAdapter extends BaseAdapter {
 		String path = imageFile.getAbsolutePath();
 		String pathWithoutExt = path.substring(0, path.lastIndexOf("."));
 		return new File(pathWithoutExt + "-thumb.png");
+	}
+
+	public List<Topic> getTopics() {
+		return topics;
+	}
+	
+	public void setTopics(List<Topic> topics) {
+		this.topics = topics;
 	}
 }

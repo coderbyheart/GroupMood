@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import uk.co.jasonfry.android.tools.ui.SwipeView;
 import uk.co.jasonfry.android.tools.ui.SwipeView.OnPageChangedListener;
@@ -25,8 +26,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsListView;
-import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -62,7 +61,7 @@ public class QuestionActivity extends ServiceActivity {
 
 	protected ProgressBar loadingProgress;
 	protected Meeting meeting;
-	protected boolean meetingComplete = false;
+	protected AtomicBoolean meetingComplete = new AtomicBoolean(false);
 	private View topicGallery;
 	private Topic currentTopic;
 	private Question currentQuestion;
@@ -108,6 +107,9 @@ public class QuestionActivity extends ServiceActivity {
 
 	// Stellt Hilfsfunktionen für ListViews zur Verfügung
 	private ListViewHelper listViewHelper = new ListViewHelper();
+
+	// Enthält die Ergebnisse, kann aktualisiert werden
+	private TopicResultAdapter topicResultAdapter;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -169,30 +171,10 @@ public class QuestionActivity extends ServiceActivity {
 			lv.setOnItemLongClickListener(topicGalleryClickListener);
 		}
 
-		// Ergebnisse ausblenden
-		TopicResultAdapter topicResultAdapter = new TopicResultAdapter(
-				meeting.getTopics());
+		topicResultAdapter = new TopicResultAdapter(meeting.getTopics());
 		ListView resultView = (ListView) findViewById(R.id.groupMood_topicResult);
 		resultView.setVisibility(View.GONE);
 		resultView.setAdapter(topicResultAdapter);
-		resultView.setOnScrollListener(new OnScrollListener() {
-
-			@Override
-			public void onScrollStateChanged(AbsListView view, int scrollState) {
-				if (scrollState == OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
-					// TODO: Fire SwipeView Action.UP(event)
-					Log.d("QuestionActivity",
-							"OnScrollListener ScrollStateTouchScroll");
-				}
-			}
-
-			@Override
-			public void onScroll(AbsListView view, int firstVisibleItem,
-					int visibleItemCount, int totalItemCount) {
-				Log.d("QuestionActivity", "OnScrollListener ONSCROLL");
-
-			}
-		});
 		updateTopic();
 	}
 
@@ -405,6 +387,8 @@ public class QuestionActivity extends ServiceActivity {
 			return new MeetingProgressHandler(message);
 		case MoodServerService.MSG_MEETING_COMPLETE_RESULT:
 			return new MeetingCompleteHandler(message);
+		case MoodServerService.MSG_MEETING_UPDATE_RESULT:
+			return new MeetingUpdateHandler(message);
 		case MoodServerService.MSG_TOPIC_IMAGE_RESULT:
 			return new TopicImageHandler(message);
 		case MoodServerService.MSG_TOPIC_COMMENTS_RESULT:
@@ -421,7 +405,7 @@ public class QuestionActivity extends ServiceActivity {
 		Log.v(getClass().getCanonicalName(), "onConnect");
 		super.onConnect();
 		// Meeting vollständig laden
-		if (!meetingComplete) {
+		if (!meetingComplete.get()) {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
 		} else {
@@ -441,7 +425,7 @@ public class QuestionActivity extends ServiceActivity {
 		}
 		outState.putBoolean("LOADING_HIDDEN",
 				loadingProgress.getVisibility() != View.VISIBLE);
-		outState.putBoolean("meetingComplete", meetingComplete);
+		outState.putBoolean("meetingComplete", meetingComplete.get());
 
 		// Zustand der Seekbars merken
 		ArrayList<SeekBarState> seekBarStates = new ArrayList<SeekBarState>();
@@ -465,7 +449,8 @@ public class QuestionActivity extends ServiceActivity {
 			currentQuestion = (Question) savedInstanceState
 					.getParcelable(MoodServerService.KEY_QUESTION_MODEL);
 		}
-		meetingComplete = savedInstanceState.getBoolean("meetingComplete");
+		meetingComplete = new AtomicBoolean(
+				savedInstanceState.getBoolean("meetingComplete"));
 		if (savedInstanceState.getBoolean("LOADING_HIDDEN"))
 			loadingProgress.setVisibility(View.GONE);
 
@@ -733,19 +718,43 @@ public class QuestionActivity extends ServiceActivity {
 		public void run() {
 			Bundle b = serviceMessage.getData();
 			b.setClassLoader(getClassLoader());
-			meeting = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
-			meetingComplete = true;
-			dismissDialog(DIALOG_LOADING);
-			// If you are using onCreateDialog(int) to manage the state
-			// of your dialogs, then every time your dialog is
-			// dismissed, the state of the Dialog object is retained by
-			// the Activity. If you decide that you will no longer need
-			// this object or it's important that the state is cleared,
-			// then you should call removeDialog(int). This will remove
-			// any internal references to the object and if the dialog
-			// is showing, it will dismiss it.
-			removeDialog(DIALOG_LOADING);
-			updateView();
+			Meeting meetingData = b
+					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+			if (!meetingComplete.getAndSet(true)) {
+				meeting = meetingData;
+				dismissDialog(DIALOG_LOADING);
+				// If you are using onCreateDialog(int) to manage the state
+				// of your dialogs, then every time your dialog is
+				// dismissed, the state of the Dialog object is retained by
+				// the Activity. If you decide that you will no longer need
+				// this object or it's important that the state is cleared,
+				// then you should call removeDialog(int). This will remove
+				// any internal references to the object and if the dialog
+				// is showing, it will dismiss it.
+				removeDialog(DIALOG_LOADING);
+				updateView();
+			}
+		}
+	}
+
+	/**
+	 * Wird aufgerufen, wenn das Meeting aktualisiert wird
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private class MeetingUpdateHandler extends ServiceMessageRunnable {
+		private MeetingUpdateHandler(Message serviceMessage) {
+			super(serviceMessage);
+		}
+
+		@Override
+		public void run() {
+			Bundle b = serviceMessage.getData();
+			b.setClassLoader(getClassLoader());
+			Meeting meetingData = b
+					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+			topicResultAdapter.setTopics(meetingData.getTopics());
+			topicResultAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -865,11 +874,14 @@ public class QuestionActivity extends ServiceActivity {
 					.getDrawable(R.drawable.ic_chart_white_tab));
 			findViewById(R.id.groupMood_topicResult)
 					.setVisibility(View.VISIBLE);
+			if (isServiceBound())
+				subscribeMeeting(meeting);
 		} else {
 			resultsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_chart));
+			if (isServiceBound())
+				unsubscribeMeeting();
 		}
-
 	}
 
 	/**
