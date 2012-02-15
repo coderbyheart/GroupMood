@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
@@ -25,8 +26,12 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -406,7 +411,10 @@ public class MoodServerApi {
 	}
 
 	public MoodServerApi() {
-		client = new DefaultHttpClient();
+		HttpParams params = new BasicHttpParams();
+		HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+		client = new DefaultHttpClient(params);
+
 		registerModel(ApiStatus.class,
 				Uri.parse("http://groupmood.net/jsonld/apistatus"));
 		registerModel(Relation.class,
@@ -454,7 +462,6 @@ public class MoodServerApi {
 		String dataAsString;
 		try {
 			response = client.execute(request);
-
 			HttpEntity entity = response.getEntity();
 			InputStream inputStream = entity.getContent();
 			ByteArrayOutputStream content = new ByteArrayOutputStream();
@@ -479,8 +486,10 @@ public class MoodServerApi {
 						+ status.toString());
 			}
 		} catch (ClientProtocolException e) {
+			Log.e(getClass().getCanonicalName(), e.toString());
 			throw new ApiException("Protocol error: " + e.toString());
 		} catch (IOException e) {
+			Log.e(getClass().getCanonicalName(), e.toString());
 			throw new ApiException("I/O error: " + e.toString());
 		}
 		Log.d(getClass().getCanonicalName(), dataAsString);
@@ -564,6 +573,7 @@ public class MoodServerApi {
 		try {
 			request.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
+			Log.e(getClass().getCanonicalName(), e.getMessage());
 			throw new ApiException(e.getMessage());
 		}
 		JSONObject response = execute(request);

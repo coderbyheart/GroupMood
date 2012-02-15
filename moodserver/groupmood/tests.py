@@ -15,7 +15,7 @@ def get_related(context, result):
 class MeetingTest(Base):
     
     def test_create(self):
-        response = self.client.post('/groupmood/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
+        response = self.client.post('/groupmood/meeting/wizard/test1', Accept='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue('Location' in response)
         info = simplejson.loads(response.content)
@@ -26,7 +26,7 @@ class MeetingTest(Base):
         self.assertEquals(1, info['result']['numTopics'])
         
     def test_default_vote(self):
-        response = self.client.post('/groupmood/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
+        response = self.client.post('/groupmood/meeting/wizard/test1', Accept='application/json')
         info = simplejson.loads(response.content)
         meeting = info['result']
         
@@ -55,7 +55,7 @@ class MeetingTest(Base):
         self.assertEquals(2, info['result']['numAnswers'])
         
     def test_topic_comment(self):
-        response = self.client.post('/groupmood/meeting', {'name': 'Test-Meeting'}, Accept='application/json')
+        response = self.client.post('/groupmood/meeting/wizard/test1', Accept='application/json')
         info = simplejson.loads(response.content)
         meeting = info['result']
         
@@ -77,3 +77,31 @@ class MeetingTest(Base):
         # Neueste Kommentare zuerst
         self.assertEquals("Test-Comment 2", info['result'][0]['comment'])
         self.assertEquals("Test-Comment", info['result'][1]['comment'])
+
+    def test_choice_vote(self):
+        """Test für Antworten und Ergebnisse von Choice-Votes""" 
+        
+        response = self.client.post('/groupmood/meeting/wizard/test2', Accept='application/json')
+        info = simplejson.loads(response.content)
+        meeting = info['result']
+        
+        response = self.client.get(get_related('topic', meeting)['href'], Accept='application/json')
+        info = simplejson.loads(response.content)
+        topic = info['result'][0]
+        
+        response = self.client.get(get_related('question', topic)['href'], Accept='application/json')
+        info = simplejson.loads(response.content)
+        question = info['result'][0]
+        
+        response = self.client.get(get_related('choice', question)['href'], Accept='application/json')
+        self.assertEqual(response.status_code, 200)
+        info = simplejson.loads(response.content)
+        choices = info['result']
+        self.assertEquals(3, len(choices))
+        self.assertEquals('http://groupmood.net/jsonld/choice', choices[0]['@context'])
+        
+        answerRelation = get_related('answer', question)['href']
+        
+        votes = [
+                 
+        ]
