@@ -15,11 +15,6 @@
     <string name="question_your_answer">Deine Antwort:</string>
     <string name="question_answered">Antwort gespeichert: %s</string>
     <string name="question_total">von %d</string>
-    <string name="alert_dialog_ok">OK</string>
-    <string name="alert_dialog_cancel">Abbrechen</string>
-    <string name="tab_questions">Fragen</string>
-    <string name="tab_comments">Kommentare</string>
-    <string name="tab_result">Ergebnisse</string>
     <string name="label_result_avg">Ergebnis: %d</string>
     
     <plurals name="label_result_numvotes">
