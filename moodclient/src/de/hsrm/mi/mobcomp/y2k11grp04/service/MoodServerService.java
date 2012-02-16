@@ -365,7 +365,6 @@ public class MoodServerService extends Service {
 	private boolean startTimer() {
 		if (timer != null)
 			return false;
-		Log.v(getClass().getCanonicalName(), "Starte Timer.");
 		timer = new Timer(true);
 		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
@@ -429,11 +428,12 @@ public class MoodServerService extends Service {
 		try {
 			rcpt.send(response);
 		} catch (RemoteException e) {
-			Log.v(getClass().getCanonicalName(), "Failed to send message.");
+			Log.e(getClass().getCanonicalName(), "Failed to send message.");
 		}
 	}
 
 	private void sendError(Messenger rcpt, String message) {
+		Log.e(getClass().getCanonicalName(), message);
 		Message errorMsg = Message.obtain(null, MSG_ERROR);
 		Bundle data = new Bundle();
 		data.putString(KEY_ERROR_MESSAGE, message);
