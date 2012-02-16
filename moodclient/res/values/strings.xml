@@ -16,6 +16,7 @@
     <string name="question_answered">Antwort gespeichert: %s</string>
     <string name="question_total">von %d</string>
     <string name="label_result_avg">Ergebnis: %d</string>
+    <string name="wifi_warning"><b>Kein WLAN verfügbar.</b>\nGroupMood wurde für die Verwendung mit WLAN entwickelt und wird lange brauchen, um Daten vom Server zu laden.</string>
     
     <plurals name="label_result_numvotes">
         <item quantity="one">1 Stimme</item>

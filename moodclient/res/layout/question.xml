@@ -9,7 +9,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         layout="@layout/actionbar" />
-
+    
     <ProgressBar
         android:id="@+id/groupMood_progressBar"
         style="?android:attr/progressBarStyleHorizontal"

@@ -3,9 +3,15 @@ package de.hsrm.mi.mobcomp.y2k11grp04;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.Uri.Builder;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
@@ -44,6 +50,32 @@ public class LaunchActivity extends ServiceActivity {
 						}
 					}
 				});
+
+		initWifiWarning();
+	}
+
+	/**
+	 * Zeigt eine Warnung an, wenn kein Wifi vorhanden ist
+	 */
+	private void initWifiWarning() {
+		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		findViewById(R.id.groupMood_wifi_warning).setVisibility(
+				wifiManager.isWifiEnabled() ? View.GONE : View.VISIBLE);
+
+		registerReceiver(new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+
+				NetworkInfo info = (NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+				if (info.getType() == ConnectivityManager.TYPE_WIFI) {
+					boolean wifiAvailable = info.getState() == NetworkInfo.State.CONNECTED
+							|| info.getState() == NetworkInfo.State.CONNECTING;
+					findViewById(R.id.groupMood_wifi_warning).setVisibility(
+							wifiAvailable ? View.GONE : View.VISIBLE);
+				}
+
+			}
+		}, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 	}
 
 	@Override

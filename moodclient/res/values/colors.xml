@@ -23,4 +23,8 @@
 	<color name="sub_text_lesser">#AF789A</color>
 	<color name="sub_light_lesser">#500031</color>
 	<color name="sub_dark_lesser">#2D001C</color>
+	<color name="warning_light">#EFD476</color>
+	<color name="warning_dark">#C1A547</color>	
+	<color name="warning_border">#d60009</color>
+	<color name="warning_text">#333333</color>
 </resources>
