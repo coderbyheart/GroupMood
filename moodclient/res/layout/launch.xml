@@ -46,4 +46,16 @@
         android:textColor="@color/action_text"
         android:textStyle="bold" />
 
+    <Button
+        android:id="@+id/groupMood_history_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@drawable/button"
+        android:padding="10dp"
+        android:text="@string/history"
+        android:textColor="@color/action_text"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
 </LinearLayout>

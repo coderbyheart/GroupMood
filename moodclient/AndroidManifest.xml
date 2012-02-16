@@ -44,6 +44,11 @@
             android:theme="@android:style/Theme.NoTitleBar"
             />
         
+        <provider
+			android:name=".persistence.Provider"
+			android:authorities="de.hsrm.mi.mobcomp.y2k11grp04.provider.content"
+			/>
+        
     </application>
 
 </manifest>

@@ -4,9 +4,11 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -24,10 +26,15 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
+import de.hsrm.mi.mobcomp.y2k11grp04.persistence.DbAdapter;
+import de.hsrm.mi.mobcomp.y2k11grp04.persistence.Provider;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
 public class LaunchActivity extends ServiceActivity {
+	private WifiStateReceiver wsr = new WifiStateReceiver();
 	BaseModel currentMeeting;
+	public static final int DIALOG_LOADING = 1;
+	private Uri lastMeetingUri;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -51,7 +58,28 @@ public class LaunchActivity extends ServiceActivity {
 					}
 				});
 
+		// Warnung bei fehlendem Wifi anzeigen
 		initWifiWarning();
+
+		// Button mit letztem Meeting anzeigen, falls vorhanden
+		Uri historyUrl = Provider.CONTENT_URI.buildUpon()
+				.appendPath("meetinghistory").build();
+		Cursor historyCursor = getContentResolver().query(historyUrl, null,
+				null, null, null);
+		if (historyCursor != null) {
+			lastMeetingUri = Uri.parse(historyCursor
+					.getString(DbAdapter.HISTORY_COL_MEETING_URL));
+			Button historyButton = (Button) findViewById(R.id.groupMood_history_button);
+			historyButton.setVisibility(View.VISIBLE);
+			historyButton.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View button) {
+					startActivity(new Intent(Intent.ACTION_VIEW, lastMeetingUri));
+				}
+			});
+			historyCursor.close();
+		}
 	}
 
 	/**
@@ -61,31 +89,19 @@ public class LaunchActivity extends ServiceActivity {
 		WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		findViewById(R.id.groupMood_wifi_warning).setVisibility(
 				wifiManager.isWifiEnabled() ? View.GONE : View.VISIBLE);
-
-		registerReceiver(new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-
-				NetworkInfo info = (NetworkInfo) intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
-				if (info.getType() == ConnectivityManager.TYPE_WIFI) {
-					boolean wifiAvailable = info.getState() == NetworkInfo.State.CONNECTED
-							|| info.getState() == NetworkInfo.State.CONNECTING;
-					findViewById(R.id.groupMood_wifi_warning).setVisibility(
-							wifiAvailable ? View.GONE : View.VISIBLE);
-				}
-
-			}
-		}, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+		registerReceiver(wsr, new IntentFilter(
+				ConnectivityManager.CONNECTIVITY_ACTION));
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
+		unregisterReceiver(wsr);
 	}
 
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -105,8 +121,6 @@ public class LaunchActivity extends ServiceActivity {
 					Toast.LENGTH_LONG).show();
 		}
 	}
-
-	public static final int DIALOG_LOADING = 1;
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -168,6 +182,16 @@ public class LaunchActivity extends ServiceActivity {
 		if (groupMoodUri != null) {
 			if (currentMeeting == null) {
 				showDialog(DIALOG_LOADING);
+
+				// Uri merken
+				ContentValues mNewValues = new ContentValues();
+				mNewValues.put(DbAdapter.HISTORY_KEY_MEETING_URL,
+						groupMoodUri.toString());
+				getContentResolver().insert(
+						Provider.CONTENT_URI.buildUpon()
+								.appendPath("meetinghistory").build(),
+						mNewValues);
+
 				// Uri umwandeln
 				Builder u = groupMoodUri.buildUpon().scheme(
 						groupMoodUri.toString().contains("+https") ? "https"
@@ -203,6 +227,27 @@ public class LaunchActivity extends ServiceActivity {
 		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
 			currentMeeting = savedInstanceState
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+		}
+	}
+
+	/**
+	 * Kümmert sich um das Anzeigen des Wifi-Warnings
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private class WifiStateReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+
+			NetworkInfo info = (NetworkInfo) intent
+					.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
+			if (info.getType() == ConnectivityManager.TYPE_WIFI) {
+				boolean wifiAvailable = info.getState() == NetworkInfo.State.CONNECTED
+						|| info.getState() == NetworkInfo.State.CONNECTING;
+				findViewById(R.id.groupMood_wifi_warning).setVisibility(
+						wifiAvailable ? View.GONE : View.VISIBLE);
+			}
+
 		}
 	}
 }
