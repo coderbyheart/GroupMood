@@ -25,7 +25,7 @@
         <com.devsmart.android.ui.HorizontalListView
             android:id="@+id/groupMood_gallery"
             android:layout_width="fill_parent"
-            android:layout_height="98dp" >
+            android:layout_height="96dp" >
 
             <!-- Die Gallery wird mit topic_item.xml befüllt -->
 

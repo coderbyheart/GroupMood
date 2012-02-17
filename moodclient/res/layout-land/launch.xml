@@ -9,69 +9,89 @@
         android:layout_height="wrap_content"
         android:background="@drawable/background"
         android:gravity="center"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <ImageView
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:contentDescription="@string/app_name"
-            android:paddingBottom="15dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
             android:src="@drawable/headlogo" />
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_main"
-            android:padding="5dp"
-            android:text="@string/intro"
-            android:textColor="@color/main_text" />
-
-        <TextView
-            android:id="@+id/groupMood_wifi_warning"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/bg_warning"
-            android:drawableLeft="@android:drawable/ic_dialog_alert"
-            android:drawablePadding="5dp"
-            android:padding="5dp"
-            android:text="@string/wifi_warning"
-            android:textColor="@color/warning_text"
-            android:textSize="11dp"
-            android:visibility="visible" />
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:orientation="vertical" >
 
-            <Button
-                android:id="@+id/groupMood_scan_button"
+            <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="10dp"
-                android:background="@drawable/button"
-                android:padding="10dp"
-                android:text="@string/scan"
-                android:textColor="@color/action_text"
-                android:textStyle="bold" />
+                android:layout_margin="5dp"
+                android:background="@drawable/bg_main"
+                android:padding="5dp"
+                android:text="@string/intro"
+                android:textColor="@color/main_text" />
 
-            <Button
-                android:id="@+id/groupMood_history_button"
+            <TextView
+                android:id="@+id/groupMood_wifi_warning"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="10dp"
-                android:background="@drawable/button"
-                android:padding="10dp"
-                android:text="@string/history"
-                android:textColor="@color/action_text"
-                android:textStyle="bold"
+                android:layout_margin="5dp"
+                android:background="@drawable/bg_warning"
+                android:drawableLeft="@android:drawable/ic_dialog_alert"
+                android:drawablePadding="5dp"
+                android:padding="5dp"
+                android:text="@string/wifi_warning"
+                android:textColor="@color/warning_text"
+                android:textSize="11dp"
                 android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <Button
+                    android:id="@+id/groupMood_fotovote_button"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/button"
+                    android:padding="5dp"
+                    android:text="@string/fotovote_create"
+                    android:textColor="@color/action_text" />
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
+
+                    <Button
+                        android:id="@+id/groupMood_scan_button"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/button"
+                        android:padding="5dp"
+                        android:text="@string/scan"
+                        android:textColor="@color/action_text"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/groupMood_history_button"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/button"
+                        android:padding="5dp"
+                        android:text="@string/history"
+                        android:textColor="@color/action_text"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

@@ -53,11 +53,14 @@ public class MoodServerService extends Service {
 	public static final int MSG_TOPIC_COMMENTS_RESULT = 16;
 	public static final int MSG_TOPIC_COMMENT = 17;
 	public static final int MSG_MEETING_UPDATE_RESULT = 18;
+	public static final int MSG_FOTOVOTE_CREATE = 19;
 	public static final int MSG_ERROR = 99;
 
+	public static final String KEY_API_URI = "api.uri";
 	public static final String KEY_MEETING_MODEL = "model.Meeting";
 	public static final String KEY_MEETING_ID = "meeting.id";
 	public static final String KEY_MEETING_URI = "meeting.uri";
+	public static final String KEY_MEETING_NAME = "meeting.name";
 	public static final String KEY_ERROR_MESSAGE = "error.message";
 	public static final String KEY_ANSWER = "answer.answer";
 	public static final String KEY_TOPIC_ID = "topic.id";
@@ -107,6 +110,9 @@ public class MoodServerService extends Service {
 				case MSG_MEETING_UNSUBSCRIBE:
 					unsubscribeMeeting(request);
 					break;
+				case MSG_FOTOVOTE_CREATE:
+					createFotoVoteMeeting(request);
+					break;
 				case MSG_ANSWER:
 					createAnswer(request);
 					break;
@@ -134,6 +140,22 @@ public class MoodServerService extends Service {
 	public void fetchMeeting(Message request) throws ApiException {
 		Meeting meeting = api.getMeeting(Uri.parse(request.getData().getString(
 				KEY_MEETING_URI)));
+		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_RESULT);
+	}
+
+	/**
+	 * Legt ein Meeting vom Typ FotoVote an
+	 * 
+	 * @param request
+	 * @throws ApiException
+	 */
+	public void createFotoVoteMeeting(Message request) throws ApiException {
+
+		String meetingName = request.getData().getString(KEY_MEETING_NAME);
+		Uri apiUri = Uri.parse(request.getData().getString(KEY_API_URI));
+		File image = new File(request.getData().getString(KEY_TOPIC_IMAGE));
+
+		Meeting meeting = api.createMeetingFotoVote(apiUri, meetingName, image);
 		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_RESULT);
 	}
 
@@ -301,16 +323,18 @@ public class MoodServerService extends Service {
 	}
 
 	/**
-	 * Abonniert Änderungen am Meeting
+	 * Abonniert Änderungen am Meeting, schickt direkt das Meeting zurück
 	 * 
 	 * @param request
 	 * @throws ApiException
 	 */
 	public void subscribeMeeting(Message request) throws ApiException {
-		Meeting subscribeMeeting = api.getMeeting(Uri.parse(request.getData()
+		Meeting subscribeMeeting = getUpdateMeeting(Uri.parse(request.getData()
 				.getString(KEY_MEETING_URI)));
 		if (subscribeMeeting != null) {
 			meetingSubscription.put(request.replyTo, subscribeMeeting);
+			sendMeetingTo(subscribeMeeting, request.replyTo,
+					MSG_MEETING_UPDATE_RESULT);
 		}
 	}
 
@@ -373,9 +397,8 @@ public class MoodServerService extends Service {
 				for (Messenger messenger : meetingSubscription.keySet()) {
 					Meeting updatedMeeting;
 					try {
-						updatedMeeting = api
-								.getUpdateMeeting(meetingSubscription.get(
-										messenger).getUri());
+						updatedMeeting = getUpdateMeeting(meetingSubscription
+								.get(messenger).getUri());
 
 						if (updatedMeeting != null)
 							sendMeetingTo(updatedMeeting, messenger,
@@ -387,6 +410,22 @@ public class MoodServerService extends Service {
 			}
 		}, updateRate, updateRate);
 		return true;
+	}
+
+	private Meeting getUpdateMeeting(Uri meetingUri) throws ApiException {
+		Meeting meeting = api.fetchUpdateMeeting(meetingUri);
+
+		// Bilder der Topics prüfen
+		for (Topic topic : meeting.getTopics()) {
+			if (topic.getImage() == null)
+				continue;
+			File imageFile = getTopicImageFile(topic);
+			if (imageFile.exists()) {
+				topic.setImageFile(imageFile);
+			}
+		}
+
+		return meeting;
 	}
 
 	/**

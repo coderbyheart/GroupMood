@@ -1,5 +1,7 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
+import java.io.File;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -223,6 +225,22 @@ abstract public class ServiceActivity extends MenuActivity {
 		Bundle data = new Bundle();
 		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri()
 				.toString());
+		m.setData(data);
+		sendMessage(m);
+	}
+
+	/**
+	 * Legt ein Meeting vom Typ Foto-Vote an
+	 * 
+	 * @param uri
+	 * @param imageFile
+	 */
+	protected void createFotoVote(Uri uri, String name, File imageFile) {
+		Message m = Message.obtain(null, MoodServerService.MSG_FOTOVOTE_CREATE);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_API_URI, uri.toString());
+		data.putString(MoodServerService.KEY_MEETING_NAME, name);
+		data.putString(MoodServerService.KEY_TOPIC_IMAGE, imageFile.toString());
 		m.setData(data);
 		sendMessage(m);
 	}

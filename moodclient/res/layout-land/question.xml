@@ -24,7 +24,7 @@
 
         <ListView
             android:id="@+id/groupMood_gallery"
-            android:layout_width="100dp"
+            android:layout_width="96dp"
             android:layout_height="fill_parent"
             android:dividerHeight="0dp" 
             >
@@ -36,7 +36,8 @@
             android:id="@+id/groupMood_allTopicQuestionsLayout"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            >
 
             <!-- Hier rein werden die einzelnen Fragen gerendert: topic_questions.xml -->
         </LinearLayout>

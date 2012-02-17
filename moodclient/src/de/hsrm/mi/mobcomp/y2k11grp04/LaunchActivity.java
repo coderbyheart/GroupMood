@@ -1,14 +1,21 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -16,10 +23,20 @@ import android.net.Uri.Builder;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Message;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.webkit.URLUtil;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -34,7 +51,18 @@ public class LaunchActivity extends ServiceActivity {
 	private WifiStateReceiver wsr = new WifiStateReceiver();
 	BaseModel currentMeeting;
 	public static final int DIALOG_LOADING = 1;
+	public static final int DIALOG_MEETING_CREATE = 2;
+	public static final int DIALOG_MEETING_CREATE_WAIT = 3;
+	private static final int ACITIVITY_RESULT_SELECT_PICTURE = 1;
+	private static final int ACITIVITY_RESULT_CAPTURE_PICTURE = 2;
 	private Uri lastMeetingUri;
+	private AutoCompleteTextView meetingName;
+	private Button meetingCreateButton;
+	private EditText serverName;
+	private ImageView photo;
+	private CreateDialogeValidator cdv;
+	private Uri captureImageTargetUri;
+	private File imageFile;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -80,6 +108,15 @@ public class LaunchActivity extends ServiceActivity {
 			});
 			historyCursor.close();
 		}
+
+		((Button) findViewById(R.id.groupMood_fotovote_button))
+				.setOnClickListener(new OnClickListener() {
+
+					@Override
+					public void onClick(View button) {
+						showDialog(DIALOG_MEETING_CREATE);
+					}
+				});
 	}
 
 	/**
@@ -105,20 +142,51 @@ public class LaunchActivity extends ServiceActivity {
 	}
 
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		IntentResult scanResult = IntentIntegrator.parseActivityResult(
-				requestCode, resultCode, intent);
-		if (scanResult != null && scanResult.getContents() != null) {
-			try {
-				startActivity(new Intent(Intent.ACTION_VIEW,
-						Uri.parse(scanResult.getContents())));
-			} catch (ActivityNotFoundException e) {
-				Toast.makeText(getApplicationContext(),
-						R.string.toast_no_groupmood_qrcode, Toast.LENGTH_LONG)
-						.show();
+		if (resultCode == RESULT_OK) {
+			if (requestCode == ACITIVITY_RESULT_SELECT_PICTURE) {
+				photo.setImageURI(intent.getData());
+
+				// Pfad zur Datei erzeugen
+				String[] proj = { MediaStore.Images.Media.DATA };
+				Cursor cursor = managedQuery(intent.getData(), proj, null,
+						null, null);
+				cursor.moveToFirst();
+				imageFile = new File(cursor.getString(cursor
+						.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)));
+				cursor.close();
+
+				cdv.setImageInput(imageFile);
+				cdv.validate();
+			} else if (requestCode == ACITIVITY_RESULT_CAPTURE_PICTURE) {
+				ContentResolver cr = getContentResolver();
+				Bitmap bitmap;
+				try {
+					bitmap = android.provider.MediaStore.Images.Media
+							.getBitmap(cr, captureImageTargetUri);
+					photo.setImageBitmap(bitmap);
+					cdv.setImageInput(imageFile);
+					cdv.validate();
+				} catch (Exception e) {
+					Log.e(getClass().getCanonicalName(), e.toString());
+				}
+			} else {
+				// Scan-Ergebnis
+				IntentResult scanResult = IntentIntegrator.parseActivityResult(
+						requestCode, resultCode, intent);
+				if (scanResult != null && scanResult.getContents() != null) {
+					try {
+						startActivity(new Intent(Intent.ACTION_VIEW,
+								Uri.parse(scanResult.getContents())));
+					} catch (ActivityNotFoundException e) {
+						Toast.makeText(getApplicationContext(),
+								R.string.toast_no_groupmood_qrcode,
+								Toast.LENGTH_LONG).show();
+					}
+				} else {
+					Toast.makeText(getApplicationContext(),
+							R.string.toast_no_scan, Toast.LENGTH_LONG).show();
+				}
 			}
-		} else {
-			Toast.makeText(getApplicationContext(), R.string.toast_no_scan,
-					Toast.LENGTH_LONG).show();
 		}
 	}
 
@@ -128,6 +196,117 @@ public class LaunchActivity extends ServiceActivity {
 		case DIALOG_LOADING:
 			return ProgressDialog.show(LaunchActivity.this, "", getResources()
 					.getString(R.string.check_meeting), true);
+		case DIALOG_MEETING_CREATE:
+
+			Dialog dialog = new Dialog(LaunchActivity.this);
+			dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+			dialog.setTitle(getResources().getString(R.string.fotovote_create));
+			dialog.setContentView(R.layout.fotovote_dialog);
+
+			serverName = (EditText) dialog
+					.findViewById(R.id.groupMood_fotovote_create_server);
+
+			if (lastMeetingUri != null) {
+				Uri serverUri = lastMeetingUri
+						.buildUpon()
+						.scheme(lastMeetingUri.toString().contains("+https") ? "https"
+								: "http").path("").build();
+				serverName.setText(serverUri.toString());
+			}
+
+			meetingName = (AutoCompleteTextView) dialog
+					.findViewById(R.id.groupMood_fotovote_create_name);
+
+			photo = (ImageView) dialog
+					.findViewById(R.id.groupMood_fotovote_create_photo_preview);
+			if (imageFile != null)
+				photo.setImageBitmap(BitmapFactory.decodeFile(imageFile
+						.getAbsolutePath()));
+
+			Button captureButton = (Button) dialog
+					.findViewById(R.id.groupMood_fotovote_create_photo_capture_button);
+			captureButton.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					File cacheDir = new File(Environment
+							.getExternalStorageDirectory().getAbsolutePath()
+							+ "/de.hsrm.mi.mobcomp.y2k11grp04/captures/");
+					if (!cacheDir.exists()) {
+						if (!cacheDir.mkdirs()) {
+							Log.e(getClass().getCanonicalName(),
+									"Failed to create directory: "
+											+ cacheDir.toString());
+							Toast.makeText(
+									getApplicationContext(),
+									getResources().getString(
+											R.string.capture_storage_error),
+									Toast.LENGTH_LONG).show();
+							return;
+						}
+					}
+					imageFile = new File(cacheDir.getAbsolutePath()
+							+ "/"
+							+ new SimpleDateFormat("yyyyMMdd_HHmmss")
+									.format(new Date()) + ".jpg");
+
+					captureImageTargetUri = Uri.fromFile(imageFile);
+
+					Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+					intent.putExtra(MediaStore.EXTRA_OUTPUT,
+							captureImageTargetUri);
+
+					startActivityForResult(Intent.createChooser(
+							intent,
+							getResources().getString(
+									R.string.fotovote_photo_capture)),
+							ACITIVITY_RESULT_CAPTURE_PICTURE);
+				}
+			});
+
+			Button galleryButton = (Button) dialog
+					.findViewById(R.id.groupMood_fotovote_create_photo_select_button);
+
+			galleryButton.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+
+					Intent intent = new Intent();
+					intent.setType("image/*");
+					intent.setAction(Intent.ACTION_GET_CONTENT);
+					startActivityForResult(
+							Intent.createChooser(intent, "Select Picture"),
+							ACITIVITY_RESULT_SELECT_PICTURE);
+
+				}
+			});
+
+			meetingCreateButton = (Button) dialog
+					.findViewById(R.id.groupMood_fotovote_create_button);
+			meetingCreateButton.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View button) {
+					dismissDialog(DIALOG_MEETING_CREATE);
+					showDialog(DIALOG_MEETING_CREATE_WAIT);
+					createFotoVote(
+							Uri.parse(serverName.getEditableText().toString()),
+							meetingName.getEditableText().toString(), imageFile);
+
+				}
+			});
+
+			cdv = new CreateDialogeValidator();
+			cdv.setCreateButton(meetingCreateButton);
+			cdv.setNameInput(meetingName);
+			cdv.setServerInput(serverName);
+			cdv.validate();
+
+			return dialog;
+		case DIALOG_MEETING_CREATE_WAIT:
+			return ProgressDialog.show(LaunchActivity.this, "", getResources()
+					.getString(R.string.creating_meeting), true);
 		default:
 			return super.onCreateDialog(id);
 		}
@@ -220,6 +399,9 @@ public class LaunchActivity extends ServiceActivity {
 			outState.putParcelable(MoodServerService.KEY_MEETING_MODEL,
 					currentMeeting);
 		}
+		if (imageFile != null) {
+			outState.putString("imageFile", imageFile.getAbsolutePath());
+		}
 	}
 
 	@Override
@@ -227,6 +409,9 @@ public class LaunchActivity extends ServiceActivity {
 		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
 			currentMeeting = savedInstanceState
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+		}
+		if (savedInstanceState.containsKey("imageFile")) {
+			imageFile = new File(savedInstanceState.getString("imageFile"));
 		}
 	}
 
@@ -248,6 +433,57 @@ public class LaunchActivity extends ServiceActivity {
 						wifiAvailable ? View.GONE : View.VISIBLE);
 			}
 
+		}
+	}
+
+	private class CreateDialogeValidator {
+		private Button meetingCreateButton;
+		private AutoCompleteTextView meetingName;
+		private EditText serverName;
+		private File photo;
+
+		TextWatcher textValidator = new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				validate();
+			}
+		};
+
+		public void validate() {
+			meetingCreateButton.setEnabled(meetingName != null
+					&& meetingName.length() > 0
+					&& serverName != null
+					&& serverName.length() > 0
+					&& URLUtil.isValidUrl(serverName.getEditableText()
+							.toString()) && photo != null);
+		}
+
+		public void setServerInput(EditText serverName) {
+			this.serverName = serverName;
+			serverName.addTextChangedListener(textValidator);
+		}
+
+		public void setImageInput(File photo) {
+			this.photo = photo;
+		}
+
+		public void setNameInput(AutoCompleteTextView meetingName) {
+			this.meetingName = meetingName;
+			meetingName.addTextChangedListener(textValidator);
+		}
+
+		public void setCreateButton(Button meetingCreateButton) {
+			this.meetingCreateButton = meetingCreateButton;
 		}
 	}
 }

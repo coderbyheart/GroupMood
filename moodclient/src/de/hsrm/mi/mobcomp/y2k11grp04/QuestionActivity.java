@@ -409,7 +409,7 @@ public class QuestionActivity extends ServiceActivity {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
 		} else {
-			loadComments();
+			// loadComments();
 		}
 	}
 
@@ -701,6 +701,7 @@ public class QuestionActivity extends ServiceActivity {
 							MoodServerService.KEY_TOPIC_IMAGE)));
 				}
 			}
+			topicGalleryAdapter.notifyDataSetChanged();
 		}
 	}
 

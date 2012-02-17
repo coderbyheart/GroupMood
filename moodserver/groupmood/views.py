@@ -124,13 +124,17 @@ def meeting_topics(request, id):
 class PresentationWizardForm(forms.Form):
     name = forms.CharField(max_length=200)
     presentation  = forms.FileField()
+    
+class FotoVoteWizardForm(forms.Form):
+    name = forms.CharField(max_length=200)
+    photo  = forms.FileField()
 
 @csrf_exempt
 def meeting_wizard(request, type):
     """Mit dem Wizard können Meetings mit vorgegebenen Einstellungen angelegt werden."""
     if request.method != 'POST':
         return HttpResponseBadRequest()
-    wizardTypes = ['presentation', 'test1', 'test2']
+    wizardTypes = ['presentation', 'fotovote', 'test1', 'test2']
     if type not in wizardTypes:
         return HttpResponseBadRequest("Unknown wizard type %s" % type)
     
@@ -151,6 +155,29 @@ def meeting_wizard(request, type):
         Choice.objects.create(question=question, name="Rot")
         Choice.objects.create(question=question, name="Gelb")
         Choice.objects.create(question=question, name="Grün")
+    elif type == 'fotovote':
+        form = FotoVoteWizardForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return HttpResponseBadRequest()
+        
+        meeting = Meeting.objects.create(name=request.POST['name'])
+        voteTopic = Topic.objects.create(meeting=meeting, name="Photo #1")
+        question = Question.objects.create(topic=voteTopic, name="Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MIN_VALUE, value="Schlecht")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MID_VALUE, value="Mittel")
+        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MAX_VALUE, value="Gut")
+        
+        # TODO: Datei überprüfen
+        topicFile = 'uploads/fotovote/%d.jpg' % voteTopic.id
+        destination = open(topicFile, 'wb+')
+        for chunk in request.FILES['photo'].chunks():
+            destination.write(chunk)
+        destination.close()
+        voteTopic.image = topicFile
+        voteTopic.save()
+        
     elif type == 'presentation':
         form = PresentationWizardForm(request.POST, request.FILES)
         if not form.is_valid():

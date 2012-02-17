@@ -1,6 +1,7 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -8,13 +9,16 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -27,6 +31,9 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
@@ -481,7 +488,7 @@ public class MoodServerApi {
 	 * @throws ApiException
 	 */
 	@SuppressWarnings("unchecked")
-	public Meeting getUpdateMeeting(Uri meetingUri) throws ApiException {
+	public Meeting fetchUpdateMeeting(Uri meetingUri) throws ApiException {
 
 		HttpGet request = new HttpGet(meetingUri.toString());
 		JSONObject response = execute(request);
@@ -741,4 +748,32 @@ public class MoodServerApi {
 					+ " has no related " + relatedClass.getCanonicalName());
 		return relation;
 	}
+
+	/**
+	 * Legt ein Meeting vom Typ FotoVote mit dem angegebene Namen an
+	 * 
+	 * @param apiUri
+	 * @param meetingName
+	 * @param image
+	 * @throws ApiException
+	 */
+	public Meeting createMeetingFotoVote(Uri apiUri, String meetingName,
+			File image) throws ApiException {
+
+		HttpPost request = new HttpPost(apiUri.buildUpon()
+				.path("/groupmood/meeting/wizard/fotovote").build().toString());
+		try {
+			MultipartEntity multipartContent = new MultipartEntity();
+			multipartContent.addPart("name", new StringBody(meetingName,
+					Charset.forName("UTF-8")));
+			multipartContent.addPart("photo", new FileBody(image));
+			request.setEntity(multipartContent);
+		} catch (UnsupportedEncodingException e) {
+			throw new ApiException(e.getMessage());
+		}
+		JSONObject response = execute(request);
+		return new JSONReader<Meeting>(response, Meeting.class,
+				JSONReader.KEY_RESULT).get();
+	}
+
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">GroupMood</string>
     <string name="scan">QR-Code scannen</string>
     <string name="history">Letztes Meeting öffnen</string>
@@ -18,9 +19,23 @@
     <string name="question_total">von %d</string>
     <string name="label_result_avg">Ergebnis: %d</string>
     <string name="wifi_warning"><b>Kein WLAN verfügbar.</b>\nGroupMood wurde für die Verwendung mit WLAN entwickelt und wird lange brauchen, um Daten vom Server zu laden.</string>
-    
+    <string name="label_add">Eintrag hinzufügen.</string>
+    <string name="fotovote_create">FotoVote erstellen</string>
+    <string name="fotovote_photo">Foto</string>
+    <string name="fotovote_photo_capture">Foto aufnehmen</string>
+    <string name="fotovote_photo_select">Aus Album auswählen</string>
+    <string name="meeting_name">Name des Meetings</string>
+    <string name="groupmood_server">Server</string>
+    <string name="groupmood_server_info">Die URL des GroupMood-Servers auf dem dieses Meeting erstellt werden soll, z.B.: \nhttp://groupmood.net:8000</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="fotovote_photo_preview">Foto</string>
+    <string name="fotovote_photo_info">Die ist das erste Foto für die Abstimmung. Anschließend können weitere Fotos hinzugefügt werden.</string>
+    <string name="capture_storage_error">Konnte Verzeichnis für Foto-Dateien nicht anlegen.</string>
+    <string name="creating_meeting">Lege Meeting an …</string>
+
     <plurals name="label_result_numvotes">
         <item quantity="one">1 Stimme</item>
         <item quantity="other">%d Stimmen</item>
     </plurals>
+
 </resources>
