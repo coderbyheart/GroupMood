@@ -118,8 +118,6 @@ public class Meeting extends BaseModel {
 		int result = super.hashCode();
 		result = prime * result + ((flags == null) ? 0 : flags.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + numTopics;
-		result = prime * result + ((topics == null) ? 0 : topics.hashCode());
 		return result;
 	}
 
@@ -141,13 +139,6 @@ public class Meeting extends BaseModel {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
-			return false;
-		if (numTopics != other.numTopics)
-			return false;
-		if (topics == null) {
-			if (other.topics != null)
-				return false;
-		} else if (!topics.equals(other.topics))
 			return false;
 		return true;
 	}

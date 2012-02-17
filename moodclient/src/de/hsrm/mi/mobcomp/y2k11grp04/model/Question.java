@@ -263,15 +263,10 @@ public class Question extends BaseModel {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + avg;
 		result = prime * result + ((mode == null) ? 0 : mode.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + numAnswers;
-		result = prime * result + ((options == null) ? 0 : options.hashCode());
-		result = prime * result + ((choices == null) ? 0 : choices.hashCode());
-		result = prime * result
-				+ ((answerAverages == null) ? 0 : answerAverages.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((topic == null) ? 0 : topic.hashCode());
 		return result;
 	}
 
@@ -284,8 +279,6 @@ public class Question extends BaseModel {
 		if (getClass() != obj.getClass())
 			return false;
 		Question other = (Question) obj;
-		if (avg != other.avg)
-			return false;
 		if (mode == null) {
 			if (other.mode != null)
 				return false;
@@ -296,32 +289,15 @@ public class Question extends BaseModel {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (numAnswers != other.numAnswers)
-			return false;
-		if (options == null) {
-			if (other.options != null)
+		if (type == null) {
+			if (other.type != null)
 				return false;
-		} else if (!options.equals(other.options))
-			return false;
-		if (choices == null) {
-			if (other.choices != null)
-				return false;
-		} else if (!choices.equals(other.choices))
-			return false;
-		if (answerAverages == null) {
-			if (other.answerAverages != null)
-				return false;
-		} else if (!answerAverages.equals(other.answerAverages))
+		} else if (!type.equals(other.type))
 			return false;
 		if (topic == null) {
 			if (other.topic != null)
 				return false;
 		} else if (!topic.equals(other.topic))
-			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
 			return false;
 		return true;
 	}

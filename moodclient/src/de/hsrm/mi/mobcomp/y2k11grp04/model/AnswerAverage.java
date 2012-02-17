@@ -74,9 +74,9 @@ public class AnswerAverage implements Model, Parcelable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((question == null) ? 0 : question.hashCode());
 		result = prime * result + ((answer == null) ? 0 : answer.hashCode());
-		result = prime * result + average;
-		result = prime * result + numVotes;
 		return result;
 	}
 
@@ -93,10 +93,6 @@ public class AnswerAverage implements Model, Parcelable {
 			if (other.answer != null)
 				return false;
 		} else if (!answer.equals(other.answer))
-			return false;
-		if (average != other.average)
-			return false;
-		if (numVotes != other.numVotes)
 			return false;
 		if (question == null) {
 			if (other.question != null)

@@ -86,11 +86,6 @@ public class Answer extends BaseModel {
 				return false;
 		} else if (!user.equals(other.user))
 			return false;
-		if (question == null) {
-			if (other.question != null)
-				return false;
-		} else if (!question.equals(other.question))
-			return false;
 		if (answer == null) {
 			if (other.answer != null)
 				return false;

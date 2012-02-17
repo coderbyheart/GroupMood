@@ -210,10 +210,6 @@ public class QuestionActivity extends ServiceActivity {
 		if (topicViews.containsKey(topic)) {
 			return topicViews.get(topic);
 		}
-
-		Log.d(getClass().getCanonicalName(),
-				"Erzeuge VIEW für Topic: " + topic.getId());
-
 		// Layout für das Topic erzeugen
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout topicQuestionsLayout = (LinearLayout) layoutInflater
@@ -443,6 +439,8 @@ public class QuestionActivity extends ServiceActivity {
 		if (!meetingComplete.get()) {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
+		} else {
+			loadComments();
 		}
 	}
 
@@ -757,8 +755,6 @@ public class QuestionActivity extends ServiceActivity {
 					commentsList.addView(view);
 				}
 			} else {
-				Log.d(getClass().getCanonicalName(), "No comments for "
-						+ topicUri.toString());
 				commentsList.setVisibility(View.GONE);
 				noComments.setVisibility(View.VISIBLE);
 			}
@@ -839,10 +835,9 @@ public class QuestionActivity extends ServiceActivity {
 			b.setClassLoader(getClassLoader());
 			Meeting meetingData = b
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
-			setCurrentTopic(meetingData.getTopics().get(0));
 			topicResultAdapter.setTopics(meetingData.getTopics());
-			topicResultAdapter.notifyDataSetChanged();
 			topicGalleryAdapter.setTopics(meetingData.getTopics());
+			topicResultAdapter.notifyDataSetChanged();
 			topicGalleryAdapter.notifyDataSetChanged();
 		}
 	}

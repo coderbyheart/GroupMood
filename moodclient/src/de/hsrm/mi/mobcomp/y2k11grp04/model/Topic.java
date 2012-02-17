@@ -119,8 +119,7 @@ public class Topic extends BaseModel {
 	/**
 	 * Gibt die Datei zurück, in dem das Bild gespeichert ist
 	 */
-	public File getImageFile() 
-	{
+	public File getImageFile() {
 		return imageFile;
 	}
 
@@ -128,12 +127,8 @@ public class Topic extends BaseModel {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((image == null) ? 0 : image.hashCode());
-		result = prime * result
-				+ ((imageFile == null) ? 0 : imageFile.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((questions == null) ? 0 : questions.hashCode());
+		result = prime * result + ((meeting == null) ? 0 : meeting.hashCode());
 		return result;
 	}
 
@@ -146,16 +141,6 @@ public class Topic extends BaseModel {
 		if (getClass() != obj.getClass())
 			return false;
 		Topic other = (Topic) obj;
-		if (image == null) {
-			if (other.image != null)
-				return false;
-		} else if (!image.equals(other.image))
-			return false;
-		if (imageFile == null) {
-			if (other.imageFile != null)
-				return false;
-		} else if (!imageFile.equals(other.imageFile))
-			return false;
 		if (meeting == null) {
 			if (other.meeting != null)
 				return false;
@@ -165,11 +150,6 @@ public class Topic extends BaseModel {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
-			return false;
-		if (questions == null) {
-			if (other.questions != null)
-				return false;
-		} else if (!questions.equals(other.questions))
 			return false;
 		return true;
 	}

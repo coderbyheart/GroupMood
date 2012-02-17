@@ -57,6 +57,8 @@ public class Choice extends BaseModel {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((question == null) ? 0 : question.hashCode());
 		return result;
 	}
 

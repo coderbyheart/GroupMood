@@ -77,6 +77,8 @@ public class QuestionOption extends BaseModel {
 		int result = super.hashCode();
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		result = prime * result
+				+ ((question == null) ? 0 : question.hashCode());
 		return result;
 	}
 
