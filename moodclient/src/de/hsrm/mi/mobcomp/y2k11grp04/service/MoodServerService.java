@@ -296,9 +296,8 @@ public class MoodServerService extends Service {
 	private File getTopicImageFile(Topic topic) {
 		return new File(Environment.getExternalStorageDirectory()
 				.getAbsolutePath()
-				+ "/de.hsrm.mi.mobcomp.y2k11grp04/cache/topic-"
-				+ topic.getId()
-				+ ".png");
+				+ "/Android/data/de.hsrm.mi.mobcomp.y2k11grp04/cache/topic-"
+				+ topic.getId() + ".png");
 	}
 
 	/**

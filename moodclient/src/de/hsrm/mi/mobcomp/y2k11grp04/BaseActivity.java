@@ -74,7 +74,7 @@ public class BaseActivity extends Activity {
 		public void onClick(View v) {
 			File cacheDir = new File(Environment.getExternalStorageDirectory()
 					.getAbsolutePath()
-					+ "/de.hsrm.mi.mobcomp.y2k11grp04/captures/");
+					+ "/Android/data/de.hsrm.mi.mobcomp.y2k11grp04/cache/");
 			if (!cacheDir.exists()) {
 				if (!cacheDir.mkdirs()) {
 					Log.e(getClass().getCanonicalName(),
@@ -90,7 +90,7 @@ public class BaseActivity extends Activity {
 			}
 			imageFile = new File(
 					cacheDir.getAbsolutePath()
-							+ "/"
+							+ "/capture-"
 							+ new SimpleDateFormat("yyyyMMdd_HHmmss")
 									.format(new Date()) + ".jpg");
 
