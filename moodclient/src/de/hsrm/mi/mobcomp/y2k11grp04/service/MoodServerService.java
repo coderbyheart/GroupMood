@@ -52,10 +52,11 @@ public class MoodServerService extends Service {
 	public static final int MSG_TOPIC_COMMENTS = 15;
 	public static final int MSG_TOPIC_COMMENTS_RESULT = 16;
 	public static final int MSG_TOPIC_COMMENT = 17;
-	public static final int MSG_MEETING_UPDATE_RESULT = 18;
-	public static final int MSG_FOTOVOTE_CREATE = 19;
-	public static final int MSG_FOTOVOTE_CREATE_TOPIC = 20;
-	public static final int MSG_FOTOVOTE_CREATE_TOPIC_RESULT = 21;
+	public static final int MSG_MEETING_UPDATE = 18;
+	public static final int MSG_MEETING_UPDATE_RESULT = 19;
+	public static final int MSG_FOTOVOTE_CREATE = 20;
+	public static final int MSG_FOTOVOTE_CREATE_TOPIC = 21;
+	public static final int MSG_FOTOVOTE_CREATE_TOPIC_RESULT = 22;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_API_URI = "api.uri";
@@ -114,6 +115,9 @@ public class MoodServerService extends Service {
 				case MSG_MEETING_UNSUBSCRIBE:
 					unsubscribeMeeting(request);
 					break;
+				case MSG_MEETING_UPDATE:
+					updateMeeting(request);
+					break;
 				case MSG_FOTOVOTE_CREATE:
 					createFotoVoteMeeting(request);
 					break;
@@ -165,7 +169,7 @@ public class MoodServerService extends Service {
 				Message.obtain(null, MSG_FOTOVOTE_CREATE_TOPIC_RESULT));
 		sendMeetingTo(getUpdateMeeting(meeting.getUri()), request.replyTo,
 				MSG_MEETING_UPDATE_RESULT);
-		fetchMissingImages(request);
+		fetchMissingImages(request.replyTo);
 	}
 
 	/**
@@ -275,22 +279,22 @@ public class MoodServerService extends Service {
 		sendMeetingProgress(request.replyTo, 2, maxProgress);
 		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
 
-		fetchMissingImages(request, 2, maxProgress);
+		fetchMissingImages(request.replyTo, 2, maxProgress);
 	}
 
-	private void fetchMissingImages(Message request, int startProgress,
+	private void fetchMissingImages(Messenger rcpt, int startProgress,
 			int maxProgress) throws ApiException {
 		int p = 0;
 		while (!missingImages.isEmpty()) {
 			Topic topic = missingImages.poll();
-			fetchTopicImage(request, topic);
+			fetchTopicImage(rcpt, topic);
 			p++;
-			sendMeetingProgress(request.replyTo, startProgress + p, maxProgress);
+			sendMeetingProgress(rcpt, startProgress + p, maxProgress);
 		}
 	}
 
-	private void fetchMissingImages(Message request) throws ApiException {
-		fetchMissingImages(request, 0, missingImages.size());
+	private void fetchMissingImages(Messenger rcpt) throws ApiException {
+		fetchMissingImages(rcpt, 0, missingImages.size());
 	}
 
 	private File getTopicImageFile(Topic topic) {
@@ -305,7 +309,7 @@ public class MoodServerService extends Service {
 	 * 
 	 * @throws ApiException
 	 */
-	private void fetchTopicImage(Message request, Topic topic)
+	private void fetchTopicImage(Messenger rcpt, Topic topic)
 			throws ApiException {
 
 		File imageFile = getTopicImageFile(topic);
@@ -326,7 +330,7 @@ public class MoodServerService extends Service {
 		data.putInt(KEY_TOPIC_ID, topic.getId());
 		data.putString(KEY_TOPIC_IMAGE, imageFile.toString());
 		info.setData(data);
-		sendMsg(request.replyTo, info);
+		sendMsg(rcpt, info);
 	}
 
 	/**
@@ -366,7 +370,21 @@ public class MoodServerService extends Service {
 			meetingSubscription.put(request.replyTo, subscribeMeeting);
 			sendMeetingTo(subscribeMeeting, request.replyTo,
 					MSG_MEETING_UPDATE_RESULT);
+			fetchMissingImages(request.replyTo);
 		}
+	}
+
+	/**
+	 * Fordert ein einmaliges Update an
+	 * 
+	 * @throws ApiException
+	 */
+	public Meeting updateMeeting(Message request) throws ApiException {
+		Meeting meeting = getUpdateMeeting(Uri.parse(request.getData()
+				.getString(KEY_MEETING_URI)));
+		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_UPDATE_RESULT);
+		fetchMissingImages(request.replyTo);
+		return meeting;
 	}
 
 	/**
@@ -431,13 +449,16 @@ public class MoodServerService extends Service {
 						updatedMeeting = getUpdateMeeting(meetingSubscription
 								.get(messenger).getUri());
 
-						if (updatedMeeting != null)
+						if (updatedMeeting != null) {
 							sendMeetingTo(updatedMeeting, messenger,
 									MSG_MEETING_UPDATE_RESULT);
+							fetchMissingImages(messenger);
+						}
 					} catch (ApiException e) {
 						sendError(messenger, e.getMessage());
 					}
 				}
+
 			}
 		}, updateRate, updateRate);
 		return true;

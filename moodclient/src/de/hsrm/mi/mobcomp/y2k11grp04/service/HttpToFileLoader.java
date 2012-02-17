@@ -58,6 +58,8 @@ public class HttpToFileLoader implements Callable<File> {
 			if (!cacheDir.mkdirs())
 				throw new IOException("Failed to create: "
 						+ cacheDir.getAbsolutePath());
+			File noMediaFile = new File(cacheDir.getAbsolutePath() + "/.nomedia");
+			noMediaFile.createNewFile();
 		}
 		// Note: Hier könnte man prüfen, ob es die Cache-Datei schon gibt, zum
 		// Demonstrationszwecken wird dies aber explizit nicht gemacht

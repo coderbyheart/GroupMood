@@ -179,6 +179,7 @@ public class LaunchActivity extends ServiceActivity {
 						@Override
 						public void onClick(View button) {
 							dismissDialog(DIALOG_MEETING_CREATE);
+							removeDialog(DIALOG_MEETING_CREATE);
 							showDialog(DIALOG_MEETING_CREATE_WAIT);
 							createFotoVote(
 									Uri.parse(((FotoVoteCreateDialog) fotovoteDialog).serverName

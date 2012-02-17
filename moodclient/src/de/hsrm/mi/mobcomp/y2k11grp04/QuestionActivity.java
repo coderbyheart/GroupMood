@@ -528,6 +528,7 @@ public class QuestionActivity extends ServiceActivity {
 						@Override
 						public void onClick(View button) {
 							dismissDialog(DIALOG_TOPIC_CREATE);
+							removeDialog(DIALOG_TOPIC_CREATE);
 							showDialog(DIALOG_TOPIC_CREATE_WAIT);
 							createFotoVoteTopic(meeting, imageFile);
 						}
@@ -556,6 +557,7 @@ public class QuestionActivity extends ServiceActivity {
 		@Override
 		public void run() {
 			dismissDialog(DIALOG_TOPIC_CREATE_WAIT);
+			removeDialog(DIALOG_TOPIC_CREATE_WAIT);
 		}
 	}
 
@@ -776,6 +778,8 @@ public class QuestionActivity extends ServiceActivity {
 			// Und Bild aus Datei setzen
 			Integer topicId = serviceMessage.getData().getInt(
 					MoodServerService.KEY_TOPIC_ID);
+			Log.d(getClass().getCanonicalName(),
+					"Bekomme neues Bild für Topic: " + topicId);
 			for (Topic t : topicGalleryAdapter.getTopics()) {
 				if (t.getId() == topicId) {
 					t.setImageFile(new File(serviceMessage.getData().getString(
@@ -929,6 +933,9 @@ public class QuestionActivity extends ServiceActivity {
 					.setVisibility(View.VISIBLE);
 			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
 					View.VISIBLE);
+			if (isServiceBound()) {
+				updateMeeting();
+			}
 		} else {
 			questionsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_checkmark));
@@ -943,8 +950,10 @@ public class QuestionActivity extends ServiceActivity {
 					View.VISIBLE);
 			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
 					View.VISIBLE);
-			if (isServiceBound())
+			if (isServiceBound()) {
+				updateMeeting();
 				loadComments();
+			}
 
 		} else {
 			commentsButton.setBackgroundDrawable(res
@@ -978,6 +987,18 @@ public class QuestionActivity extends ServiceActivity {
 		Bundle data = new Bundle();
 		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic()
 				.getUri().toString());
+		m.setData(data);
+		sendMessage(m);
+	}
+
+	/**
+	 * Führt ein einmaliges Update aus
+	 */
+	private void updateMeeting() {
+		Message m = Message.obtain(null, MoodServerService.MSG_MEETING_UPDATE);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri()
+				.toString());
 		m.setData(data);
 		sendMessage(m);
 	}

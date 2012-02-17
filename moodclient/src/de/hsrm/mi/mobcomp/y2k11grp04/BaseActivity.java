@@ -1,6 +1,7 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -86,6 +87,15 @@ public class BaseActivity extends Activity {
 									R.string.capture_storage_error),
 							Toast.LENGTH_LONG).show();
 					return;
+				}
+				File noMediaFile = new File(cacheDir.getAbsolutePath()
+						+ "/.nomedia");
+				try {
+					noMediaFile.createNewFile();
+				} catch (IOException e) {
+					Log.e(getClass().getCanonicalName(),
+							"Failed to create file "
+									+ noMediaFile.getAbsolutePath());
 				}
 			}
 			imageFile = new File(
