@@ -13,6 +13,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
@@ -33,6 +34,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -50,6 +52,7 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
+import de.hsrm.mi.mobcomp.y2k11grp04.view.FotoVoteTopicCreateDialog;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.ListViewHelper;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
 import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
@@ -58,15 +61,17 @@ import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicResultAdapter;
 public class QuestionActivity extends ServiceActivity {
 
 	public static final int DIALOG_LOADING = 1;
+	public static final int DIALOG_TOPIC_CREATE = 2;
+	public static final int DIALOG_TOPIC_CREATE_WAIT = 3;
 
 	protected ProgressBar loadingProgress;
 	protected Meeting meeting;
 	protected AtomicBoolean meetingComplete = new AtomicBoolean(false);
-	private View topicGallery;
+	private ViewGroup topicGallery;
 	private Topic currentTopic;
 	private Question currentQuestion;
 	private TopicGalleryAdapter topicGalleryAdapter;
-	private Map<Topic, View> topicViews = new HashMap<Topic, View>();
+	private Map<Topic, ViewGroup> topicViews = new HashMap<Topic, ViewGroup>();
 	private Map<Question, LinearLayout> questionActionViews = new HashMap<Question, LinearLayout>();
 	private Map<SeekBar, Question> seekbarToQuestion = new HashMap<SeekBar, Question>();
 	private Map<SeekBar, TextView> seekbarToCurrentValueTextView = new HashMap<SeekBar, TextView>();
@@ -110,6 +115,7 @@ public class QuestionActivity extends ServiceActivity {
 
 	// Enthält die Ergebnisse, kann aktualisiert werden
 	private TopicResultAdapter topicResultAdapter;
+	private LinearLayout allTopicQuestionsLayout;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -124,6 +130,8 @@ public class QuestionActivity extends ServiceActivity {
 		Bundle b = getIntent().getExtras();
 		b.setClassLoader(getClassLoader());
 		meeting = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+
+		allTopicQuestionsLayout = (LinearLayout) findViewById(R.id.groupMood_allTopicQuestionsLayout);
 
 		updateView();
 	}
@@ -155,7 +163,7 @@ public class QuestionActivity extends ServiceActivity {
 	 * Die Anzeige der Aktivity aktualisieren.
 	 */
 	protected void updateView() {
-		topicGallery = findViewById(R.id.groupMood_gallery);
+		topicGallery = (ViewGroup) findViewById(R.id.groupMood_gallery);
 		topicGalleryAdapter = new TopicGalleryAdapter(meeting.getTopics());
 		GalleryItemClickListener topicGalleryClickListener = new GalleryItemClickListener();
 
@@ -166,15 +174,16 @@ public class QuestionActivity extends ServiceActivity {
 			lv.setOnItemLongClickListener(topicGalleryClickListener);
 		} else {
 			ListView lv = ((ListView) topicGallery);
-			lv.setAdapter(topicGalleryAdapter);
 			lv.setOnItemClickListener(topicGalleryClickListener);
 			lv.setOnItemLongClickListener(topicGalleryClickListener);
+			lv.setAdapter(topicGalleryAdapter);
 		}
 
 		topicResultAdapter = new TopicResultAdapter(meeting.getTopics());
 		ListView resultView = (ListView) findViewById(R.id.groupMood_topicResult);
 		resultView.setVisibility(View.GONE);
 		resultView.setAdapter(topicResultAdapter);
+
 		updateTopic();
 	}
 
@@ -183,100 +192,125 @@ public class QuestionActivity extends ServiceActivity {
 	}
 
 	private void updateTopic() {
-		// Enthält alle Layouts zur Darstellung der Fragen eines Topics
-		LinearLayout allTopicQuestionsLayout = (LinearLayout) findViewById(R.id.groupMood_allTopicQuestionsLayout);
-
 		// Alle Question-Views aushängen
-		allTopicQuestionsLayout.removeAllViews();
+		// allTopicQuestionsLayout.removeAllViews();
 
-		Topic currentTopic = getCurrentTopic();
-		if (currentTopic != null) {
-			// Gibt es die View schon für das Topic?
-			if (!topicViews.containsKey(currentTopic)) {
-				// Layout für das Topic erzeugen
-				LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-				LinearLayout topicQuestionsLayout = (LinearLayout) layoutInflater
-						.inflate(R.layout.topic_questions,
-								allTopicQuestionsLayout, false);
-				// Name des Topics
-				TextView topicName = (TextView) topicQuestionsLayout
-						.findViewById(R.id.groupMood_topicName);
-				topicName.setText(currentTopic.getName());
-
-				// Swipe-View zum Durchblättern,
-				// enthält die Namen der Fragen
-				SwipeView mSwipeView = (SwipeView) topicQuestionsLayout
-						.findViewById(R.id.groupMood_questionsSwipe);
-				mSwipeView.setOnPageChangedListener(swipeChangeListener);
-
-				// Layout mit den Antwort-Möglichkeiten zur Frage
-				LinearLayout topicQuestionActionsLayout = (LinearLayout) topicQuestionsLayout
-						.findViewById(R.id.groupMood_questionsActions);
-
-				Resources res = getResources();
-				int num = 0;
-				for (Question q : currentTopic.getQuestions()) {
-					// Die Anzeige des Frage-Textes erfolgt in der SwipeView
-					LinearLayout questionView = (LinearLayout) layoutInflater
-							.inflate(R.layout.question_name, null);
-					((TextView) questionView
-							.findViewById(R.id.groupMood_question_text))
-							.setText(q.getName());
-					((TextView) questionView
-							.findViewById(R.id.groupMood_question_number))
-							.setText("" + ++num);
-					((TextView) questionView
-							.findViewById(R.id.groupMood_question_total))
-							.setText(String.format(
-									res.getString(R.string.question_total), q
-											.getTopic().getQuestions().size()));
-					mSwipeView.addView(questionView);
-					// Die Frage-Aktion wird in einer anderen View angzeigt,
-					// damit man z.B. den SeekBar bedienen kann
-					LinearLayout actionView = createQuestionAction(q);
-					topicQuestionActionsLayout.addView(actionView);
-					// Merken, um beim Swipen umschalten zu können
-					questionActionViews.put(q, actionView);
-				}
-
-				// Nur Aktion der erste Fragen anzeigen
-				int actionCount = topicQuestionActionsLayout.getChildCount();
-				if (actionCount > 0) {
-					for (int i = 1; i < actionCount; i++) {
-						topicQuestionActionsLayout.getChildAt(i).setVisibility(
-								View.GONE);
-					}
-				}
-
-				// Comments ausblenden
-				topicQuestionsLayout.findViewById(R.id.groupMood_topicComments)
-						.setVisibility(View.GONE);
-				Button newCommentButton = (Button) topicQuestionsLayout
-						.findViewById(R.id.groupMood_newcomment_button);
-				EditText newCommentText = (EditText) topicQuestionsLayout
-						.findViewById(R.id.groupMood_newcomment_text);
-				commentTextToButton.put(newCommentText.getEditableText(),
-						newCommentButton);
-				newCommentButton.setOnClickListener(nccl);
-				newCommentText.addTextChangedListener(ctw);
-
-				// Fertige View merken
-				topicViews.put(currentTopic, topicQuestionsLayout);
-
-				// Zur aktuellen Frage springen
-				if (currentQuestion != null) {
-					int page = 0;
-					for (Question q : currentTopic.getQuestions()) {
-						if (currentQuestion.equals(q)) {
-							mSwipeView.scrollToPage(page);
-						}
-						page++;
-					}
-				}
+		if (getCurrentTopic() != null) {
+			for (int i = 0; i < allTopicQuestionsLayout.getChildCount(); i++) {
+				allTopicQuestionsLayout.getChildAt(i).setVisibility(View.GONE);
 			}
 			// Die View zum aktuellen Topic Anzeigen
-			allTopicQuestionsLayout.addView(topicViews.get(currentTopic));
+			createTopicView(getCurrentTopic()).setVisibility(View.VISIBLE);
+
 		}
+	}
+
+	protected ViewGroup createTopicView(Topic topic) {
+		// Gibt es die View schon für das Topic?
+		if (topicViews.containsKey(topic)) {
+			return topicViews.get(topic);
+		}
+
+		Log.d(getClass().getCanonicalName(),
+				"Erzeuge VIEW für Topic: " + topic.getId());
+
+		// Layout für das Topic erzeugen
+		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LinearLayout topicQuestionsLayout = (LinearLayout) layoutInflater
+				.inflate(R.layout.topic_questions, allTopicQuestionsLayout,
+						false);
+		// Name des Topics
+		TextView topicName = (TextView) topicQuestionsLayout
+				.findViewById(R.id.groupMood_topicName);
+		topicName.setText(topic.getName());
+
+		// Button zum Anlegen eines neuen Topics
+		if (meeting.hasFlag(Meeting.FLAG_FOTOVOTE)) {
+			ImageButton addTopicButton = (ImageButton) topicQuestionsLayout
+					.findViewById(R.id.groupMood_topic_create_button);
+			addTopicButton.setVisibility(View.VISIBLE);
+			addTopicButton.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					showDialog(DIALOG_TOPIC_CREATE);
+				}
+			});
+		}
+
+		// Swipe-View zum Durchblättern,
+		// enthält die Namen der Fragen
+		SwipeView mSwipeView = (SwipeView) topicQuestionsLayout
+				.findViewById(R.id.groupMood_questionsSwipe);
+		mSwipeView.setOnPageChangedListener(swipeChangeListener);
+
+		// Layout mit den Antwort-Möglichkeiten zur Frage
+		LinearLayout topicQuestionActionsLayout = (LinearLayout) topicQuestionsLayout
+				.findViewById(R.id.groupMood_questionsActions);
+
+		Resources res = getResources();
+		int num = 0;
+		for (Question q : topic.getQuestions()) {
+			// Die Anzeige des Frage-Textes erfolgt in der SwipeView
+			LinearLayout questionView = (LinearLayout) layoutInflater.inflate(
+					R.layout.question_name, null);
+			((TextView) questionView.findViewById(R.id.groupMood_question_text))
+					.setText(q.getName());
+			((TextView) questionView
+					.findViewById(R.id.groupMood_question_number)).setText(""
+					+ ++num);
+			((TextView) questionView
+					.findViewById(R.id.groupMood_question_total))
+					.setText(String.format(
+							res.getString(R.string.question_total), q
+									.getTopic().getQuestions().size()));
+			mSwipeView.addView(questionView);
+			// Die Frage-Aktion wird in einer anderen View angzeigt,
+			// damit man z.B. den SeekBar bedienen kann
+			LinearLayout actionView = createQuestionAction(q);
+			topicQuestionActionsLayout.addView(actionView);
+			// Merken, um beim Swipen umschalten zu können
+			questionActionViews.put(q, actionView);
+		}
+
+		// Nur Aktion der erste Fragen anzeigen
+		int actionCount = topicQuestionActionsLayout.getChildCount();
+		if (actionCount > 0) {
+			for (int i = 1; i < actionCount; i++) {
+				topicQuestionActionsLayout.getChildAt(i).setVisibility(
+						View.GONE);
+			}
+		}
+
+		// Comments ausblenden
+		topicQuestionsLayout.findViewById(R.id.groupMood_topicComments)
+				.setVisibility(View.GONE);
+		Button newCommentButton = (Button) topicQuestionsLayout
+				.findViewById(R.id.groupMood_newcomment_button);
+		EditText newCommentText = (EditText) topicQuestionsLayout
+				.findViewById(R.id.groupMood_newcomment_text);
+		commentTextToButton.put(newCommentText.getEditableText(),
+				newCommentButton);
+		newCommentButton.setOnClickListener(nccl);
+		newCommentText.addTextChangedListener(ctw);
+
+		// Zur aktuellen Frage springen
+		if (currentQuestion != null) {
+			int page = 0;
+			for (Question q : topic.getQuestions()) {
+				if (currentQuestion.equals(q)) {
+					mSwipeView.scrollToPage(page);
+				}
+				page++;
+			}
+		}
+
+		// Einhängen
+		allTopicQuestionsLayout.addView(topicQuestionsLayout);
+
+		// Fertige View merken
+		topicViews.put(topic, topicQuestionsLayout);
+
+		return topicQuestionsLayout;
 	}
 
 	private LinearLayout createQuestionAction(Question q) {
@@ -395,6 +429,8 @@ public class QuestionActivity extends ServiceActivity {
 			return new TopicCommentsHandler(message);
 		case MoodServerService.MSG_ANSWER_RESULT:
 			return new AnswerCreatedHandler(message);
+		case MoodServerService.MSG_FOTOVOTE_CREATE_TOPIC_RESULT:
+			return new TopicCreatedHandler(message);
 		default:
 			return super.getServiceMessageRunnable(message);
 		}
@@ -402,19 +438,17 @@ public class QuestionActivity extends ServiceActivity {
 
 	@Override
 	protected void onConnect() {
-		Log.v(getClass().getCanonicalName(), "onConnect");
 		super.onConnect();
 		// Meeting vollständig laden
 		if (!meetingComplete.get()) {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
-		} else {
-			// loadComments();
 		}
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
 		if (meeting != null) {
 			outState.putParcelable(MoodServerService.KEY_MEETING_MODEL, meeting);
 			outState.putParcelable(MoodServerService.KEY_TOPIC_MODEL,
@@ -441,6 +475,7 @@ public class QuestionActivity extends ServiceActivity {
 
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		super.onRestoreInstanceState(savedInstanceState);
 		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
 			meeting = savedInstanceState
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
@@ -470,15 +505,60 @@ public class QuestionActivity extends ServiceActivity {
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		Log.v(getClass().getCanonicalName(), "onCreateDialog");
 		switch (id) {
 		case DIALOG_LOADING:
 			return ProgressDialog.show(QuestionActivity.this, "",
 					getResources().getString(R.string.loading_meeting), true);
+		case DIALOG_TOPIC_CREATE:
+			fotovoteDialog = new FotoVoteTopicCreateDialog(
+					QuestionActivity.this);
+
+			if (imageFile != null) {
+				fotovoteDialog.photo.setImageBitmap(BitmapFactory
+						.decodeFile(imageFile.getAbsolutePath()));
+				fotovoteDialog.imageFile = imageFile;
+			}
+
+			fotovoteDialog.galleryButton
+					.setOnClickListener(new GallerySelectListener());
+
+			fotovoteDialog.captureButton
+					.setOnClickListener(new PhotoCaptureListener());
+
+			((FotoVoteTopicCreateDialog) fotovoteDialog).topicCreateButton
+					.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View button) {
+							dismissDialog(DIALOG_TOPIC_CREATE);
+							showDialog(DIALOG_TOPIC_CREATE_WAIT);
+							createFotoVoteTopic(meeting, imageFile);
+						}
+					});
+			fotovoteDialog.validate();
+			return fotovoteDialog;
+		case DIALOG_TOPIC_CREATE_WAIT:
+			return ProgressDialog.show(QuestionActivity.this, "",
+					getResources().getString(R.string.creating_topic), true);
 		default:
 			return super.onCreateDialog(id);
 		}
 
+	}
+
+	/**
+	 * Wird aufgerufen, wenn das Topic angelegt wurde
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class TopicCreatedHandler extends ServiceMessageRunnable {
+		private TopicCreatedHandler(Message serviceMessage) {
+			super(serviceMessage);
+		}
+
+		@Override
+		public void run() {
+			dismissDialog(DIALOG_TOPIC_CREATE_WAIT);
+		}
 	}
 
 	/**
@@ -629,7 +709,7 @@ public class QuestionActivity extends ServiceActivity {
 					.getString(MoodServerService.KEY_TOPIC_URI));
 			Topic theTopic = null;
 
-			for (Topic t : meeting.getTopics()) {
+			for (Topic t : topicGalleryAdapter.getTopics()) {
 				if (t.getUri().equals(topicUri))
 					theTopic = t;
 			}
@@ -639,15 +719,18 @@ public class QuestionActivity extends ServiceActivity {
 				return;
 			}
 
+			if (!currentTopic.equals(theTopic))
+				return;
+
 			// Loading ausblenden
-			topicViews.get(theTopic)
-					.findViewById(R.id.groupMood_comments_loading)
+			ViewGroup topicView = createTopicView(theTopic);
+			topicView.findViewById(R.id.groupMood_comments_loading)
 					.setVisibility(View.GONE);
 
 			// Kommentare rendern
-			LinearLayout commentsList = (LinearLayout) topicViews.get(theTopic)
+			LinearLayout commentsList = (LinearLayout) topicView
 					.findViewById(R.id.groupMood_comments_list);
-			LinearLayout noComments = (LinearLayout) topicViews.get(theTopic)
+			LinearLayout noComments = (LinearLayout) topicView
 					.findViewById(R.id.groupMood_comments_nocomments);
 
 			if (comments.size() > 0) {
@@ -674,6 +757,8 @@ public class QuestionActivity extends ServiceActivity {
 					commentsList.addView(view);
 				}
 			} else {
+				Log.d(getClass().getCanonicalName(), "No comments for "
+						+ topicUri.toString());
 				commentsList.setVisibility(View.GONE);
 				noComments.setVisibility(View.VISIBLE);
 			}
@@ -695,7 +780,7 @@ public class QuestionActivity extends ServiceActivity {
 			// Und Bild aus Datei setzen
 			Integer topicId = serviceMessage.getData().getInt(
 					MoodServerService.KEY_TOPIC_ID);
-			for (Topic t : meeting.getTopics()) {
+			for (Topic t : topicGalleryAdapter.getTopics()) {
 				if (t.getId() == topicId) {
 					t.setImageFile(new File(serviceMessage.getData().getString(
 							MoodServerService.KEY_TOPIC_IMAGE)));
@@ -754,8 +839,11 @@ public class QuestionActivity extends ServiceActivity {
 			b.setClassLoader(getClassLoader());
 			Meeting meetingData = b
 					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+			setCurrentTopic(meetingData.getTopics().get(0));
 			topicResultAdapter.setTopics(meetingData.getTopics());
 			topicResultAdapter.notifyDataSetChanged();
+			topicGalleryAdapter.setTopics(meetingData.getTopics());
+			topicGalleryAdapter.notifyDataSetChanged();
 		}
 	}
 
@@ -823,7 +911,7 @@ public class QuestionActivity extends ServiceActivity {
 		Resources res = getResources();
 		actionBarActiveButton = b;
 		// Die View des aktuellen Topics holen
-		View topicView = topicViews.get(getCurrentTopic());
+		View topicView = createTopicView(getCurrentTopic());
 
 		topicView.findViewById(R.id.groupMood_topicComments).setVisibility(
 				View.GONE);
@@ -889,9 +977,8 @@ public class QuestionActivity extends ServiceActivity {
 	 * Lädt / aktualisiert die Kommentare des aktuellen Topics
 	 */
 	private void loadComments() {
-		topicViews.get(getCurrentTopic())
-				.findViewById(R.id.groupMood_comments_loading)
-				.setVisibility(View.VISIBLE);
+		createTopicView(getCurrentTopic()).findViewById(
+				R.id.groupMood_comments_loading).setVisibility(View.VISIBLE);
 		Message m = Message.obtain(null, MoodServerService.MSG_TOPIC_COMMENTS);
 		Bundle data = new Bundle();
 		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic()
@@ -904,9 +991,8 @@ public class QuestionActivity extends ServiceActivity {
 	 * Erzeugt ein neues Kommentar
 	 */
 	protected void addComment(String comment) {
-		topicViews.get(getCurrentTopic())
-				.findViewById(R.id.groupMood_comments_loading)
-				.setVisibility(View.VISIBLE);
+		createTopicView(getCurrentTopic()).findViewById(
+				R.id.groupMood_comments_loading).setVisibility(View.VISIBLE);
 		Message m = Message.obtain(null, MoodServerService.MSG_TOPIC_COMMENT);
 		Bundle data = new Bundle();
 		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic()
@@ -975,7 +1061,8 @@ public class QuestionActivity extends ServiceActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			setCurrentTopic(topicGalleryAdapter.getItem(position));
+			Topic topic = (Topic) parent.getAdapter().getItem(position);
+			setCurrentTopic(topic);
 			updateTopic();
 			Button b = new Button(QuestionActivity.this);
 			switch (actionbarState) {
@@ -995,9 +1082,9 @@ public class QuestionActivity extends ServiceActivity {
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view,
 				int position, long id) {
+			Topic topic = (Topic) parent.getAdapter().getItem(position);
 			Intent intent = new Intent(Intent.ACTION_VIEW);
-			intent.setDataAndType(Uri.fromFile(topicGalleryAdapter.getItem(
-					position).getImageFile()), "image/*");
+			intent.setDataAndType(Uri.fromFile(topic.getImageFile()), "image/*");
 			startActivity(intent);
 			return true;
 		}

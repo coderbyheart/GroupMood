@@ -19,10 +19,15 @@ class Meeting(BaseModel):
     'Test'
     >>> meeting.numTopics()
     0
+    >>> meeting.flags == None
+    True
+    >>> meeting.flagList()
+    []
     
     """
     context = 'meeting'
     name = models.CharField(max_length=200)
+    flags = models.CharField(max_length=200,null=True,blank=True)
     
     def __unicode__(self):
         return "Meeting #%d: %s" % (self.id, self.name)
@@ -32,12 +37,16 @@ class Meeting(BaseModel):
     
     def numTopics(self):
         return len(self.topics())
+    
+    def flagList(self):
+        return self.flags.split("|") if self.flags != None else []
         
     def toJsonDict(self):
         return {
             'id': self.id, 
             'name': self.name, 
-            'numTopics': self.numTopics(), 
+            'numTopics': self.numTopics(),
+            'flags': self.flags, 
             'creationDate': self.creation_date.isoformat(),
         }
     

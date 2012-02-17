@@ -54,6 +54,8 @@ public class MoodServerService extends Service {
 	public static final int MSG_TOPIC_COMMENT = 17;
 	public static final int MSG_MEETING_UPDATE_RESULT = 18;
 	public static final int MSG_FOTOVOTE_CREATE = 19;
+	public static final int MSG_FOTOVOTE_CREATE_TOPIC = 20;
+	public static final int MSG_FOTOVOTE_CREATE_TOPIC_RESULT = 21;
 	public static final int MSG_ERROR = 99;
 
 	public static final String KEY_API_URI = "api.uri";
@@ -80,6 +82,8 @@ public class MoodServerService extends Service {
 
 	private ExecutorService pool = Executors.newFixedThreadPool(1,
 			Executors.defaultThreadFactory());
+
+	private Queue<Topic> missingImages = new LinkedList<Topic>();
 
 	/**
 	 * Wie oft das Meeting aktualisiert wird (ms)
@@ -113,6 +117,9 @@ public class MoodServerService extends Service {
 				case MSG_FOTOVOTE_CREATE:
 					createFotoVoteMeeting(request);
 					break;
+				case MSG_FOTOVOTE_CREATE_TOPIC:
+					createFotoVoteTopic(request);
+					break;
 				case MSG_ANSWER:
 					createAnswer(request);
 					break;
@@ -141,6 +148,24 @@ public class MoodServerService extends Service {
 		Meeting meeting = api.getMeeting(Uri.parse(request.getData().getString(
 				KEY_MEETING_URI)));
 		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_RESULT);
+	}
+
+	/**
+	 * Legt ein Foto-Topic zu einem Meeting an
+	 * 
+	 * @param request
+	 * @throws ApiException
+	 */
+	public void createFotoVoteTopic(Message request) throws ApiException {
+		Meeting meeting = api.getMeeting(Uri.parse(request.getData().getString(
+				KEY_MEETING_URI)));
+		File image = new File(request.getData().getString(KEY_TOPIC_IMAGE));
+		api.createTopicFotoVote(meeting, image);
+		sendMsg(request.replyTo,
+				Message.obtain(null, MSG_FOTOVOTE_CREATE_TOPIC_RESULT));
+		sendMeetingTo(getUpdateMeeting(meeting.getUri()), request.replyTo,
+				MSG_MEETING_UPDATE_RESULT);
+		fetchMissingImages(request);
 	}
 
 	/**
@@ -236,8 +261,6 @@ public class MoodServerService extends Service {
 		Meeting meeting = api.getMeetingRecursive(Uri.parse(request.getData()
 				.getString(KEY_MEETING_URI)));
 
-		// Bilder der Topics ggfs. nachladen
-		Queue<Topic> missingImages = new LinkedList<Topic>();
 		for (Topic topic : meeting.getTopics()) {
 			if (topic.getImage() == null)
 				continue;
@@ -252,13 +275,22 @@ public class MoodServerService extends Service {
 		sendMeetingProgress(request.replyTo, 2, maxProgress);
 		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
 
+		fetchMissingImages(request, 2, maxProgress);
+	}
+
+	private void fetchMissingImages(Message request, int startProgress,
+			int maxProgress) throws ApiException {
 		int p = 0;
 		while (!missingImages.isEmpty()) {
 			Topic topic = missingImages.poll();
 			fetchTopicImage(request, topic);
 			p++;
-			sendMeetingProgress(request.replyTo, 2 + p, maxProgress);
+			sendMeetingProgress(request.replyTo, startProgress + p, maxProgress);
 		}
+	}
+
+	private void fetchMissingImages(Message request) throws ApiException {
+		fetchMissingImages(request, 0, missingImages.size());
 	}
 
 	private File getTopicImageFile(Topic topic) {
@@ -417,11 +449,13 @@ public class MoodServerService extends Service {
 
 		// Bilder der Topics prüfen
 		for (Topic topic : meeting.getTopics()) {
-			if (topic.getImage() == null)
-				continue;
-			File imageFile = getTopicImageFile(topic);
-			if (imageFile.exists()) {
-				topic.setImageFile(imageFile);
+			if (topic.getImage() != null) {
+				File imageFile = getTopicImageFile(topic);
+				if (imageFile.exists()) {
+					topic.setImageFile(imageFile);
+				} else {
+					missingImages.add(topic);
+				}
 			}
 		}
 

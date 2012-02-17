@@ -50,12 +50,15 @@
         android:id="@+id/groupMood_history_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
         android:background="@drawable/button"
         android:padding="10dp"
         android:text="@string/history"
         android:textColor="@color/action_text"
-        android:visibility="gone" />
+        android:visibility="gone" 
+        />
 
     <Button
         android:id="@+id/groupMood_fotovote_button"

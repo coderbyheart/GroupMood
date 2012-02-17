@@ -245,6 +245,22 @@ abstract public class ServiceActivity extends MenuActivity {
 		sendMessage(m);
 	}
 
+	/**
+	 * Legt ein Topic zu einem Meeting an
+	 * 
+	 * @param meeting
+	 * @param imageFile
+	 */
+	protected void createFotoVoteTopic(Meeting meeting, File imageFile) {
+		Message m = Message.obtain(null,
+				MoodServerService.MSG_FOTOVOTE_CREATE_TOPIC);
+		Bundle data = new Bundle();
+		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri().toString());
+		data.putString(MoodServerService.KEY_TOPIC_IMAGE, imageFile.toString());
+		m.setData(data);
+		sendMessage(m);
+	}
+
 	public boolean isServiceBound() {
 		return serviceBound;
 	}

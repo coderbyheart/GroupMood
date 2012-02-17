@@ -1,6 +1,5 @@
 package de.hsrm.mi.mobcomp.y2k11grp04;
 
-import android.app.Activity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -10,7 +9,7 @@ import android.view.MenuItem;
  * @author Markus Tacker <m@tacker.org>
  * 
  */
-public abstract class MenuActivity extends Activity {
+public abstract class MenuActivity extends BaseActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

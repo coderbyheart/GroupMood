@@ -7,6 +7,7 @@ from django.utils import simplejson
 from django.views.decorators.csrf import *
 from django import forms
 from models import *
+from PIL import Image
 import os
 import subprocess
 import re
@@ -110,16 +111,58 @@ def meeting_entry(request, id):
         attendeeAppURL = 'grpmd://%s/%d' % (request.META['HTTP_HOST'], meeting.id)
         return render_to_response('groupmood/meeting_detail.html', {'meeting': meeting, 'attendeeAppURL': attendeeAppURL})
     
+def createFotoVoteTopic(meeting, request):
+    numTopics = Topic.objects.filter(meeting=meeting).count()
+    voteTopic = Topic.objects.create(meeting=meeting, name="Photo #%d" % (numTopics + 1))
+    question = Question.objects.create(topic=voteTopic, name="Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MIN_VALUE, value="Schlecht")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MID_VALUE, value="Mittel")
+    QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MAX_VALUE, value="Gut")
+    
+    # TODO: Datei überprüfen
+    topicFile = 'uploads/fotovote/%d.jpg' % voteTopic.id
+    destination = open(topicFile, 'wb+')
+    for chunk in request.FILES['photo'].chunks():
+        destination.write(chunk)
+    destination.close()
+
+    # Wenigstens die maximale Größe erzwingen    
+    image = Image.open(topicFile)
+    if image.mode not in ('L', 'RGB'):
+        image = image.convert('RGB')
+    image.thumbnail((800,800), Image.ANTIALIAS)
+    image.save(topicFile)
+    
+    voteTopic.image = topicFile
+    voteTopic.save()
+    
+    return voteTopic
+    
+@csrf_exempt
 def meeting_topics(request, id):
-    if request.method != 'GET':
+    if request.method not in ('GET', 'POST'):
         return HttpResponseBadRequest()
     meeting = get_object_or_404(Meeting, pk=id)
-    topics = Topic.objects.filter(meeting=meeting)
-    # Fixe Bild-URLs
-    for topic in topics:
-        if topic.image != None:
-            topic.image = "%s/groupmood/topic/%d/image" % (getBaseHref(request), topic.id)
-    return jsonResponse(request, modelsToJson(request, topics))
+    if request.method == 'GET':
+        topics = Topic.objects.filter(meeting=meeting)
+        # Fixe Bild-URLs
+        for topic in topics:
+            if topic.image != None:
+                topic.image = "%s/groupmood/topic/%d/image" % (getBaseHref(request), topic.id)
+        return jsonResponse(request, modelsToJson(request, topics))
+    else: # POST
+        if 'fotovote' not in meeting.flagList():
+            return HttpResponseBadRequest('Creation of topics only allowed for fotovote meetings.')
+        voteTopic = createFotoVoteTopic(meeting, request)
+        voteTopic.image = "%s/groupmood/topic/%d/image" % (getBaseHref(request), voteTopic.id)
+        
+        jsondata = modelToJson(request, voteTopic);
+        resp = jsonResponse(request, jsondata)
+        resp['Location'] = getModelUrl(request, voteTopic)
+        resp.status_code = 201;
+        return resp
 
 class PresentationWizardForm(forms.Form):
     name = forms.CharField(max_length=200)
@@ -160,23 +203,8 @@ def meeting_wizard(request, type):
         if not form.is_valid():
             return HttpResponseBadRequest()
         
-        meeting = Meeting.objects.create(name=request.POST['name'])
-        voteTopic = Topic.objects.create(meeting=meeting, name="Photo #1")
-        question = Question.objects.create(topic=voteTopic, name="Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
-        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
-        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
-        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MIN_VALUE, value="Schlecht")
-        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MID_VALUE, value="Mittel")
-        QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_LABEL_MAX_VALUE, value="Gut")
-        
-        # TODO: Datei überprüfen
-        topicFile = 'uploads/fotovote/%d.jpg' % voteTopic.id
-        destination = open(topicFile, 'wb+')
-        for chunk in request.FILES['photo'].chunks():
-            destination.write(chunk)
-        destination.close()
-        voteTopic.image = topicFile
-        voteTopic.save()
+        meeting = Meeting.objects.create(name=request.POST['name'], flags='fotovote')
+        voteTopic = createFotoVoteTopic(meeting, request)
         
     elif type == 'presentation':
         form = PresentationWizardForm(request.POST, request.FILES)

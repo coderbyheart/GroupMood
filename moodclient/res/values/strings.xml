@@ -10,7 +10,7 @@
     <string name="no_comments">Keine Kommentare vorhanden.</string>
     <string name="check_meeting">Prüfe Meeting …</string>
     <string name="label_settings">Einstellungen</string>
-    <string name="intro">Willkommen bei <b>GroupMood</b>.\n\nZum Starten der Anwendung, scanne bitte den QR-Code des Meeting.</string>
+    <string name="intro">Willkommen bei <b>GroupMood</b>.\nZum Starten der Anwendung, scanne bitte den QR-Code des Meetings.</string>
     <string name="toast_no_scan">Es wurde nichts gescannt.</string>
     <string name="toast_no_groupmood_qrcode">Ups! Du hast keinen GroupMood-QR-Code gescannt.</string>
     <string name="question_action_answer">Frage beantworten</string>
@@ -25,6 +25,7 @@
     <string name="fotovote_photo_capture">Foto aufnehmen</string>
     <string name="fotovote_photo_select">Aus Album auswählen</string>
     <string name="meeting_name">Name des Meetings</string>
+    <string name="fotovote_topic_name">Name des Fotos</string>
     <string name="groupmood_server">Server</string>
     <string name="groupmood_server_info">Die URL des GroupMood-Servers auf dem dieses Meeting erstellt werden soll, z.B.: \nhttp://groupmood.net:8000</string>
     <string name="cancel">Abbrechen</string>
@@ -32,6 +33,9 @@
     <string name="fotovote_photo_info">Die ist das erste Foto für die Abstimmung. Anschließend können weitere Fotos hinzugefügt werden.</string>
     <string name="capture_storage_error">Konnte Verzeichnis für Foto-Dateien nicht anlegen.</string>
     <string name="creating_meeting">Lege Meeting an …</string>
+    <string name="creating_topic">Lege Thema an …</string>
+    <string name="topic_create">Thema anlegen</string>
+    <string name="fotovote_createtopic">Foto anlegen</string>
 
     <plurals name="label_result_numvotes">
         <item quantity="one">1 Stimme</item>

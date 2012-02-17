@@ -1,16 +1,20 @@
 package de.hsrm.mi.mobcomp.y2k11grp04.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
 public class Meeting extends BaseModel {
 	private String name;
+	private String flags;
 	private int numTopics;
 	private List<Topic> topics = new ArrayList<Topic>();
+	public static final String FLAG_FOTOVOTE = "fotovote";
 
 	public Meeting() {
 	}
@@ -29,6 +33,7 @@ public class Meeting extends BaseModel {
 			topics.add((Topic) t);
 			((Topic) t).setMeeting(this);
 		}
+		this.setFlags(in.readString());
 	}
 
 	@Override
@@ -37,6 +42,7 @@ public class Meeting extends BaseModel {
 		out.writeString(name);
 		out.writeInt(numTopics);
 		out.writeParcelableArray(topics.toArray(new Topic[topics.size()]), 0);
+		out.writeString(this.getFlags());
 	}
 
 	public static final Parcelable.Creator<Meeting> CREATOR = new Parcelable.Creator<Meeting>() {
@@ -73,9 +79,23 @@ public class Meeting extends BaseModel {
 	public List<Topic> getTopics() {
 		return topics;
 	}
-	
+
 	public void setTopics(List<Topic> topics) {
 		this.topics = topics;
+	}
+
+	public String getFlags() {
+		return flags;
+	}
+
+	public void setFlags(String flags) {
+		this.flags = flags;
+	}
+
+	public boolean hasFlag(String flag) {
+		if (!flags.contains("|"))
+			return flags.equals(flag);
+		return Arrays.asList(TextUtils.split(flags, "|")).contains(flag);
 	}
 
 	@Override
@@ -83,9 +103,9 @@ public class Meeting extends BaseModel {
 			List<? extends StateModel> items) {
 		if (relation.getModel() == Topic.class) {
 			topics = new ArrayList<Topic>();
-			for(StateModel m: items) {
-				topics.add((Topic)m);
-				((Topic)m).setMeeting(this);
+			for (StateModel m : items) {
+				topics.add((Topic) m);
+				((Topic) m).setMeeting(this);
 			}
 		} else {
 			super.setRelationItems(relation, items);
@@ -96,6 +116,7 @@ public class Meeting extends BaseModel {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((flags == null) ? 0 : flags.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + numTopics;
 		result = prime * result + ((topics == null) ? 0 : topics.hashCode());
@@ -111,6 +132,11 @@ public class Meeting extends BaseModel {
 		if (getClass() != obj.getClass())
 			return false;
 		Meeting other = (Meeting) obj;
+		if (flags == null) {
+			if (other.flags != null)
+				return false;
+		} else if (!flags.equals(other.flags))
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;

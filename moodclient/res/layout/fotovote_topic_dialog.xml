@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_action_noround"
+        android:orientation="vertical"
+        android:padding="5dp" >
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="5dp"
+            android:text="@string/fotovote_photo"
+            android:textColor="@color/action_text" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/groupMood_fotovote_createtopic_photo_preview"
+                android:layout_width="94dp"
+                android:layout_height="94dp"
+                android:layout_marginRight="2dp"
+                android:background="@android:drawable/picture_frame"
+                android:contentDescription="@string/fotovote_photo_preview"
+                android:scaleType="fitXY" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <Button
+                    android:id="@+id/groupMood_fotovote_createtopic_photo_capture_button"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:background="@drawable/button_inside"
+                    android:drawableLeft="@android:drawable/ic_menu_camera"
+                    android:paddingRight="10dp"
+                    android:text="@string/fotovote_photo_capture"
+                    android:textColor="@color/action_text_inside" />
+
+                <Button
+                    android:id="@+id/groupMood_fotovote_createtopic_photo_select_button"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/button_inside"
+                    android:drawableLeft="@android:drawable/ic_menu_gallery"
+                    android:paddingRight="10dp"
+                    android:text="@string/fotovote_photo_select"
+                    android:textColor="@color/action_text_inside" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/groupMood_fotovote_createtopic_button"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/button_inside"
+            android:padding="10dp"
+            android:text="@string/fotovote_createtopic"
+            android:textColor="@color/action_text_inside"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</ScrollView>

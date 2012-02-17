@@ -95,39 +95,4 @@ abstract public class BaseModel implements StateModel, Parcelable {
 		result = prime * result + ((uri == null) ? 0 : uri.hashCode());
 		return result;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		BaseModel other = (BaseModel) obj;
-		if (creationDate == null) {
-			if (other.creationDate != null)
-				return false;
-		} else if (!creationDate.equals(other.creationDate))
-			return false;
-		if (id != other.id)
-			return false;
-		if (relations == null) {
-			if (other.relations != null)
-				return false;
-		} else if (!relations.equals(other.relations))
-			return false;
-		if (uri == null) {
-			if (other.uri != null)
-				return false;
-		} else if (!uri.equals(other.uri))
-			return false;
-		return true;
-	}
-
 }

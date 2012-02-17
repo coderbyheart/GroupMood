@@ -90,7 +90,7 @@ public class MoodServerApi {
 						+ objectClass.toString());
 			} catch (InstantiationException e) {
 				throw new InvalidParameterException(
-						"Could not instantiate class " + objectClass.toString());
+						"Could not instantiate class " + objectClass.toString()); 
 			}
 		}
 
@@ -773,6 +773,26 @@ public class MoodServerApi {
 		}
 		JSONObject response = execute(request);
 		return new JSONReader<Meeting>(response, Meeting.class,
+				JSONReader.KEY_RESULT).get();
+	}
+
+	/**
+	 * Legt ein Topic zu einem Foto-Vote-Meeting an
+	 * 
+	 * @param meeting
+	 * @param image
+	 * @throws ApiException
+	 */
+	public Topic createTopicFotoVote(Meeting meeting, File image)
+			throws ApiException {
+		Relation topicRelation = getRelated(meeting, Topic.class);
+
+		HttpPost request = new HttpPost(topicRelation.getHref().toString());
+		MultipartEntity multipartContent = new MultipartEntity();
+		multipartContent.addPart("photo", new FileBody(image));
+		request.setEntity(multipartContent);
+		JSONObject response = execute(request);
+		return new JSONReader<Topic>(response, Topic.class,
 				JSONReader.KEY_RESULT).get();
 	}
 
