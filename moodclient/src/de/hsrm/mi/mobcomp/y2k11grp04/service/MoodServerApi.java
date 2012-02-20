@@ -54,7 +54,6 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.StateModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
 public class MoodServerApi {
-	private HttpClient client;
 	private Map<Uri, Class<? extends Model>> contextToModel = new HashMap<Uri, Class<? extends Model>>();
 	private Map<Class<? extends Model>, Uri> modelToContext = new HashMap<Class<? extends Model>, Uri>();
 
@@ -88,7 +87,7 @@ public class MoodServerApi {
 						+ objectClass.toString());
 			} catch (InstantiationException e) {
 				throw new InvalidParameterException(
-						"Could not instantiate class " + objectClass.toString()); 
+						"Could not instantiate class " + objectClass.toString());
 			}
 		}
 
@@ -317,7 +316,7 @@ public class MoodServerApi {
 						}
 					} else {
 						// TODO: support all Types
-						Log.d(getClass().getCanonicalName(), "Skipped value "
+						Log.v(getClass().getCanonicalName(), "Skipped value "
 								+ key + " of type " + param.toString() + " on "
 								+ objectInstance.getClass().toString());
 					}
@@ -345,7 +344,7 @@ public class MoodServerApi {
 									.get();
 							if (!contextToModel.containsKey(rel
 									.getRelatedcontext())) {
-								Log.d(getClass().getCanonicalName(),
+								Log.v(getClass().getCanonicalName(),
 										"Skipped relation with unknown context "
 												+ rel.getRelatedcontext()
 														.toString());
@@ -383,7 +382,7 @@ public class MoodServerApi {
 				for (Relation relation : ((StateModel) top).getRelations()) {
 					if (!contextToModel.containsKey(relation
 							.getRelatedcontext())) {
-						Log.d(getClass().getCanonicalName(),
+						Log.v(getClass().getCanonicalName(),
 								"Skipped unknown context "
 										+ relation.getRelatedcontext()
 												.toString());
@@ -391,7 +390,7 @@ public class MoodServerApi {
 					}
 					if (acceptedModels != null
 							&& !acceptedModels.contains(relation.getModel())) {
-						Log.d(getClass().getCanonicalName(),
+						Log.v(getClass().getCanonicalName(),
 								"Context not accepted: "
 										+ relation.getRelatedcontext()
 												.toString() + " on "
@@ -460,10 +459,6 @@ public class MoodServerApi {
 	}
 
 	public MoodServerApi() {
-		HttpParams params = new BasicHttpParams();
-		HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-		client = new DefaultHttpClient(params);
-
 		registerModel(ApiStatus.class,
 				Uri.parse("http://groupmood.net/jsonld/apistatus"));
 		registerModel(Relation.class,
@@ -530,6 +525,9 @@ public class MoodServerApi {
 		request.setHeader("Accept", "application/json");
 		String dataAsString;
 		try {
+			HttpParams params = new BasicHttpParams();
+			HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+			HttpClient client = new DefaultHttpClient(params);
 			response = client.execute(request);
 			HttpEntity entity = response.getEntity();
 			InputStream inputStream = entity.getContent();
@@ -551,9 +549,11 @@ public class MoodServerApi {
 						"Request failed: " + request.getMethod() + " "
 								+ request.getURI().toString() + ": "
 								+ dataAsString.replaceAll("<[^>]+>", ""));
+				client.getConnectionManager().shutdown();
 				throw new ApiException("Invalid response from server: "
 						+ status.toString());
 			}
+			client.getConnectionManager().shutdown();
 		} catch (ClientProtocolException e) {
 			Log.e(getClass().getCanonicalName(), e.toString());
 			throw new ApiException("Protocol error: " + e.toString());
@@ -561,7 +561,7 @@ public class MoodServerApi {
 			Log.e(getClass().getCanonicalName(), e.toString());
 			throw new ApiException("I/O error: " + e.toString());
 		}
-		Log.d(getClass().getCanonicalName(), dataAsString);
+		Log.v(getClass().getCanonicalName(), dataAsString);
 		JSONObject jsonResponse;
 		try {
 			jsonResponse = (JSONObject) new JSONTokener(dataAsString)

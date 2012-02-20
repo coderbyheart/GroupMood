@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -79,7 +80,11 @@ public class MoodServerService extends Service {
 
 	private final Messenger messenger = new Messenger(new IncomingHandler());
 	private Timer timer;
-	private Map<Messenger, Meeting> meetingSubscription = new HashMap<Messenger, Meeting>();
+	private Map<Messenger, Uri> meetingSubscription = new HashMap<Messenger, Uri>();
+	// Merkt sich immer den letzten Request eines Typs eines Messengers um bei
+	// langsamer Verbindung keine unnötigen Requests zu erzeugen
+	private ConcurrentLinkedQueue<LatestTask> serviceRequest = new ConcurrentLinkedQueue<LatestTask>();
+	private Object serviceRequestLock = new Object();
 
 	private ExecutorService pool = Executors.newFixedThreadPool(1,
 			Executors.defaultThreadFactory());
@@ -91,53 +96,46 @@ public class MoodServerService extends Service {
 	 */
 	private int updateRate = 10000;
 	private MoodServerApi api;
+	private ResponseRunner runner;
 
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message request) {
-			try {
-				switch (request.what) {
-				case MSG_MEETING:
-					fetchMeeting(request);
-					break;
-				case MSG_TOPIC_COMMENTS:
-					fetchTopicComments(request);
-					break;
-				case MSG_TOPIC_COMMENT:
-					createComment(request);
-					break;
-				case MSG_MEETING_COMPLETE:
-					fetchMeetingComplete(request);
-					break;
-				case MSG_MEETING_SUBSCRIBE:
-					subscribeMeeting(request);
-					break;
-				case MSG_MEETING_UNSUBSCRIBE:
-					unsubscribeMeeting(request);
-					break;
-				case MSG_MEETING_UPDATE:
-					updateMeeting(request);
-					break;
-				case MSG_FOTOVOTE_CREATE:
-					createFotoVoteMeeting(request);
-					break;
-				case MSG_FOTOVOTE_CREATE_TOPIC:
-					createFotoVoteTopic(request);
-					break;
-				case MSG_ANSWER:
-					createAnswer(request);
-					break;
-				case MSG_PAUSE:
-					doPause(request);
-					break;
-				case MSG_RESUME:
-					doResume(request);
-					break;
-				default:
-					super.handleMessage(request);
-				}
-			} catch (ApiException e) {
-				sendError(request.replyTo, e.getMessage());
+
+			// Aktionen ohne Antwort
+			switch (request.what) {
+			case MSG_MEETING_SUBSCRIBE:
+				meetingSubscription
+						.put(request.replyTo,
+								Uri.parse(request.getData().getString(
+										KEY_MEETING_URI)));
+				break;
+			case MSG_MEETING_UNSUBSCRIBE:
+				meetingSubscription.remove(request.replyTo);
+				break;
+			case MSG_PAUSE:
+				stopTimer();
+				break;
+			case MSG_RESUME:
+				startTimer();
+				break;
+			default:
+				super.handleMessage(request);
+			}
+
+			// Aktionen die eine Antwort erzeugen
+			// Nur letzten Request eines Messengers verwenden um bei langsamer
+			// Verbindung keine unnötigen Requests zu erzeugen
+			LatestTask t = new LatestTask(request);
+			if (serviceRequest.remove(t)) {
+				Log.w(getClass().getCanonicalName(),
+						"Request for " + t.getWhat()
+								+ " already queued. Replaced.");
+			}
+			serviceRequest.offer(t);
+
+			synchronized (serviceRequestLock) {
+				serviceRequestLock.notifyAll();
 			}
 		}
 	}
@@ -349,32 +347,6 @@ public class MoodServerService extends Service {
 	}
 
 	/**
-	 * Meldet sich von Änderungsbenachrichtigungen ab
-	 * 
-	 * @param request
-	 */
-	public void unsubscribeMeeting(Message request) {
-		meetingSubscription.remove(request.replyTo);
-	}
-
-	/**
-	 * Abonniert Änderungen am Meeting, schickt direkt das Meeting zurück
-	 * 
-	 * @param request
-	 * @throws ApiException
-	 */
-	public void subscribeMeeting(Message request) throws ApiException {
-		Meeting subscribeMeeting = getUpdateMeeting(Uri.parse(request.getData()
-				.getString(KEY_MEETING_URI)));
-		if (subscribeMeeting != null) {
-			meetingSubscription.put(request.replyTo, subscribeMeeting);
-			sendMeetingTo(subscribeMeeting, request.replyTo,
-					MSG_MEETING_UPDATE_RESULT);
-			fetchMissingImages(request.replyTo);
-		}
-	}
-
-	/**
 	 * Fordert ein einmaliges Update an
 	 * 
 	 * @throws ApiException
@@ -421,6 +393,9 @@ public class MoodServerService extends Service {
 		api.registerModel(AnswerAverage.class,
 				Uri.parse("http://groupmood.net/jsonld/answeraverage"));
 		startTimer();
+
+		runner = new ResponseRunner();
+		new Thread(runner).start();
 	}
 
 	@Override
@@ -430,6 +405,13 @@ public class MoodServerService extends Service {
 
 	public void onDestroy() {
 		stopTimer();
+		runner.running = false;
+		synchronized (serviceRequest) {
+			serviceRequest.clear();
+		}
+		synchronized (serviceRequestLock) {
+			serviceRequestLock.notifyAll();
+		}
 	}
 
 	/**
@@ -447,7 +429,7 @@ public class MoodServerService extends Service {
 					Meeting updatedMeeting;
 					try {
 						updatedMeeting = getUpdateMeeting(meetingSubscription
-								.get(messenger).getUri());
+								.get(messenger));
 
 						if (updatedMeeting != null) {
 							sendMeetingTo(updatedMeeting, messenger,
@@ -493,28 +475,6 @@ public class MoodServerService extends Service {
 		return true;
 	}
 
-	/**
-	 * Methode zum Pausieren des Timers von Außen
-	 * 
-	 * @param request
-	 */
-	private void doResume(Message request) {
-		boolean timerResult = startTimer();
-		sendMsg(request.replyTo,
-				Message.obtain(null, MSG_RESUME_RESULT, timerResult ? 1 : 0, 0));
-	}
-
-	/**
-	 * Methode zum Pausieren des Timers von Außen
-	 * 
-	 * @param request
-	 */
-	private void doPause(Message request) {
-		boolean stopResult = stopTimer();
-		sendMsg(request.replyTo,
-				Message.obtain(null, MSG_PAUSE_RESULT, stopResult ? 1 : 0, 0));
-	}
-
 	protected void sendMsg(Messenger rcpt, Message response) {
 		if (rcpt == null)
 			return;
@@ -532,5 +492,67 @@ public class MoodServerService extends Service {
 		data.putString(KEY_ERROR_MESSAGE, message);
 		errorMsg.setData(data);
 		sendMsg(rcpt, errorMsg);
+	}
+
+	private class ResponseRunner implements Runnable {
+		public boolean running = true;
+
+		@Override
+		public void run() {
+			while (running) {
+				if (!serviceRequest.isEmpty()) {
+					// Task nur holen, wird erst entfernt, wenn wir wirklich
+					// fertig sind.
+					LatestTask t = serviceRequest.peek();
+					if (t != null) {
+						Message request = new Message();
+						request.what = t.getWhat();
+						request.setData(t.getData());
+						request.replyTo = t.getReplyTo();
+						try {
+							switch (request.what) {
+							case MSG_MEETING:
+								fetchMeeting(request);
+								break;
+							case MSG_TOPIC_COMMENTS:
+								fetchTopicComments(request);
+								break;
+							case MSG_TOPIC_COMMENT:
+								createComment(request);
+								break;
+							case MSG_MEETING_COMPLETE:
+								fetchMeetingComplete(request);
+								break;
+							case MSG_MEETING_SUBSCRIBE:
+							case MSG_MEETING_UPDATE:
+								updateMeeting(request);
+								break;
+							case MSG_FOTOVOTE_CREATE:
+								createFotoVoteMeeting(request);
+								break;
+							case MSG_FOTOVOTE_CREATE_TOPIC:
+								createFotoVoteTopic(request);
+								break;
+							case MSG_ANSWER:
+								createAnswer(request);
+								break;
+							}
+						} catch (ApiException e) {
+							sendError(request.replyTo, e.getMessage());
+						}
+						// Task aus Queue entfernen
+						serviceRequest.remove(t);
+					}
+				} else {
+					try {
+						synchronized (serviceRequestLock) {
+							serviceRequestLock.wait();
+						}
+					} catch (InterruptedException e) {
+						Log.e(getClass().getCanonicalName(), e.getMessage());
+					}
+				}
+			}
+		}
 	}
 }

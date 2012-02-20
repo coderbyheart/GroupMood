@@ -951,7 +951,6 @@ public class QuestionActivity extends ServiceActivity {
 			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
 					View.VISIBLE);
 			if (isServiceBound()) {
-				updateMeeting();
 				loadComments();
 			}
 
