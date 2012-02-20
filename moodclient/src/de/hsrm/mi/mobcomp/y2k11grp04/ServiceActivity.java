@@ -19,7 +19,7 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
-abstract public class ServiceActivity extends MenuActivity {
+abstract public class ServiceActivity extends BaseActivity {
 
 	private boolean serviceBound = false;
 	private Messenger messengerSend;

@@ -9,7 +9,6 @@
     <string name="loading_comments">Lade Kommentare …</string>
     <string name="no_comments">Keine Kommentare vorhanden.</string>
     <string name="check_meeting">Prüfe Meeting …</string>
-    <string name="label_settings">Einstellungen</string>
     <string name="intro">Willkommen bei <b>GroupMood</b>.\nZum Starten der Anwendung, scanne bitte den QR-Code des Meetings.</string>
     <string name="toast_no_scan">Es wurde nichts gescannt.</string>
     <string name="toast_no_groupmood_qrcode">Ups! Du hast keinen GroupMood-QR-Code gescannt.</string>
@@ -19,7 +18,6 @@
     <string name="question_total">von %d</string>
     <string name="label_result_avg">Ergebnis: %d</string>
     <string name="wifi_warning"><b>Kein WLAN verfügbar.</b>\nGroupMood wurde für die Verwendung mit WLAN entwickelt und wird lange brauchen, um Daten vom Server zu laden.</string>
-    <string name="label_add">Eintrag hinzufügen.</string>
     <string name="fotovote_create">FotoVote erstellen</string>
     <string name="fotovote_photo">Foto</string>
     <string name="fotovote_photo_capture">Foto aufnehmen</string>
