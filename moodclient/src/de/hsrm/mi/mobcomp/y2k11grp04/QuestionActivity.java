@@ -115,6 +115,8 @@ public class QuestionActivity extends ServiceActivity {
 
 	// Enthält die Ergebnisse, kann aktualisiert werden
 	private TopicResultAdapter topicResultAdapter;
+	
+	// Enthält das globale Layout
 	private LinearLayout allTopicQuestionsLayout;
 
 	/** Called when the activity is first created. */
@@ -181,6 +183,7 @@ public class QuestionActivity extends ServiceActivity {
 
 		topicResultAdapter = new TopicResultAdapter(meeting.getTopics());
 		ListView resultView = (ListView) findViewById(R.id.groupMood_topicResult);
+		resultView.setOnItemLongClickListener(topicGalleryClickListener);
 		resultView.setVisibility(View.GONE);
 		resultView.setAdapter(topicResultAdapter);
 
