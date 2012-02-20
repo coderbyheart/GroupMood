@@ -134,3 +134,14 @@ class MeetingTest(Base):
         self.assertEquals(1, averageAnswers[2]['numVotes'])
         self.assertEquals(16, averageAnswers[2]['average'])
 
+    def test_recursive(self):
+        """Test für das Serverseite zusammenbauen von Datenstrukturen aus API-Antworten."""
+        response = self.client.get('/groupmood/recursive/question/3', Accept='application/json')
+        info = simplejson.loads(response.content)
+        question = info['result']
+        
+        self.assertEquals(2, len(get_related('questionoption', question)['data']))
+        self.assertEquals('http://groupmood.net/jsonld/questionoption', get_related('questionoption', question)['data'][0]['@context'])
+        self.assertEquals(3, len(get_related('choice', question)['data']))
+        self.assertEquals('http://groupmood.net/jsonld/choice', get_related('choice', question)['data'][0]['@context'])
+        

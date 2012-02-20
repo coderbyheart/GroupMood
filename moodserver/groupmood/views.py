@@ -12,6 +12,7 @@ import os
 import subprocess
 import re
 import mimetypes
+import sys
 
 contexthref = 'http://groupmood.net/jsonld'
 modelRelations = {
@@ -27,7 +28,7 @@ def getModelRelation(modelType, relatedType):
     for relation in modelRelations[modelType]:
         if relation[0] == relatedType:
             return relation
-    raise NoRelationException("No relation of " + relatedType +  " on " + modelType + " defined ")
+    raise NoRelationException("No relation of " + relatedType + " on " + modelType + " defined ")
 
 def getUser(request):
     userMatch = User.objects.filter(ip=request.META['REMOTE_ADDR'])
@@ -51,14 +52,18 @@ def modelsToJson(request, models):
 
 def modelToJson(request, model):
     data = model.toJsonDict()
+    
+    # Der @content-Parameter identifiziert das Model
     modelJson = {
         '@context': '%s/%s' % (contexthref, model.context),
     }
+    # ID ist die konkrete URL unter dem dieses Entity abgerufen werden kann
     try:
         modelJson['@id'] = getModelUrl(request, model)
     except AttributeError:
         pass
     
+    # Daten des Entities auslesen
     for k in data:
         if type(data[k]) == list:
             modelJson[k] = []
@@ -69,16 +74,35 @@ def modelToJson(request, model):
                 modelJson[k] = modelToJson(request, data[k])
             except AttributeError:
                 modelJson[k] = data[k]
+    
+    # Bei Topics die Bild-URL erzeugen
+    if type(model) == Topic:
+        if model.image != None:
+            modelJson['image'] = "%s/groupmood/topic/%d/image" % (getBaseHref(request), model.id)
+    
+    # Infos zu relation hinterlegen
     if type(model) in modelRelations:
         modelJson['@relations'] = []
         for relation in modelRelations[type(model)]:
             relatedModel, isList, href = relation
-            modelJson['@relations'].append({
+            relationInfo = {
                 '@context': '%s/%s' % (contexthref, "relation"),
                 'relatedcontext': '%s/%s' % (contexthref, relatedModel.context),
                 'list': True if isList else False,
                 'href': href.replace('@id', modelJson['@id'])
-            })
+            };
+            # Sind Daten zu dieser Relation hinterleg?
+            try:
+                if isList:
+                    relationInfo['data'] = modelsToJson(request, model.relatedData[relatedModel])
+                else:
+                    # TODO: Implementieren
+                    pass
+            except AttributeError:
+                pass
+            except KeyError:
+                pass
+            modelJson['@relations'].append(relationInfo)
     return modelJson
 
 def jsonResponse(request, result):
@@ -132,7 +156,7 @@ def createFotoVoteTopic(meeting, request):
     image = Image.open(topicFile)
     if image.mode not in ('L', 'RGB'):
         image = image.convert('RGB')
-    image.thumbnail((800,800), Image.ANTIALIAS)
+    image.thumbnail((800, 800), Image.ANTIALIAS)
     image.save(topicFile)
     
     voteTopic.image = topicFile
@@ -147,16 +171,11 @@ def meeting_topics(request, id):
     meeting = get_object_or_404(Meeting, pk=id)
     if request.method == 'GET':
         topics = Topic.objects.filter(meeting=meeting)
-        # Fixe Bild-URLs
-        for topic in topics:
-            if topic.image != None:
-                topic.image = "%s/groupmood/topic/%d/image" % (getBaseHref(request), topic.id)
         return jsonResponse(request, modelsToJson(request, topics))
     else: # POST
         if 'fotovote' not in meeting.flagList():
             return HttpResponseBadRequest('Creation of topics only allowed for fotovote meetings.')
         voteTopic = createFotoVoteTopic(meeting, request)
-        voteTopic.image = "%s/groupmood/topic/%d/image" % (getBaseHref(request), voteTopic.id)
         
         jsondata = modelToJson(request, voteTopic);
         resp = jsonResponse(request, jsondata)
@@ -166,11 +185,11 @@ def meeting_topics(request, id):
 
 class PresentationWizardForm(forms.Form):
     name = forms.CharField(max_length=200)
-    presentation  = forms.FileField()
+    presentation = forms.FileField()
     
 class FotoVoteWizardForm(forms.Form):
     name = forms.CharField(max_length=200)
-    photo  = forms.FileField()
+    photo = forms.FileField()
 
 @csrf_exempt
 def meeting_wizard(request, type):
@@ -369,7 +388,6 @@ def question_answers(request, id):
                 answerValues = []
                 for answerValue in request.POST.getlist('answer[]'):
                     answerValues.append(answerValue)
-                print answerValues
                 if minChoices != None and int(minChoices) > len(answerValues):
                     return HttpResponseBadRequest("Too few choices. %d given, %d required" % (len(answerValues), int(minChoices)))
                 if maxChoices != None and int(maxChoices) < len(answerValues):
@@ -401,3 +419,36 @@ def meeting_vote(request, id):
         return jsonResponse(request, meeting)
     else:
         return HttpResponseRedirect("/groupmood/meeting/%s" % id)
+
+def recursive(request, model, id):
+    """Diese View verfolgt alle Child-Elemente und gibt diese 
+    als eine große Antwort zurück. Das spart HTTP-Requests."""
+    if request.method != ('GET'):
+        return HttpResponseBadRequest('Only GET supported.')
+    
+    try:
+        modelClass = getattr(sys.modules[__name__], model.capitalize())
+    except AttributeError:
+        return HttpResponseBadRequest('Unknown model %s' % model.capitalize())
+    
+    entity = get_object_or_404(modelClass, pk=id)
+    entity = recursiveFetch(request, entity)
+    return jsonResponse(request, modelToJson(request, entity))
+
+ignoreInRecursion = [Answer, Comment]
+    
+def recursiveFetch(request, entity):
+    if not type(entity) in modelRelations:
+        return entity
+    entity.relatedData = {} 
+    for relation in modelRelations[type(entity)]:
+        relatedModel, isList, href = relation
+        if relatedModel in ignoreInRecursion: 
+            continue
+        if isList:
+            entityList = []
+            kwargs = {entity.context: entity}
+            for relatedEntity in relatedModel.objects.filter(**kwargs):
+                entityList.append(recursiveFetch(request, relatedEntity))
+            entity.relatedData[relatedModel] = entityList
+    return entity

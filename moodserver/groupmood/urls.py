@@ -17,4 +17,5 @@ urlpatterns = patterns('',
    url(r'^question/(?P<id>\d+)/answers$', 'groupmood.views.question_answers'),   
    url(r'^question/(?P<id>\d+)/options$', 'groupmood.views.question_options'),
    url(r'^question/(?P<id>\d+)/choices$', 'groupmood.views.question_choices'),
+   url(r'^recursive/(?P<model>\w+)/(?P<id>\d+)$', 'groupmood.views.recursive'),
 )

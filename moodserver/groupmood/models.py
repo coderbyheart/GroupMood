@@ -5,7 +5,7 @@ from validators import validate_percent, validate_nonzeropositive
 class BaseModel(models.Model):
     'Abstrakte Basisklasse für alle Models der Anwendung.'
     creation_date = models.DateTimeField('date created', auto_now_add=True)
-
+    
     class Meta:
         abstract = True
 
@@ -32,11 +32,11 @@ class Meeting(BaseModel):
     def __unicode__(self):
         return "Meeting #%d: %s" % (self.id, self.name)
       
-    def topics(self):
+    def topicList(self):
         return Topic.objects.filter(meeting=self.id)
     
     def numTopics(self):
-        return len(self.topics())
+        return len(self.topicList())
     
     def flagList(self):
         return self.flags.split("|") if self.flags != None else []
@@ -206,11 +206,11 @@ class Question(BaseModel):
     OPTION_MIN_CHOICES = "min_choices"
     OPTION_MAX_CHOICES = "max_choices"
     
-    def answers(self):
+    def getAnswers(self):
         return Answer.objects.filter(question=self.id)
     
     def numAnswers(self):
-        return len(self.answers());
+        return len(self.getAnswers());
     
     def toJsonDict(self):
         type = filter(lambda t: t[0] == self.type, self.TYPES)[0][0]
@@ -230,7 +230,7 @@ class Question(BaseModel):
     def avg(self):
         if self.mode != self.MODE_AVERAGE:
             return 0
-        votes = self.answers()
+        votes = self.getAnswers()
         
         if len(votes) == 0:
             return (int(self.getMax(0)) - int(self.getMin(0))) / 2
