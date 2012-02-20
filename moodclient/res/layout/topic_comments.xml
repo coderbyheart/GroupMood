@@ -23,6 +23,7 @@
                 android:id="@+id/groupMood_newcomment_text"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:hint="@string/comment_hint"
                 android:inputType="text|textAutoCorrect|textAutoComplete|textCapSentences"
                 android:maxLines="1" />
 
@@ -31,10 +32,10 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_inside"
+                android:enabled="false"
                 android:padding="10dp"
                 android:text="@string/comment"
                 android:textColor="@color/main_text"
-                android:enabled="false"
                 android:textStyle="bold" />
         </LinearLayout>
 

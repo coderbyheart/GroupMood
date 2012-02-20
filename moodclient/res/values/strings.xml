@@ -5,6 +5,7 @@
     <string name="scan">QR-Code scannen</string>
     <string name="history">Letztes Meeting öffnen</string>
     <string name="comment">Kommentar hinzufügen</string>
+    <string name="comment_hint">Dein Kommentar …</string>
     <string name="loading_meeting">Lade Daten des Meetings …</string>
     <string name="loading_comments">Lade Kommentare …</string>
     <string name="no_comments">Keine Kommentare vorhanden.</string>
@@ -23,8 +24,10 @@
     <string name="fotovote_photo_capture">Foto aufnehmen</string>
     <string name="fotovote_photo_select">Aus Album auswählen</string>
     <string name="meeting_name">Name des Meetings</string>
+    <string name="meeting_name_hint">Was wollen wir Essen?</string>
     <string name="groupmood_server">Server</string>
-    <string name="groupmood_server_info">Die URL des GroupMood-Servers auf dem dieses Meeting erstellt werden soll, z.B.: \nhttp://groupmood.net:8000</string>
+    <string name="groupmood_server_info">Die URL des GroupMood-Servers auf dem dieses Meeting erstellt werden soll.</string>
+    <string name="groupmood_server_hint">http://groupmood.net:8000</string>
     <string name="fotovote_photo_preview">Foto</string>
     <string name="fotovote_photo_info">Die ist das erste Foto für die Abstimmung. Anschließend können weitere Fotos hinzugefügt werden.</string>
     <string name="capture_storage_error">Konnte Verzeichnis für Foto-Dateien nicht anlegen.</string>
