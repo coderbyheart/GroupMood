@@ -439,8 +439,6 @@ public class QuestionActivity extends ServiceActivity {
 		if (!meetingComplete.get()) {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
-		} else {
-			loadComments();
 		}
 	}
 
@@ -497,8 +495,10 @@ public class QuestionActivity extends ServiceActivity {
 		updateView();
 
 		// Aktive view laden
-		setActionBarActiveButton((Button) findViewById(savedInstanceState
-				.getInt("actionBarActiveButton")));
+		setActionBarActiveButton(
+				(Button) findViewById(savedInstanceState
+						.getInt("actionBarActiveButton")),
+				false);
 	}
 
 	@Override
@@ -669,16 +669,18 @@ public class QuestionActivity extends ServiceActivity {
 			String answer = "";
 			Answer singleAnswer = b
 					.getParcelable(MoodServerService.KEY_ANSWER_MODEL);
-			ArrayList<Answer> answers = b
-					.getParcelableArrayList(MoodServerService.KEY_ANSWER_MODEL);
 			if (singleAnswer != null) {
 				answer = singleAnswer.getAnswer();
-			} else if (answers != null) {
-				ArrayList<String> answerValues = new ArrayList<String>();
-				for (Answer a : answers) {
-					answerValues.add(a.getAnswer());
+			} else {
+				ArrayList<Answer> answers = b
+						.getParcelableArrayList(MoodServerService.KEY_ANSWER_MODEL);
+				if (answers != null) {
+					ArrayList<String> answerValues = new ArrayList<String>();
+					for (Answer a : answers) {
+						answerValues.add(a.getAnswer());
+					}
+					answer = TextUtils.join(", ", answerValues);
 				}
-				answer = TextUtils.join(", ", answerValues);
 			}
 			String text = String.format(getApplicationContext().getResources()
 					.getString(R.string.question_answered), answer);
@@ -897,7 +899,7 @@ public class QuestionActivity extends ServiceActivity {
 	private class ActionBarClickListener implements OnClickListener {
 		@Override
 		public void onClick(View v) {
-			setActionBarActiveButton((Button) v);
+			setActionBarActiveButton((Button) v, false);
 		}
 	}
 
@@ -906,7 +908,7 @@ public class QuestionActivity extends ServiceActivity {
 	 * 
 	 * @param b
 	 */
-	public void setActionBarActiveButton(Button b) {
+	public void setActionBarActiveButton(Button b, boolean fromListView) {
 		Resources res = getResources();
 		actionBarActiveButton = b;
 		// Die View des aktuellen Topics holen
@@ -933,7 +935,7 @@ public class QuestionActivity extends ServiceActivity {
 					.setVisibility(View.VISIBLE);
 			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
 					View.VISIBLE);
-			if (isServiceBound()) {
+			if (!fromListView && isServiceBound()) {
 				updateMeeting();
 			}
 		} else {
@@ -966,12 +968,14 @@ public class QuestionActivity extends ServiceActivity {
 					.getDrawable(R.drawable.ic_chart_white_tab));
 			findViewById(R.id.groupMood_topicResult)
 					.setVisibility(View.VISIBLE);
-			if (isServiceBound())
+			if (!fromListView && isServiceBound()) {
 				subscribeMeeting(meeting);
+				updateMeeting();
+			}
 		} else {
 			resultsButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.ic_tab_chart));
-			if (isServiceBound())
+			if (!fromListView && isServiceBound())
 				unsubscribeMeeting();
 		}
 	}
@@ -1091,7 +1095,7 @@ public class QuestionActivity extends ServiceActivity {
 				b = resultsButton;
 				break;
 			}
-			setActionBarActiveButton(b);
+			setActionBarActiveButton(b, true);
 		}
 
 		@Override

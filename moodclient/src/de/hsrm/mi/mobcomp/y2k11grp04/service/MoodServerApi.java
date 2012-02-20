@@ -63,6 +63,7 @@ public class MoodServerApi {
 		public static final String KEY_CONTEXT = "@context";
 		public static final String KEY_ID = "@id";
 		public static final String KEY_RELATIONS = "@relations";
+		public static final String KEY_RELATIONS_DATA = "data";
 		public static final String KEY_STATUS = "status";
 		public static final String KEY_RESULT = "result";
 		private JSONObject objectData;
@@ -289,8 +290,7 @@ public class MoodServerApi {
 						if (!contextToModel.values().contains(childs))
 							continue;
 
-						@SuppressWarnings("rawtypes")
-						ArrayList childList = new ArrayList();
+						ArrayList<Model> childList = new ArrayList<Model>();
 						try {
 							JSONArray items = objectData.getJSONArray(key);
 							for (int i = 0; i < items.length(); i++) {
@@ -339,9 +339,11 @@ public class MoodServerApi {
 						JSONArray relations = objectData
 								.getJSONArray(KEY_RELATIONS);
 						for (int i = 0; i < relations.length(); i++) {
+							JSONObject relationData = relations
+									.getJSONObject(i);
 							Relation rel = new JSONReader<Relation>(
-									Relation.class, relations.getJSONObject(i))
-									.get();
+									Relation.class, relationData).get();
+							instanceRelations.add(rel);
 							if (!contextToModel.containsKey(rel
 									.getRelatedcontext())) {
 								Log.v(getClass().getCanonicalName(),
@@ -350,9 +352,38 @@ public class MoodServerApi {
 														.toString());
 								continue;
 							}
-							rel.setModel(contextToModel.get(rel
-									.getRelatedcontext()));
-							instanceRelations.add(rel);
+							Class<? extends Model> relatedModel = contextToModel
+									.get(rel.getRelatedcontext());
+							rel.setModel(relatedModel);
+
+							// Falls vorhanden, Daten der verknüpften Objekte
+							// auslesen
+							// TODO: !rel.isList implementieren
+							if (relationData.has(KEY_RELATIONS_DATA)) {
+								List<StateModel> relatedData = new ArrayList<StateModel>();
+								try {
+									JSONArray items = relationData
+											.getJSONArray(KEY_RELATIONS_DATA);
+									for (int j = 0; j < items.length(); j++) {
+										@SuppressWarnings({ "rawtypes",
+												"unchecked" })
+										JSONReader reader = new JSONReader(
+												relatedModel,
+												items.getJSONObject(j));
+										relatedData.add((StateModel) reader
+												.get());
+									}
+									// und setzen
+									((StateModel) objectInstance)
+											.setRelationItems(rel, relatedData);
+								} catch (JSONException e) {
+									Log.e(getClass().getCanonicalName(),
+											e.getMessage());
+									throw new ApiException(
+											"Failed to read items for "
+													+ KEY_RELATIONS_DATA);
+								}
+							}
 						}
 						((StateModel) objectInstance)
 								.setRelations(instanceRelations);
@@ -473,31 +504,15 @@ public class MoodServerApi {
 		return meeting;
 	}
 
-	/**
-	 * Lädt ein Update-Datensatz eines Meetings
-	 * 
-	 * @param meeting
-	 * @return
-	 * @throws ApiException
-	 */
-	@SuppressWarnings("unchecked")
-	public Meeting fetchUpdateMeeting(Uri meetingUri) throws ApiException {
-
-		HttpGet request = new HttpGet(meetingUri.toString());
-		JSONObject response = execute(request);
-
-		JSONReader<Meeting> meetingReader = new JSONReader<Meeting>(response,
-				Meeting.class, JSONReader.KEY_RESULT);
-		meetingReader.setRecursiveModels(Topic.class, Question.class,
-				QuestionOption.class);
-		return meetingReader.getRecursive();
-	}
-
 	public Meeting getMeetingRecursive(Uri meetingUri) throws ApiException {
-		HttpGet request = new HttpGet(meetingUri.toString());
+		Uri meetingRecursiveUri = meetingUri
+				.buildUpon()
+				.path(meetingUri.getPath().replaceAll("meeting",
+						"recursive/meeting")).build();
+		HttpGet request = new HttpGet(meetingRecursiveUri.toString());
 		JSONObject response = execute(request);
 		Meeting meeting = new JSONReader<Meeting>(response, Meeting.class,
-				JSONReader.KEY_RESULT).getRecursive();
+				JSONReader.KEY_RESULT).get();
 		return meeting;
 	}
 
@@ -511,12 +526,16 @@ public class MoodServerApi {
 
 	@SuppressWarnings("unchecked")
 	public Question getQuestion(Uri questionUri) throws ApiException {
-		HttpGet request = new HttpGet(questionUri.toString());
+		Uri recursiveQuestionUri = questionUri
+				.buildUpon()
+				.path(questionUri.getPath().replace("question",
+						"recursive/question")).build();
+		HttpGet request = new HttpGet(recursiveQuestionUri.toString());
 		JSONObject response = execute(request);
 		JSONReader<Question> reader = new JSONReader<Question>(response,
 				Question.class, JSONReader.KEY_RESULT);
 		reader.setRecursiveModels(QuestionOption.class);
-		Question question = reader.getRecursive();
+		Question question = reader.get();
 		return question;
 	}
 

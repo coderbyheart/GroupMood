@@ -7,6 +7,7 @@ import java.util.List;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
 abstract public class BaseModel implements StateModel, Parcelable {
@@ -76,6 +77,9 @@ abstract public class BaseModel implements StateModel, Parcelable {
 	@Override
 	public void setRelationItems(Relation relation,
 			List<? extends StateModel> items) {
+		Log.w(getClass().getCanonicalName(), "Unhandled setRelationItems() on "
+				+ getClass().getCanonicalName() + " and related objects "
+				+ relation.getModel().getCanonicalName());
 	}
 
 	@Override

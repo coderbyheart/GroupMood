@@ -193,20 +193,19 @@ public class MoodServerService extends Service {
 	 * @throws ApiException
 	 */
 	public void fetchTopicComments(Message request) throws ApiException {
-		Message info = Message.obtain(null, MSG_TOPIC_COMMENTS_RESULT);
-
 		Topic topic = api.getTopic(Uri.parse(request.getData().getString(
 				KEY_TOPIC_URI)));
+		fetchTopicComments(request, topic);
+	}
 
+	private void fetchTopicComments(Message request, Topic topic)
+			throws ApiException {
 		ArrayList<Comment> comments = api.getComments(topic);
-
-		Uri uri = Uri.parse(request.getData().getString(
-				MoodServerService.KEY_TOPIC_URI));
 		Bundle b = new Bundle();
-		b.putString(MoodServerService.KEY_TOPIC_URI, uri.toString());
+		b.putString(MoodServerService.KEY_TOPIC_URI, topic.getUri().toString());
 		b.putParcelableArrayList(MoodServerService.KEY_COMMENT_MODEL, comments);
+		Message info = Message.obtain(null, MSG_TOPIC_COMMENTS_RESULT);
 		info.setData(b);
-
 		sendMsg(request.replyTo, info);
 	}
 
@@ -221,7 +220,7 @@ public class MoodServerService extends Service {
 				KEY_TOPIC_URI)));
 		api.addComment(topic, request.getData().getString(KEY_COMMENT_COMMENT));
 		// Also Antwort Liste der Kommentare schicken
-		fetchTopicComments(request);
+		fetchTopicComments(request, topic);
 	}
 
 	/**
@@ -254,14 +253,11 @@ public class MoodServerService extends Service {
 	/**
 	 * @param request
 	 * @throws ApiException
-	 * @todo TODO: Hier muss noch das Laden des Meetings in Stücken
-	 *       implementiert werden.
 	 */
 	public void fetchMeetingComplete(Message request) throws ApiException {
-		int maxProgress = 2;
-		sendMeetingProgress(request.replyTo, 1, maxProgress);
 		Meeting meeting = api.getMeetingRecursive(Uri.parse(request.getData()
 				.getString(KEY_MEETING_URI)));
+		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
 
 		for (Topic topic : meeting.getTopics()) {
 			if (topic.getImage() == null)
@@ -273,22 +269,19 @@ public class MoodServerService extends Service {
 				topic.setImageFile(imageFile);
 			}
 		}
-		maxProgress += missingImages.size();
-		sendMeetingProgress(request.replyTo, 2, maxProgress);
-		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
-
-		fetchMissingImages(request.replyTo, 2, maxProgress);
+		fetchMissingImages(request.replyTo);
 	}
 
 	private void fetchMissingImages(Messenger rcpt, int startProgress,
 			int maxProgress) throws ApiException {
 		int p = 0;
 		while (!missingImages.isEmpty()) {
+			sendMeetingProgress(rcpt, startProgress + p, maxProgress);
 			Topic topic = missingImages.poll();
 			fetchTopicImage(rcpt, topic);
 			p++;
-			sendMeetingProgress(rcpt, startProgress + p, maxProgress);
 		}
+		sendMeetingProgress(rcpt, startProgress + p, maxProgress);
 	}
 
 	private void fetchMissingImages(Messenger rcpt) throws ApiException {
@@ -344,19 +337,6 @@ public class MoodServerService extends Service {
 		info.arg1 = progress;
 		info.arg2 = max;
 		sendMsg(replyTo, info);
-	}
-
-	/**
-	 * Fordert ein einmaliges Update an
-	 * 
-	 * @throws ApiException
-	 */
-	public Meeting updateMeeting(Message request) throws ApiException {
-		Meeting meeting = getUpdateMeeting(Uri.parse(request.getData()
-				.getString(KEY_MEETING_URI)));
-		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_UPDATE_RESULT);
-		fetchMissingImages(request.replyTo);
-		return meeting;
 	}
 
 	/**
@@ -447,7 +427,7 @@ public class MoodServerService extends Service {
 	}
 
 	private Meeting getUpdateMeeting(Uri meetingUri) throws ApiException {
-		Meeting meeting = api.fetchUpdateMeeting(meetingUri);
+		Meeting meeting = api.getMeetingRecursive(meetingUri);
 
 		// Bilder der Topics prüfen
 		for (Topic topic : meeting.getTopics()) {
@@ -521,11 +501,8 @@ public class MoodServerService extends Service {
 								createComment(request);
 								break;
 							case MSG_MEETING_COMPLETE:
-								fetchMeetingComplete(request);
-								break;
-							case MSG_MEETING_SUBSCRIBE:
 							case MSG_MEETING_UPDATE:
-								updateMeeting(request);
+								fetchMeetingComplete(request);
 								break;
 							case MSG_FOTOVOTE_CREATE:
 								createFotoVoteMeeting(request);
