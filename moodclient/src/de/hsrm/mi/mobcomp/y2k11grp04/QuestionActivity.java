@@ -937,7 +937,7 @@ public class QuestionActivity extends ServiceActivity {
 					.setVisibility(View.VISIBLE);
 			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
 					View.VISIBLE);
-			if (!fromListView && isServiceBound()) {
+			if (!fromListView && isServiceBound() && meeting.shouldRefresh()) {
 				updateMeeting();
 			}
 		} else {

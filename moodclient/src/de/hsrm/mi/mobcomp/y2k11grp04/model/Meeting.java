@@ -98,6 +98,16 @@ public class Meeting extends BaseModel {
 		return Arrays.asList(TextUtils.split(flags, "|")).contains(flag);
 	}
 
+	/**
+	 * Gibt an, ob das Meeting aktualisiert werden sollte, weil neue Themen
+	 * hinzukommen könnten.
+	 * 
+	 * @return
+	 */
+	public boolean shouldRefresh() {
+		return hasFlag(FLAG_FOTOVOTE);
+	}
+
 	@Override
 	public void setRelationItems(Relation relation,
 			List<? extends StateModel> items) {
