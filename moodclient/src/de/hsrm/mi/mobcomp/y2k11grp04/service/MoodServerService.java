@@ -257,7 +257,6 @@ public class MoodServerService extends Service {
 	public void fetchMeetingComplete(Message request) throws ApiException {
 		Meeting meeting = api.getMeetingRecursive(Uri.parse(request.getData()
 				.getString(KEY_MEETING_URI)));
-		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
 
 		for (Topic topic : meeting.getTopics()) {
 			if (topic.getImage() == null)
@@ -269,6 +268,9 @@ public class MoodServerService extends Service {
 				topic.setImageFile(imageFile);
 			}
 		}
+		
+		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
+		
 		fetchMissingImages(request.replyTo);
 	}
 

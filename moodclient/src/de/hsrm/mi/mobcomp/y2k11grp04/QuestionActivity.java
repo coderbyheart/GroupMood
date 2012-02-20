@@ -439,6 +439,8 @@ public class QuestionActivity extends ServiceActivity {
 		if (!meetingComplete.get()) {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
+		} else if (actionBarActiveButton.equals(commentsButton)) {
+			loadComments();
 		}
 	}
 
@@ -451,7 +453,6 @@ public class QuestionActivity extends ServiceActivity {
 					currentTopic);
 			outState.putParcelable(MoodServerService.KEY_QUESTION_MODEL,
 					currentQuestion);
-
 		}
 		outState.putBoolean("LOADING_HIDDEN",
 				loadingProgress.getVisibility() != View.VISIBLE);
@@ -845,6 +846,7 @@ public class QuestionActivity extends ServiceActivity {
 			topicGalleryAdapter.setTopics(meetingData.getTopics());
 			topicResultAdapter.notifyDataSetChanged();
 			topicGalleryAdapter.notifyDataSetChanged();
+			meeting.setTopics(meetingData.getTopics());
 		}
 	}
 
