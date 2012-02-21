@@ -7,9 +7,16 @@ import java.util.List;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerApi;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.RelatedModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
+/**
+ * Eine Frage eines {@link Topic Themas}.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ * @author Coralie Reuter <coralie.reuter@hrcom.de>
+ */
 public class Question extends BaseModel {
 	public static final String TYPE_CHOICE = "choice";
 	public static final String TYPE_RANGE = "range";
@@ -139,6 +146,15 @@ public class Question extends BaseModel {
 		return answerAverages;
 	}
 
+	/**
+	 * Da {@link AnswerAverage Antwort-Ergebnisse} keine {@link StateModel
+	 * persistenten Models} sind, werden diese immer in der Antwort des Servers
+	 * als Liste mitgeliefert. Da es in Java aber nicht möglich ist, über
+	 * Reflection den Typ einer generischen Liste zu erkennen, wird hier einfach
+	 * (durch {@link MoodServerApi}) eine nicht-typisierte Liste gesetzt.
+	 * 
+	 * @param answerAverages
+	 */
 	@SuppressWarnings("unchecked")
 	public void setAverageAnswers(
 			@SuppressWarnings("rawtypes") @RelatedModel(model = AnswerAverage.class) List answerAverages) {
@@ -249,6 +265,22 @@ public class Question extends BaseModel {
 				.parseInt(getOption(QuestionOption.OPTION_RANGE_MAX_VALUE));
 	}
 
+	/**
+	 * Gibt den Wert dieses an der stelle 0 <= d <= 1 zurück.
+	 * 
+	 * @param d
+	 */
+	public Integer getValueAt(double d) {
+		if (d < 0 || d > 1)
+			throw new InvalidParameterException(
+					"progress must be between 0 and 1");
+		return (int) (getMinOption() + (getMaxOption() - getMinOption()) * d);
+	}
+
+	public void setOptions(List<QuestionOption> options) {
+		this.options = options;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -290,16 +322,5 @@ public class Question extends BaseModel {
 		} else if (!topic.equals(other.topic))
 			return false;
 		return true;
-	}
-
-	public Integer getValueAt(double d) {
-		if (d < 0 || d > 1)
-			throw new InvalidParameterException(
-					"progress must be between 0 and 1");
-		return (int) (getMinOption() + (getMaxOption() - getMinOption()) * d);
-	}
-
-	public void setOptions(List<QuestionOption> options) {
-		this.options = options;
 	}
 }

@@ -276,6 +276,14 @@ public class MoodServerApi {
 						// untersuchen wir den Parameter ober die Annotation
 						// @RelatedModel besitzt, wenn ja lesen wir die Daten
 						// als Liste ein.
+						//
+						// AnswerAverage sind z.B. keine StateModels und
+						// werden immer in der Antwort des Servers als Liste
+						// mitgeliefert. Da es in Java aber nicht möglich ist,
+						// über Reflection den Typ einer generischen Liste zu
+						// erkennen, wird hier einfach eine nicht-typisierte
+						// Liste gesetzt.
+
 						Annotation[][] paramAnnotations = m
 								.getParameterAnnotations();
 						if (paramAnnotations.length <= 0)

@@ -3,6 +3,12 @@ package de.hsrm.mi.mobcomp.y2k11grp04.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Optionen für {@link Question Fragen}.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ * @author Coralie Reuter <coralie.reuter@hrcom.de>
+ */
 public class QuestionOption extends BaseModel {
 	private Question question;
 	private String key;

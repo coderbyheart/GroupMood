@@ -3,6 +3,11 @@ package de.hsrm.mi.mobcomp.y2k11grp04.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Der Autor eines {@link Comment Kommentars}.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class User extends BaseModel {
 	private String ip;
 

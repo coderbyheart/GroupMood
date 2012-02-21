@@ -9,6 +9,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
+/**
+ * Themen eines {@link Meeting Meetings}.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class Topic extends BaseModel {
 	private String name;
 	private Meeting meeting;

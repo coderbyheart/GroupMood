@@ -3,6 +3,11 @@ package de.hsrm.mi.mobcomp.y2k11grp04.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Beschreibt die zusammengefassten Ergebnisse aller {@link Answer Antworten} einer {@link Question Frage}.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class AnswerAverage implements Model, Parcelable {
 	private Question question;
 	private int average;

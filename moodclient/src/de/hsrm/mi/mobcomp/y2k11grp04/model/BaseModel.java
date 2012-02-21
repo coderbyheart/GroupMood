@@ -10,6 +10,11 @@ import android.os.Parcelable;
 import android.util.Log;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
+/**
+ * Basisklasse für Models die persisten sind
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 abstract public class BaseModel implements StateModel, Parcelable {
 
 	private int id;

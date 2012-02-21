@@ -9,6 +9,11 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.Relation;
 
+/**
+ * Ein Meeting.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class Meeting extends BaseModel {
 	private String name;
 	private String flags;
