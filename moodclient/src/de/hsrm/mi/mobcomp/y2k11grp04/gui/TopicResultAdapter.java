@@ -60,9 +60,12 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 					.findViewById(R.id.groupMood_questionResult_answers);
 
 			if (q.getType().equals(Question.TYPE_RANGE)) {
+				int progress = q.getAvg() - q.getMinOption();
+				int maxProgress = q.getMaxOption() - q.getMinOption();
 				View rangeAnswerView = createAnswerView(layoutInflater, res,
 						String.format(res.getString(R.string.label_result_avg),
-								q.getAvg()), q.getAvg(), q.getNumAnswers());
+								q.getAvg()), progress, maxProgress,
+						q.getNumAnswers());
 				// Labels
 				TextView minValueLabel = (TextView) rangeAnswerView
 						.findViewById(R.id.groupMood_question_resultMinLabel);
@@ -84,7 +87,7 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 			} else {
 				for (AnswerAverage aa : q.getAverageAnswers()) {
 					View choiceAnswerView = createAnswerView(layoutInflater,
-							res, aa.getAnswer(), aa.getAverage(),
+							res, aa.getAnswer(), aa.getAverage(), 100,
 							aa.getNumVotes());
 					choiceAnswerView.findViewById(
 							R.id.groupMood_question_resultLabel_layout)
@@ -105,12 +108,13 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 	}
 
 	public View createAnswerView(LayoutInflater layoutInflater, Resources res,
-			String answer, int progress, int numVotes) {
+			String answer, int progress, int maxProgress, int numVotes) {
 		LinearLayout answerView = (LinearLayout) layoutInflater.inflate(
 				R.layout.question_result_answer, null);
 
 		ProgressBar p = (ProgressBar) answerView
 				.findViewById(R.id.groupMood_question_resultProgressbar);
+		p.setMax(maxProgress);
 		p.setProgress(progress);
 
 		((TextView) answerView
