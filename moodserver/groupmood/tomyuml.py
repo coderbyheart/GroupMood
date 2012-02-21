@@ -1,4 +1,10 @@
 # -*- coding: utf8 -*-
+"""
+    Erzeugt aus der models.py Quellcode im DOT-Format 
+    zur Erzeugung der Grafik des Datenmodells.
+    
+    @author: Markus Tacker <m@coderbyheart.de>
+"""
 import re
 
 currentModel = None

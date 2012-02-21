@@ -1,4 +1,9 @@
 # -*- coding: utf8 -*-
+"""
+    Definiert die Models der Anwendung
+    
+    @author: Markus Tacker <m@coderbyheart.de>
+"""
 from django.db import models
 from validators import validate_percent, validate_nonzeropositive
 

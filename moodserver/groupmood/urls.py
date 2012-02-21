@@ -1,3 +1,9 @@
+# -*- coding: utf8 -*-
+"""
+    Definiert das Mapping zwischen URLs und Views (siehe views.py)
+    
+    @author: Markus Tacker <m@coderbyheart.de>
+"""
 from django.conf.urls.defaults import *
 from django.views.generic import DetailView, ListView
 from groupmood.models import *

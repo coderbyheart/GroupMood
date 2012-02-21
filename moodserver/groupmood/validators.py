@@ -1,4 +1,7 @@
 from django.core.exceptions import ValidationError
+"""
+    @author: Markus Tacker <m@coderbyheart.de>
+"""
 
 def validate_percent(value):
     'Validiert Prozentwerte'

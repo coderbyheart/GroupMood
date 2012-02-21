@@ -1,4 +1,9 @@
 # -*- coding: utf8 -*-
+"""
+    Testet die API.
+    
+    @author: Markus Tacker <m@coderbyheart.de>
+"""
 from django.utils import unittest
 from django.test.client import Client
 from django.utils import simplejson
@@ -15,6 +20,7 @@ def get_related(context, result):
 class MeetingTest(Base):
     
     def test_create(self):
+        """Test für den Meeting-Wizard"""
         response = self.client.post('/groupmood/meeting/wizard/test1', Accept='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue('Location' in response)
@@ -26,6 +32,7 @@ class MeetingTest(Base):
         self.assertEquals(1, info['result']['numTopics'])
         
     def test_default_vote(self):
+        """Test für das Abgeben von Antworten"""
         response = self.client.post('/groupmood/meeting/wizard/test1', Accept='application/json')
         info = simplejson.loads(response.content)
         meeting = info['result']
@@ -55,6 +62,7 @@ class MeetingTest(Base):
         self.assertEquals(2, info['result']['numAnswers'])
         
     def test_topic_comment(self):
+        """Test für das Abgeben von Kommentaren"""
         response = self.client.post('/groupmood/meeting/wizard/test1', Accept='application/json')
         info = simplejson.loads(response.content)
         meeting = info['result']
