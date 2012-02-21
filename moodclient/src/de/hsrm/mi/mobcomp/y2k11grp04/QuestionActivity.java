@@ -18,7 +18,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.DateUtils;
@@ -914,25 +913,15 @@ public class QuestionActivity extends ServiceActivity {
 		public void onClick(View v) {
 			if (((Button) v).equals(shareButton)) {
 				Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-				sharingIntent.setType("text/html");
-				sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT,
-						Html.fromHtml(meeting.getUri().toString()));
-				startActivity(Intent
-						.createChooser(sharingIntent, "Share using"));
-
-				Button b = new Button(QuestionActivity.this);
-				switch (actionbarState) {
-				case 0:
-					b = questionsButton;
-					break;
-				case 1:
-					b = commentsButton;
-					break;
-				case 2:
-					b = resultsButton;
-					break;
-				}
-				setActionBarActiveButton(b, false);
+				sharingIntent.setType("text/plain");
+				sharingIntent.putExtra(
+						Intent.EXTRA_TEXT,
+						String.format(
+								getResources().getString(
+										R.string.share_meeting_text),
+								meeting.getUri()));
+				startActivity(Intent.createChooser(sharingIntent,
+						getResources().getString(R.string.share_meeting)));
 			} else {
 				setActionBarActiveButton((Button) v, false);
 			}

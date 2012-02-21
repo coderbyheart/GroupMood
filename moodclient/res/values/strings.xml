@@ -36,6 +36,8 @@
     <string name="topic_create">Thema anlegen</string>
     <string name="fotovote_createtopic">Foto anlegen</string>
     <string name="no_questions">Keine Fragen hinterlegt.</string>
+    <string name="share_meeting">Zum Meeting einladen …</string>
+    <string name="share_meeting_text">Ich nehme gerade an diesem Meeting teil: %s.</string>
 
     <plurals name="label_result_numvotes">
         <item quantity="one">1 Stimme</item>
