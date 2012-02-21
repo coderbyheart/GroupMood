@@ -3,6 +3,21 @@ package de.hsrm.mi.mobcomp.y2k11grp04.service;
 import android.net.Uri;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Model;
 
+/**
+ * Beschreibt die Beziehung zwischen zwei Models.
+ * 
+ * Der relatedcontext ist dabei der Identifier, über den erkannt werden kann, um
+ * welches Model es sich handelt. Client und Server verwenden dabei die gleichen
+ * Contexte. Aktive Context werden auf
+ * {@link MoodServerApi#registerModel(Class, Uri)} in
+ * {@link MoodServerService#onCreate()} angemeldet.
+ * 
+ * Anschließend kann die {@link MoodServerApi} dann anhand der in den Antworten
+ * des Servers enthaltenen Angaben über den Context eines JSON-Objects das
+ * passenden Model erzeugen und die Antwort parsen.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class Relation implements Model {
 	private Uri relatedcontext;
 	private Class<? extends Model> model;

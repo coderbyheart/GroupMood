@@ -34,6 +34,12 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
+/**
+ * Wird als RemoteService von der App instanziert und kapselt die komplette
+ * Kommunikation zwischen App und Server.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class MoodServerService extends Service {
 
 	public static final int MSG_PAUSE = 1;
@@ -97,7 +103,38 @@ public class MoodServerService extends Service {
 	private int updateRate = 10000;
 	private MoodServerApi api;
 	private ResponseRunner runner;
+	
+	@Override
+	public void onCreate() {
+		api = new MoodServerApi();
+		api.registerModel(Meeting.class,
+				Uri.parse("http://groupmood.net/jsonld/meeting"));
+		api.registerModel(Topic.class,
+				Uri.parse("http://groupmood.net/jsonld/topic"));
+		api.registerModel(Question.class,
+				Uri.parse("http://groupmood.net/jsonld/question"));
+		api.registerModel(QuestionOption.class,
+				Uri.parse("http://groupmood.net/jsonld/questionoption"));
+		api.registerModel(Choice.class,
+				Uri.parse("http://groupmood.net/jsonld/choice"));
+		api.registerModel(Comment.class,
+				Uri.parse("http://groupmood.net/jsonld/comment"));
+		api.registerModel(Answer.class,
+				Uri.parse("http://groupmood.net/jsonld/answer"));
+		api.registerModel(AnswerAverage.class,
+				Uri.parse("http://groupmood.net/jsonld/answeraverage"));
+		startTimer();
 
+		// Dieser Thread kommuniziert mit dem Server
+		runner = new ResponseRunner();
+		new Thread(runner).start();
+	}
+
+	/**
+	 * Kümmert sich um eingehende Nachrichten
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message request) {
@@ -133,7 +170,6 @@ public class MoodServerService extends Service {
 								+ " already queued. Replaced.");
 			}
 			serviceRequest.offer(t);
-
 			synchronized (serviceRequestLock) {
 				serviceRequestLock.notifyAll();
 			}
@@ -198,6 +234,13 @@ public class MoodServerService extends Service {
 		fetchTopicComments(request, topic);
 	}
 
+	/**
+	 * Lädt die Kommentare eines Topics
+	 * 
+	 * @param request
+	 * @param topic
+	 * @throws ApiException
+	 */
 	private void fetchTopicComments(Message request, Topic topic)
 			throws ApiException {
 		ArrayList<Comment> comments = api.getComments(topic);
@@ -268,12 +311,20 @@ public class MoodServerService extends Service {
 				topic.setImageFile(imageFile);
 			}
 		}
-		
+
 		sendMeetingTo(meeting, request.replyTo, MSG_MEETING_COMPLETE_RESULT);
-		
+
 		fetchMissingImages(request.replyTo);
 	}
 
+	/**
+	 * Lädt fehlende Bilder nach
+	 * 
+	 * @param rcpt
+	 * @param startProgress
+	 * @param maxProgress
+	 * @throws ApiException
+	 */
 	private void fetchMissingImages(Messenger rcpt, int startProgress,
 			int maxProgress) throws ApiException {
 		int p = 0;
@@ -286,10 +337,20 @@ public class MoodServerService extends Service {
 		sendMeetingProgress(rcpt, startProgress + p, maxProgress);
 	}
 
+	/**
+	 * @see MoodServerService#fetchMissingImages(Messenger, int, int)
+	 * @param rcpt
+	 * @throws ApiException
+	 */
 	private void fetchMissingImages(Messenger rcpt) throws ApiException {
 		fetchMissingImages(rcpt, 0, missingImages.size());
 	}
 
+	/**
+	 * Erzeugt den lokalen Pfad zur Cache-Datei eines Topic-Bildes
+	 * 
+	 * @param topic
+	 */
 	private File getTopicImageFile(Topic topic) {
 		return new File(Environment.getExternalStorageDirectory()
 				.getAbsolutePath()
@@ -356,31 +417,6 @@ public class MoodServerService extends Service {
 	}
 
 	@Override
-	public void onCreate() {
-		api = new MoodServerApi();
-		api.registerModel(Meeting.class,
-				Uri.parse("http://groupmood.net/jsonld/meeting"));
-		api.registerModel(Topic.class,
-				Uri.parse("http://groupmood.net/jsonld/topic"));
-		api.registerModel(Question.class,
-				Uri.parse("http://groupmood.net/jsonld/question"));
-		api.registerModel(QuestionOption.class,
-				Uri.parse("http://groupmood.net/jsonld/questionoption"));
-		api.registerModel(Choice.class,
-				Uri.parse("http://groupmood.net/jsonld/choice"));
-		api.registerModel(Comment.class,
-				Uri.parse("http://groupmood.net/jsonld/comment"));
-		api.registerModel(Answer.class,
-				Uri.parse("http://groupmood.net/jsonld/answer"));
-		api.registerModel(AnswerAverage.class,
-				Uri.parse("http://groupmood.net/jsonld/answeraverage"));
-		startTimer();
-
-		runner = new ResponseRunner();
-		new Thread(runner).start();
-	}
-
-	@Override
 	public IBinder onBind(Intent intent) {
 		return messenger.getBinder();
 	}
@@ -428,6 +464,13 @@ public class MoodServerService extends Service {
 		return true;
 	}
 
+	/**
+	 * Wird verwendet um die Daten eines Meetings zu aktualisieren
+	 * 
+	 * @param meetingUri
+	 * @return
+	 * @throws ApiException
+	 */
 	private Meeting getUpdateMeeting(Uri meetingUri) throws ApiException {
 		Meeting meeting = api.getMeetingRecursive(meetingUri);
 
@@ -457,6 +500,12 @@ public class MoodServerService extends Service {
 		return true;
 	}
 
+	/**
+	 * Sendet eine Nachricht an die app
+	 * 
+	 * @param rcpt
+	 * @param response
+	 */
 	protected void sendMsg(Messenger rcpt, Message response) {
 		if (rcpt == null)
 			return;
@@ -467,6 +516,12 @@ public class MoodServerService extends Service {
 		}
 	}
 
+	/**
+	 * Sendet eine Fehlermeldung an die App
+	 * 
+	 * @param rcpt
+	 * @param message
+	 */
 	private void sendError(Messenger rcpt, String message) {
 		Log.e(getClass().getCanonicalName(), message);
 		Message errorMsg = Message.obtain(null, MSG_ERROR);
@@ -476,6 +531,11 @@ public class MoodServerService extends Service {
 		sendMsg(rcpt, errorMsg);
 	}
 
+	/**
+	 * Kommuniziert mit dem Server
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
 	private class ResponseRunner implements Runnable {
 		public boolean running = true;
 

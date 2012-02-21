@@ -2,6 +2,11 @@ package de.hsrm.mi.mobcomp.y2k11grp04.service;
 
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Model;
 
+/**
+ * Stateless Model, dass den Status der Antwort des Servers enthält.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class ApiStatus implements Model {
 	public static final String STATUS_OK = "ok";
 	private String message;

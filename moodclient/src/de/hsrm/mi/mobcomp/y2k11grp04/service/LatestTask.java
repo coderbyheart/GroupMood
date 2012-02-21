@@ -6,7 +6,7 @@ import android.os.Messenger;
 
 /**
  * Mithilfe dieser Klasse wird verhindert, dass mehrmals die gleiche Aufgabe
- * eines Empfängers nacheinander ausgeführt wird
+ * eines Empfängers nacheinander ausgeführt wird.
  * 
  * @author Markus Tacker <m@coderbyheart.de>
  */

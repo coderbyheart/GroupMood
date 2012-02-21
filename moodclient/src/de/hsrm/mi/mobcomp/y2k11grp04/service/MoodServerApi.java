@@ -53,10 +53,25 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.StateModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
+/**
+ * Implementiert die Schnittstelle zum Server
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class MoodServerApi {
 	private Map<Uri, Class<? extends Model>> contextToModel = new HashMap<Uri, Class<? extends Model>>();
 	private Map<Class<? extends Model>, Uri> modelToContext = new HashMap<Class<? extends Model>, Uri>();
 
+	/**
+	 * Liest JSON-Antworten des Servers aus.
+	 * 
+	 * Die erzeugten Objekte werden dabei anhand ihrer Relation erkannt. Siehe
+	 * {@link Relation}.
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 * 
+	 * @param <T>
+	 */
 	private class JSONReader<T extends Model> {
 		private T objectInstance;
 
@@ -127,6 +142,8 @@ public class MoodServerApi {
 				}
 			}
 
+			// Hier werden alle Setter eines Models durchgegangen und der
+			// passenden Wert aus der Server-Antwort ausgelesen.
 			for (Method m : objectInstance.getClass().getMethods()) {
 				if (!Modifier.isPublic(m.getModifiers())) {
 					continue;
@@ -149,6 +166,7 @@ public class MoodServerApi {
 					continue;
 				try {
 					if (param == int.class || param.equals(Integer.class)) {
+						// Integer
 						Integer value;
 						try {
 							value = objectData.getInt(key);
@@ -166,6 +184,7 @@ public class MoodServerApi {
 									+ "(Integer) did not work.");
 						}
 					} else if (param == Uri.class) {
+						// URL
 						String uriVal;
 						try {
 							uriVal = objectData.isNull(key) ? null : objectData
@@ -187,6 +206,7 @@ public class MoodServerApi {
 						}
 
 					} else if (param == boolean.class) {
+						// Boolean
 						boolean value;
 						try {
 							value = objectData.getBoolean(key);
@@ -204,6 +224,7 @@ public class MoodServerApi {
 									+ "(boolean) did not work.");
 						}
 					} else if (param == String.class) {
+						// String
 						String value;
 						try {
 							value = objectData.getString(key);
@@ -221,6 +242,7 @@ public class MoodServerApi {
 									+ "(String) did not work.");
 						}
 					} else if (param == Date.class) {
+						// Date
 						String value;
 						try {
 							value = objectData.getString(key);
@@ -248,6 +270,7 @@ public class MoodServerApi {
 									+ "(Date) did not work.");
 						}
 					} else if (param.isInstance(StateModel.class)) {
+						// ein anderes Model
 						if (!contextToModel.values().contains(param))
 							continue;
 						@SuppressWarnings("unchecked")
@@ -272,6 +295,8 @@ public class MoodServerApi {
 									+ "(StateModel) did not work.");
 						}
 					} else if (param == List.class) {
+						// Eine Liste von Models
+
 						// Wenn ein Setter eine Liste als Parameter akzeptziert,
 						// untersuchen wir den Parameter ober die Annotation
 						// @RelatedModel besitzt, wenn ja lesen wir die Daten
@@ -365,7 +390,10 @@ public class MoodServerApi {
 							rel.setModel(relatedModel);
 
 							// Falls vorhanden, Daten der verknüpften Objekte
-							// auslesen
+							// auslesen.
+							// Die API kann Relationen auch selber auflösen und
+							// so den kompletten Baum in einer Antwort liefern.
+							// Das spart massiv HTTP-Requests.
 							// TODO: !rel.isList implementieren
 							if (relationData.has(KEY_RELATIONS_DATA)) {
 								List<StateModel> relatedData = new ArrayList<StateModel>();
@@ -408,8 +436,7 @@ public class MoodServerApi {
 		/**
 		 * Lädt das Objekt und alle Relationen
 		 * 
-		 * TODO: Sicherstellen dass nur abwärts zeigende Relationen verfolgt
-		 * werden, sonst lädt man sich so den ganzen Graphen
+		 * Siehe auch {@link Relation}.
 		 * 
 		 * @return T
 		 * @throws ApiException
@@ -475,6 +502,7 @@ public class MoodServerApi {
 						}
 					} else {
 						// TODO: Implementieren
+						// Wird nicht verwendet.
 					}
 				}
 			}
@@ -498,12 +526,20 @@ public class MoodServerApi {
 	}
 
 	public MoodServerApi() {
+		// Dies sind Standard-Contexte, die immer in einer Antwort enthalten
+		// sind.
 		registerModel(ApiStatus.class,
 				Uri.parse("http://groupmood.net/jsonld/apistatus"));
 		registerModel(Relation.class,
 				Uri.parse("http://groupmood.net/jsonld/relation"));
 	}
 
+	/**
+	 * Liefert ein {@link Meeting} ohne Zusatzdaten aus.
+	 * 
+	 * @param meetingUri
+	 * @throws ApiException
+	 */
 	public Meeting getMeeting(Uri meetingUri) throws ApiException {
 		HttpGet request = new HttpGet(meetingUri.toString());
 		JSONObject response = execute(request);
@@ -512,6 +548,12 @@ public class MoodServerApi {
 		return meeting;
 	}
 
+	/**
+	 * Verwendet die Rekursive API, um ein {@link Meeting} komplett zu laden.
+	 * 
+	 * @param meetingUri
+	 * @throws ApiException
+	 */
 	public Meeting getMeetingRecursive(Uri meetingUri) throws ApiException {
 		Uri meetingRecursiveUri = meetingUri
 				.buildUpon()
@@ -524,6 +566,12 @@ public class MoodServerApi {
 		return meeting;
 	}
 
+	/**
+	 * Gibt eine {@link Topic Thema} zurück.
+	 * 
+	 * @param topicUri
+	 * @throws ApiException
+	 */
 	public Topic getTopic(Uri topicUri) throws ApiException {
 		HttpGet request = new HttpGet(topicUri.toString());
 		JSONObject response = execute(request);
@@ -532,6 +580,12 @@ public class MoodServerApi {
 		return topic;
 	}
 
+	/**
+	 * Lädt eine {@link Question Frage}.
+	 * 
+	 * @param questionUri
+	 * @throws ApiException
+	 */
 	@SuppressWarnings("unchecked")
 	public Question getQuestion(Uri questionUri) throws ApiException {
 		Uri recursiveQuestionUri = questionUri
@@ -547,6 +601,12 @@ public class MoodServerApi {
 		return question;
 	}
 
+	/**
+	 * Lädt die Antwort vom Server
+	 * 
+	 * @param request
+	 * @throws ApiException
+	 */
 	private JSONObject execute(HttpUriRequest request) throws ApiException {
 		HttpResponse response;
 		request.setHeader("Accept", "application/json");
@@ -613,7 +673,7 @@ public class MoodServerApi {
 	}
 
 	/**
-	 * Lädt die Topics eines Meetings
+	 * Lädt die {@link Topic Themen} eines {@link Meeting Meetings}.
 	 * 
 	 * @param meeting
 	 * @throws ApiException
@@ -639,6 +699,12 @@ public class MoodServerApi {
 		return topics;
 	}
 
+	/**
+	 * Lädt die {@link Comment Kommentare} eines {@link Topic Themas}.
+	 * 
+	 * @param topic
+	 * @throws ApiException
+	 */
 	public ArrayList<Comment> getComments(Topic topic) throws ApiException {
 		Relation commentRelation = getRelated(topic, Comment.class);
 		HttpGet request = new HttpGet(commentRelation.getHref().toString());
@@ -660,6 +726,13 @@ public class MoodServerApi {
 		return comments;
 	}
 
+	/**
+	 * Fügt einem {@link Topic Thema} ein {@link Comment Kommentar} hinzu.
+	 * 
+	 * @param topic
+	 * @param comment
+	 * @throws ApiException
+	 */
 	public Comment addComment(Topic topic, String comment) throws ApiException {
 		Relation commentRelation = getRelated(topic, Comment.class);
 		HttpPost request = new HttpPost(commentRelation.getHref().toString());
@@ -677,6 +750,13 @@ public class MoodServerApi {
 		return c;
 	}
 
+	/**
+	 * Fügt einem {@link Question Frage} eine {@link Answer Antwort} hinzu.
+	 * 
+	 * @param question
+	 * @param answer
+	 * @throws ApiException
+	 */
 	public Answer addAnswer(Question question, String answer)
 			throws ApiException {
 
@@ -696,6 +776,14 @@ public class MoodServerApi {
 
 	}
 
+	/**
+	 * Fügt einem {@link Question Frage} mehrere {@link Answer Antworten} hinzu
+	 * (wird bei Multiple-Choice-Fragen verwendet).
+	 * 
+	 * @param question
+	 * @param answerValues
+	 * @throws ApiException
+	 */
 	public ArrayList<Answer> addAnswers(Question question, String[] answerValues)
 			throws ApiException {
 
@@ -731,6 +819,13 @@ public class MoodServerApi {
 		return answers;
 	}
 
+	/**
+	 * Lädt die {@link Question Fragen} einse {@link Topic Themas} mit allen
+	 * Zusatzdaten
+	 * 
+	 * @param topic
+	 * @throws ApiException
+	 */
 	public ArrayList<Question> getQuestionsWithExtras(Topic topic)
 			throws ApiException {
 		Relation questionRelation = getRelated(topic, Question.class);

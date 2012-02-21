@@ -43,7 +43,9 @@ public class HttpToFileLoader implements Callable<File> {
 	}
 
 	/**
-	 * TODO: Wir gehen davon aus, dass external Storage verfügbar ist
+	 * Lädt die Datei aus source und speichert sie in der vorher angegeben
+	 * Zieldatei.
+	 * 
 	 * @param source
 	 * @throws IOException
 	 */
@@ -58,11 +60,13 @@ public class HttpToFileLoader implements Callable<File> {
 			if (!cacheDir.mkdirs())
 				throw new IOException("Failed to create: "
 						+ cacheDir.getAbsolutePath());
-			File noMediaFile = new File(cacheDir.getAbsolutePath() + "/.nomedia");
+			File noMediaFile = new File(cacheDir.getAbsolutePath()
+					+ "/.nomedia");
 			noMediaFile.createNewFile();
 		}
-		// Note: Hier könnte man prüfen, ob es die Cache-Datei schon gibt, zum
-		// Demonstrationszwecken wird dies aber explizit nicht gemacht
+		// Hier könnte man prüfen, ob es die Cache-Datei schon gibt, wir
+		// gehen aber davon aus, dass das eine übergeordneten Klasse selber
+		// erledigt
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(source.toString());
 		HttpResponse response = client.execute(request);
