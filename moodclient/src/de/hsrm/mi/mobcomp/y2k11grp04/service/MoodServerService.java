@@ -294,7 +294,7 @@ public class MoodServerService extends Service {
 		return new File(Environment.getExternalStorageDirectory()
 				.getAbsolutePath()
 				+ "/Android/data/de.hsrm.mi.mobcomp.y2k11grp04/cache/topic-"
-				+ topic.getId() + ".png");
+				+ topic.getUri().getHost() + "-" + topic.getId() + ".png");
 	}
 
 	/**
