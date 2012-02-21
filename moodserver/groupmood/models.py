@@ -238,11 +238,11 @@ class Question(BaseModel):
         votes = self.getAnswers()
         
         if len(votes) == 0:
-            return (int(self.getMax(0)) - int(self.getMin(0))) / 2
+            return round(float(int(self.getMax(0)) - int(self.getMin(0))) / 2)
         sum = 0
         for v in votes:
             sum += int(v.answer)
-        return sum / len(votes)
+        return round(sum / len(votes))
     
     def averageAnswers(self):
         """Berechnet für alle Abgegebenen Antworten einer Choice-Question die Durchschnittswerte"""
