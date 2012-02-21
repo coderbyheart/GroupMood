@@ -21,6 +21,12 @@ import android.widget.Toast;
 import de.hsrm.mi.mobcomp.y2k11grp04.R;
 import de.hsrm.mi.mobcomp.y2k11grp04.gui.FotoVoteDialog;
 
+/**
+ * Enthält gemeinsam verwendete Funktionen der {@link LaunchActivity} und der
+ * {@link QuestionActivity}.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class BaseActivity extends Activity {
 
 	protected static final int ACITIVITY_RESULT_SELECT_PICTURE = 1;
@@ -29,7 +35,10 @@ public class BaseActivity extends Activity {
 	// Zeigt den Dialog zum anlegen eines Topics an
 	protected FotoVoteDialog fotovoteDialog;
 
+	// Uri zum ausgewählten oder gemachten Bild
 	protected Uri captureImageTargetUri;
+
+	// Datei des ausgewählten oder gemachten Bild
 	protected File imageFile;
 
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -70,6 +79,12 @@ public class BaseActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Kümmert sich um das Verwenden der Kamera, legt das geschossene Bild auf
+	 * der SD-Karte ab.
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
 	protected class PhotoCaptureListener implements OnClickListener {
 
 		@Override
@@ -118,6 +133,11 @@ public class BaseActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Wählt eine Fotos aus der Galerie aus.
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
 	protected final class GallerySelectListener implements OnClickListener {
 		@Override
 		public void onClick(View v) {

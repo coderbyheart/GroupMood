@@ -19,13 +19,27 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
+/**
+ * Enthält die Funktionalität, die sich um die Kommunikation mit dem Service
+ * kümmert
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 abstract public class ServiceActivity extends BaseActivity {
 
 	private boolean serviceBound = false;
 	private Messenger messengerSend;
 	private final Messenger messengerReceive = new Messenger(
 			new IncomingHandler());
-	private final ServiceConnection sConn = new ServiceConnection() {
+	private final ServiceConnection sConn = new MoodServiceConnection();
+
+	/**
+	 * Ruft bei Verbindung {@link ServiceActivity#onConnect()} und bei
+	 * Verbindungsabbau {@link ServiceActivity#onDisconnect()} auf.
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
+	private final class MoodServiceConnection implements ServiceConnection {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			messengerSend = new Messenger(service);
@@ -47,8 +61,14 @@ abstract public class ServiceActivity extends BaseActivity {
 				}
 			});
 		}
-	};
+	}
 
+	/**
+	 * Die übergeordneten Klassen definieren ihre Reaktion auf Messages mit
+	 * dieser Klasse.
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
 	public abstract class ServiceMessageRunnable implements Runnable {
 		protected Message serviceMessage;
 
@@ -57,6 +77,11 @@ abstract public class ServiceActivity extends BaseActivity {
 		}
 	}
 
+	/**
+	 * Behandelt Nachrichten des Service
+	 * 
+	 * @author Markus Tacker <m@coderbyheart.de>
+	 */
 	private class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -69,6 +94,12 @@ abstract public class ServiceActivity extends BaseActivity {
 		}
 	}
 
+	/**
+	 * In dieser Methode definieren übergeordnete Klassen ihre Reaktion auf
+	 * Messages mit Hilfe von {@link ServiceMessageRunnable}.
+	 * 
+	 * @param message
+	 */
 	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
 		switch (message.what) {
 		case MoodServerService.MSG_ERROR:
@@ -80,15 +111,21 @@ abstract public class ServiceActivity extends BaseActivity {
 							serviceMessage.getData().getString(
 									MoodServerService.KEY_ERROR_MESSAGE),
 							Toast.LENGTH_LONG).show();
+					Log.e(getClass().getCanonicalName(),
+							"Service error: "
+									+ serviceMessage
+											.getData()
+											.getString(
+													MoodServerService.KEY_ERROR_MESSAGE));
+
 				}
 			};
 		default:
 			return new ServiceMessageRunnable(message) {
 				@Override
 				public void run() {
-					Toast.makeText(getApplicationContext(),
-							"Unhandled Message: " + serviceMessage.what,
-							Toast.LENGTH_LONG).show();
+					Log.w(getClass().getCanonicalName(), "Unhandled Message: "
+							+ serviceMessage.what);
 				}
 			};
 		}
@@ -98,6 +135,12 @@ abstract public class ServiceActivity extends BaseActivity {
 	public void onResume() {
 		super.onResume();
 		connect();
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		disconnect();
 	}
 
 	private void connect() {
@@ -116,17 +159,15 @@ abstract public class ServiceActivity extends BaseActivity {
 		}
 	}
 
-	@Override
-	public void onPause() {
-		super.onPause();
-		disconnect();
-	}
-
 	private void disconnect() {
 		if (serviceBound) {
 			getApplicationContext().unbindService(sConn);
 			serviceBound = false;
 		}
+	}
+
+	public boolean isServiceBound() {
+		return serviceBound;
 	}
 
 	/**
@@ -143,9 +184,15 @@ abstract public class ServiceActivity extends BaseActivity {
 		}
 	}
 
+	/**
+	 * Wird von {@link ServiceActivity.MoodServiceConnection} aufgerufen.
+	 */
 	protected void onConnect() {
 	}
 
+	/**
+	 * Wird von {@link ServiceActivity.MoodServiceConnection} aufgerufen.
+	 */
 	protected void onDisconnect() {
 	}
 
@@ -255,13 +302,10 @@ abstract public class ServiceActivity extends BaseActivity {
 		Message m = Message.obtain(null,
 				MoodServerService.MSG_FOTOVOTE_CREATE_TOPIC);
 		Bundle data = new Bundle();
-		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri().toString());
+		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri()
+				.toString());
 		data.putString(MoodServerService.KEY_TOPIC_IMAGE, imageFile.toString());
 		m.setData(data);
 		sendMessage(m);
-	}
-
-	public boolean isServiceBound() {
-		return serviceBound;
 	}
 }

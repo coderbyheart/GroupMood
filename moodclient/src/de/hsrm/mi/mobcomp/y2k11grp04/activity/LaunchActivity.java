@@ -33,15 +33,23 @@ import de.hsrm.mi.mobcomp.y2k11grp04.persistence.DbAdapter;
 import de.hsrm.mi.mobcomp.y2k11grp04.persistence.Provider;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
+/**
+ * Diese Aktivity ist der Startscreen der Anwendung. Hier hat der Nutzer die
+ * Möglichkeit, die Scan-App zu starten, das letzte Meeting zu öffnen (falls
+ * vorhanden) oder ein FotoVote-Meeting an zu legen.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ * @author Coralie Reuter <coralie.reuter@hrcom.de>
+ */
 public class LaunchActivity extends ServiceActivity {
-	private WifiStateReceiver wsr = new WifiStateReceiver();
-	BaseModel currentMeeting;
 	public static final int DIALOG_LOADING = 1;
 	public static final int DIALOG_MEETING_CREATE = 2;
 	public static final int DIALOG_MEETING_CREATE_WAIT = 3;
+
+	private WifiStateReceiver wsr = new WifiStateReceiver();
+	BaseModel currentMeeting;
 	private Uri lastMeetingUri;
 
-	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -205,6 +213,7 @@ public class LaunchActivity extends ServiceActivity {
 	@Override
 	protected ServiceMessageRunnable getServiceMessageRunnable(Message message) {
 		switch (message.what) {
+		// Wird aufgerufen, wenn der Service das Meeting gefunden hat
 		case MoodServerService.MSG_MEETING_RESULT:
 			return new ServiceMessageRunnable(message) {
 				@Override
@@ -244,6 +253,7 @@ public class LaunchActivity extends ServiceActivity {
 					finish();
 				}
 			};
+		// Wird aufgerufen, wenn im Service ein Fehler passiert
 		case MoodServerService.MSG_ERROR:
 			return new ServiceMessageRunnable(message) {
 				@Override

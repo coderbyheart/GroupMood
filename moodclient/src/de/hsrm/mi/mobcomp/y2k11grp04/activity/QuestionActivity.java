@@ -59,6 +59,12 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
 
+/**
+ * Dies ist die Haupt-Activity der App, hier erfolgt die Anzeige des Meetings
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ * @author Coralie Reuter <coralie.reuter@hrcom.de>
+ */
 public class QuestionActivity extends ServiceActivity {
 
 	public static final int DIALOG_LOADING = 1;
@@ -120,11 +126,10 @@ public class QuestionActivity extends ServiceActivity {
 	// Enthält das globale Layout
 	private LinearLayout allTopicQuestionsLayout;
 
-	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(getLayout());
+		setContentView(R.layout.question);
 
 		initActionBar();
 
@@ -193,10 +198,9 @@ public class QuestionActivity extends ServiceActivity {
 		updateTopic();
 	}
 
-	protected int getLayout() {
-		return R.layout.question;
-	}
-
+	/**
+	 * Zeigt das aktuell ausgewählte Thema an
+	 */
 	private void updateTopic() {
 		// Alle Question-Views aushängen
 		// allTopicQuestionsLayout.removeAllViews();
@@ -211,6 +215,11 @@ public class QuestionActivity extends ServiceActivity {
 		}
 	}
 
+	/**
+	 * Erzeugt eine View für das Thema
+	 * 
+	 * @param topic
+	 */
 	protected ViewGroup createTopicView(Topic topic) {
 		// Gibt es die View schon für das Topic?
 		if (topicViews.containsKey(topic)) {
@@ -320,6 +329,11 @@ public class QuestionActivity extends ServiceActivity {
 		return topicQuestionsLayout;
 	}
 
+	/**
+	 * Erzeugt die Aktionen für die Frage
+	 * 
+	 * @param q
+	 */
 	private LinearLayout createQuestionAction(Question q) {
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout) layoutInflater.inflate(
@@ -407,6 +421,9 @@ public class QuestionActivity extends ServiceActivity {
 		return view;
 	}
 
+	/**
+	 * Gibt das aktuelle Thema zurück
+	 */
 	private Topic getCurrentTopic() {
 		if (currentTopic == null) {
 			if (meeting.getTopics().size() > 0) {
@@ -416,6 +433,9 @@ public class QuestionActivity extends ServiceActivity {
 		return currentTopic;
 	}
 
+	/**
+	 * Setzt das aktuelle Thema
+	 */
 	private void setCurrentTopic(Topic topic) {
 		currentTopic = topic;
 		currentQuestion = topic.getQuestions().size() > 0 ? topic
@@ -452,6 +472,7 @@ public class QuestionActivity extends ServiceActivity {
 			showDialog(DIALOG_LOADING);
 			loadMeetingComplete(meeting);
 		} else if (actionBarActiveButton.equals(commentsButton)) {
+			// Auf Kommentaransicht die Kommentare aktualisieren
 			loadComments();
 		}
 	}
