@@ -143,12 +143,14 @@ public class QuestionActivity extends ServiceActivity {
 	 * Initialisiert die ActionBar
 	 */
 	private void initActionBar() {
-		((Button) findViewById(R.id.groupMood_actionbar_logo)).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				startActivity(new Intent(getApplicationContext(), LaunchActivity.class));
-			}
-		});
+		((Button) findViewById(R.id.groupMood_actionbar_logo))
+				.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						startActivity(new Intent(getApplicationContext(),
+								LaunchActivity.class));
+					}
+				});
 		ActionBarClickListener abcl = new ActionBarClickListener();
 		questionsButton = (Button) findViewById(R.id.groupMood_actionbar_button_questions);
 		commentsButton = (Button) findViewById(R.id.groupMood_actionbar_button_comments);
@@ -216,10 +218,12 @@ public class QuestionActivity extends ServiceActivity {
 		}
 		// Layout für das Topic erzeugen
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		LinearLayout topicQuestionsLayout = (LinearLayout) layoutInflater.inflate(R.layout.topic_questions,
-				allTopicQuestionsLayout, false);
+		LinearLayout topicQuestionsLayout = (LinearLayout) layoutInflater
+				.inflate(R.layout.topic_questions, allTopicQuestionsLayout,
+						false);
 		// Name des Topics
-		TextView topicName = (TextView) topicQuestionsLayout.findViewById(R.id.groupMood_topicName);
+		TextView topicName = (TextView) topicQuestionsLayout
+				.findViewById(R.id.groupMood_topicName);
 		topicName.setText(topic.getName());
 
 		// Button zum Anlegen eines neuen Topics
@@ -237,22 +241,35 @@ public class QuestionActivity extends ServiceActivity {
 
 		// Swipe-View zum Durchblättern,
 		// enthält die Namen der Fragen
-		SwipeView mSwipeView = (SwipeView) topicQuestionsLayout.findViewById(R.id.groupMood_questionsSwipe);
+		SwipeView mSwipeView = (SwipeView) topicQuestionsLayout
+				.findViewById(R.id.groupMood_questionsSwipe);
 		mSwipeView.setOnPageChangedListener(swipeChangeListener);
 
 		// Layout mit den Antwort-Möglichkeiten zur Frage
 		LinearLayout topicQuestionActionsLayout = (LinearLayout) topicQuestionsLayout
 				.findViewById(R.id.groupMood_questionsActions);
 
+		// Hinweis anzeigen, wenn keine Fragen definiert
+		if (topic.getQuestions().size() > 0) {
+			topicQuestionActionsLayout.removeAllViews();
+		}
+
 		Resources res = getResources();
 		int num = 0;
 		for (Question q : topic.getQuestions()) {
 			// Die Anzeige des Frage-Textes erfolgt in der SwipeView
-			LinearLayout questionView = (LinearLayout) layoutInflater.inflate(R.layout.question_name, null);
-			((TextView) questionView.findViewById(R.id.groupMood_question_text)).setText(q.getName());
-			((TextView) questionView.findViewById(R.id.groupMood_question_number)).setText("" + ++num);
-			((TextView) questionView.findViewById(R.id.groupMood_question_total)).setText(String.format(
-					res.getString(R.string.question_total), q.getTopic().getQuestions().size()));
+			LinearLayout questionView = (LinearLayout) layoutInflater.inflate(
+					R.layout.question_name, null);
+			((TextView) questionView.findViewById(R.id.groupMood_question_text))
+					.setText(q.getName());
+			((TextView) questionView
+					.findViewById(R.id.groupMood_question_number)).setText(""
+					+ ++num);
+			((TextView) questionView
+					.findViewById(R.id.groupMood_question_total))
+					.setText(String.format(
+							res.getString(R.string.question_total), q
+									.getTopic().getQuestions().size()));
 			mSwipeView.addView(questionView);
 			// Die Frage-Aktion wird in einer anderen View angzeigt,
 			// damit man z.B. den SeekBar bedienen kann
@@ -266,15 +283,20 @@ public class QuestionActivity extends ServiceActivity {
 		int actionCount = topicQuestionActionsLayout.getChildCount();
 		if (actionCount > 0) {
 			for (int i = 1; i < actionCount; i++) {
-				topicQuestionActionsLayout.getChildAt(i).setVisibility(View.GONE);
+				topicQuestionActionsLayout.getChildAt(i).setVisibility(
+						View.GONE);
 			}
 		}
 
 		// Comments ausblenden
-		topicQuestionsLayout.findViewById(R.id.groupMood_topicComments).setVisibility(View.GONE);
-		Button newCommentButton = (Button) topicQuestionsLayout.findViewById(R.id.groupMood_newcomment_button);
-		EditText newCommentText = (EditText) topicQuestionsLayout.findViewById(R.id.groupMood_newcomment_text);
-		commentTextToButton.put(newCommentText.getEditableText(), newCommentButton);
+		topicQuestionsLayout.findViewById(R.id.groupMood_topicComments)
+				.setVisibility(View.GONE);
+		Button newCommentButton = (Button) topicQuestionsLayout
+				.findViewById(R.id.groupMood_newcomment_button);
+		EditText newCommentText = (EditText) topicQuestionsLayout
+				.findViewById(R.id.groupMood_newcomment_text);
+		commentTextToButton.put(newCommentText.getEditableText(),
+				newCommentButton);
 		newCommentButton.setOnClickListener(nccl);
 		newCommentText.addTextChangedListener(ctw);
 
@@ -300,11 +322,14 @@ public class QuestionActivity extends ServiceActivity {
 
 	private LinearLayout createQuestionAction(Question q) {
 		LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		LinearLayout view = (LinearLayout) layoutInflater.inflate(R.layout.question_action, null);
+		LinearLayout view = (LinearLayout) layoutInflater.inflate(
+				R.layout.question_action, null);
 
 		if (q.getType().equals(Question.TYPE_RANGE)) {
-			view.removeView(view.findViewById(R.id.groupMood_questionActionChoices));
-			SeekBar s = (SeekBar) view.findViewById(R.id.groupMood_questionActionSeekBar);
+			view.removeView(view
+					.findViewById(R.id.groupMood_questionActionChoices));
+			SeekBar s = (SeekBar) view
+					.findViewById(R.id.groupMood_questionActionSeekBar);
 			if (seekBarState.containsKey(q.getId())) {
 				s.setProgress(seekBarState.get(q.getId()));
 			}
@@ -312,25 +337,41 @@ public class QuestionActivity extends ServiceActivity {
 			// Also merken, wird dann später im SeekBarChangeListener verwendet
 			seekbarToQuestion.put(s, q);
 			// Labels
-			TextView minValueLabel = (TextView) view.findViewById(R.id.groupMood_questionActionMinLabel);
-			TextView midValueLabel = (TextView) view.findViewById(R.id.groupMood_questionActionMidLabel);
-			TextView maxValueLabel = (TextView) view.findViewById(R.id.groupMood_questionActionMaxLabel);
-			minValueLabel.setText(q.getOption(QuestionOption.OPTION_RANGE_LABEL_MIN_VALUE, "" + q.getMinOption()));
-			midValueLabel.setText(q.getOption(QuestionOption.OPTION_RANGE_LABEL_MID_VALUE, "" + q.getValueAt(0.5)));
-			maxValueLabel.setText(q.getOption(QuestionOption.OPTION_RANGE_LABEL_MAX_VALUE, "" + q.getMaxOption()));
-			TextView currentValue = (TextView) view.findViewById(R.id.groupMood_questionActionCurrentValue);
+			TextView minValueLabel = (TextView) view
+					.findViewById(R.id.groupMood_questionActionMinLabel);
+			TextView midValueLabel = (TextView) view
+					.findViewById(R.id.groupMood_questionActionMidLabel);
+			TextView maxValueLabel = (TextView) view
+					.findViewById(R.id.groupMood_questionActionMaxLabel);
+			minValueLabel.setText(q.getOption(
+					QuestionOption.OPTION_RANGE_LABEL_MIN_VALUE,
+					"" + q.getMinOption()));
+			midValueLabel.setText(q.getOption(
+					QuestionOption.OPTION_RANGE_LABEL_MID_VALUE,
+					"" + q.getValueAt(0.5)));
+			maxValueLabel.setText(q.getOption(
+					QuestionOption.OPTION_RANGE_LABEL_MAX_VALUE,
+					"" + q.getMaxOption()));
+			TextView currentValue = (TextView) view
+					.findViewById(R.id.groupMood_questionActionCurrentValue);
 			currentValue.setText("" + q.getValueAt(s.getProgress() / 100.0));
 			seekbarToCurrentValueTextView.put(s, currentValue);
 			// Listener
 			s.setOnSeekBarChangeListener(questionActionSeekBarListener);
 		} else { // Choice-Frage
 			// Layout für Range wird nicht gebraucht
-			view.removeView(view.findViewById(R.id.groupMood_questionActionRangeLayout));
+			view.removeView(view
+					.findViewById(R.id.groupMood_questionActionRangeLayout));
 
 			// List-View für Choices
-			ListView lv = (ListView) view.findViewById(R.id.groupMood_questionActionChoices);
-			lv.addHeaderView(layoutInflater.inflate(R.layout.choice_button, null), null, false);
-			lv.addFooterView(layoutInflater.inflate(R.layout.choice_footer, null), null, false);
+			ListView lv = (ListView) view
+					.findViewById(R.id.groupMood_questionActionChoices);
+			lv.addHeaderView(
+					layoutInflater.inflate(R.layout.choice_button, null), null,
+					false);
+			lv.addFooterView(
+					layoutInflater.inflate(R.layout.choice_footer, null), null,
+					false);
 
 			ArrayList<String> questionOptionNames = new ArrayList<String>();
 			for (int i = 0; i < q.getChoices().size(); i++) {
@@ -339,19 +380,20 @@ public class QuestionActivity extends ServiceActivity {
 
 			// Question-Type Single-Choice
 			if (q.getMaxChoices().equals(1)) {
-				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this, R.layout.choice_single,
-						questionOptionNames));
+				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
+						R.layout.choice_single, questionOptionNames));
 				lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 			} else { // Question-Type Multiple-Choice
-				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this, R.layout.choice_multiple,
-						questionOptionNames));
+				lv.setAdapter(new ArrayAdapter<String>(QuestionActivity.this,
+						R.layout.choice_multiple, questionOptionNames));
 				lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 			}
 			lv.setOnItemSelectedListener(csl);
 			lv.setOnItemClickListener(csl);
 
 			// Button dazu
-			Button b = (Button) view.findViewById(R.id.groupMood_questionActionButton);
+			Button b = (Button) view
+					.findViewById(R.id.groupMood_questionActionButton);
 			b.setOnClickListener(cbcl);
 
 			// ListView zum Button merken
@@ -375,7 +417,8 @@ public class QuestionActivity extends ServiceActivity {
 
 	private void setCurrentTopic(Topic topic) {
 		currentTopic = topic;
-		currentQuestion = topic.getQuestions().size() > 0 ? topic.getQuestions().get(0) : null;
+		currentQuestion = topic.getQuestions().size() > 0 ? topic
+				.getQuestions().get(0) : null;
 	}
 
 	@Override
@@ -417,16 +460,20 @@ public class QuestionActivity extends ServiceActivity {
 		super.onSaveInstanceState(outState);
 		if (meeting != null) {
 			outState.putParcelable(MoodServerService.KEY_MEETING_MODEL, meeting);
-			outState.putParcelable(MoodServerService.KEY_TOPIC_MODEL, currentTopic);
-			outState.putParcelable(MoodServerService.KEY_QUESTION_MODEL, currentQuestion);
+			outState.putParcelable(MoodServerService.KEY_TOPIC_MODEL,
+					currentTopic);
+			outState.putParcelable(MoodServerService.KEY_QUESTION_MODEL,
+					currentQuestion);
 		}
-		outState.putBoolean("LOADING_HIDDEN", loadingProgress.getVisibility() != View.VISIBLE);
+		outState.putBoolean("LOADING_HIDDEN",
+				loadingProgress.getVisibility() != View.VISIBLE);
 		outState.putBoolean("meetingComplete", meetingComplete.get());
 
 		// Zustand der Seekbars merken
 		ArrayList<SeekBarState> seekBarStates = new ArrayList<SeekBarState>();
 		for (Integer questionId : seekBarState.keySet()) {
-			seekBarStates.add(new SeekBarState().setIdentifier(questionId).setProgress(seekBarState.get(questionId)));
+			seekBarStates.add(new SeekBarState().setIdentifier(questionId)
+					.setProgress(seekBarState.get(questionId)));
 		}
 		outState.putParcelableArrayList("seekbarStates", seekBarStates);
 
@@ -438,16 +485,21 @@ public class QuestionActivity extends ServiceActivity {
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
 		if (savedInstanceState.containsKey(MoodServerService.KEY_MEETING_MODEL)) {
-			meeting = savedInstanceState.getParcelable(MoodServerService.KEY_MEETING_MODEL);
-			setCurrentTopic((Topic) savedInstanceState.getParcelable(MoodServerService.KEY_TOPIC_MODEL));
-			currentQuestion = (Question) savedInstanceState.getParcelable(MoodServerService.KEY_QUESTION_MODEL);
+			meeting = savedInstanceState
+					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+			setCurrentTopic((Topic) savedInstanceState
+					.getParcelable(MoodServerService.KEY_TOPIC_MODEL));
+			currentQuestion = (Question) savedInstanceState
+					.getParcelable(MoodServerService.KEY_QUESTION_MODEL);
 		}
-		meetingComplete = new AtomicBoolean(savedInstanceState.getBoolean("meetingComplete"));
+		meetingComplete = new AtomicBoolean(
+				savedInstanceState.getBoolean("meetingComplete"));
 		if (savedInstanceState.getBoolean("LOADING_HIDDEN"))
 			loadingProgress.setVisibility(View.GONE);
 
 		// Zustand der Seekbars laden
-		ArrayList<SeekBarState> seekBarStates = savedInstanceState.getParcelableArrayList("seekbarStates");
+		ArrayList<SeekBarState> seekBarStates = savedInstanceState
+				.getParcelableArrayList("seekbarStates");
 		for (SeekBarState s : seekBarStates) {
 			seekBarState.put(s.getIdentifier(), s.getProgress());
 		}
@@ -455,41 +507,49 @@ public class QuestionActivity extends ServiceActivity {
 		updateView();
 
 		// Aktive view laden
-		setActionBarActiveButton((Button) findViewById(savedInstanceState.getInt("actionBarActiveButton")), false);
+		setActionBarActiveButton(
+				(Button) findViewById(savedInstanceState
+						.getInt("actionBarActiveButton")),
+				false);
 	}
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case DIALOG_LOADING:
-			return ProgressDialog.show(QuestionActivity.this, "", getResources().getString(R.string.loading_meeting),
-					true);
+			return ProgressDialog.show(QuestionActivity.this, "",
+					getResources().getString(R.string.loading_meeting), true);
 		case DIALOG_TOPIC_CREATE:
-			fotovoteDialog = new FotoVoteTopicCreateDialog(QuestionActivity.this);
+			fotovoteDialog = new FotoVoteTopicCreateDialog(
+					QuestionActivity.this);
 
 			if (imageFile != null) {
-				fotovoteDialog.photo.setImageBitmap(BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
+				fotovoteDialog.photo.setImageBitmap(BitmapFactory
+						.decodeFile(imageFile.getAbsolutePath()));
 				fotovoteDialog.imageFile = imageFile;
 			}
 
-			fotovoteDialog.galleryButton.setOnClickListener(new GallerySelectListener());
+			fotovoteDialog.galleryButton
+					.setOnClickListener(new GallerySelectListener());
 
-			fotovoteDialog.captureButton.setOnClickListener(new PhotoCaptureListener());
+			fotovoteDialog.captureButton
+					.setOnClickListener(new PhotoCaptureListener());
 
-			((FotoVoteTopicCreateDialog) fotovoteDialog).topicCreateButton.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View button) {
-					dismissDialog(DIALOG_TOPIC_CREATE);
-					removeDialog(DIALOG_TOPIC_CREATE);
-					showDialog(DIALOG_TOPIC_CREATE_WAIT);
-					createFotoVoteTopic(meeting, imageFile);
-				}
-			});
+			((FotoVoteTopicCreateDialog) fotovoteDialog).topicCreateButton
+					.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View button) {
+							dismissDialog(DIALOG_TOPIC_CREATE);
+							removeDialog(DIALOG_TOPIC_CREATE);
+							showDialog(DIALOG_TOPIC_CREATE_WAIT);
+							createFotoVoteTopic(meeting, imageFile);
+						}
+					});
 			fotovoteDialog.validate();
 			return fotovoteDialog;
 		case DIALOG_TOPIC_CREATE_WAIT:
-			return ProgressDialog.show(QuestionActivity.this, "", getResources().getString(R.string.creating_topic),
-					true);
+			return ProgressDialog.show(QuestionActivity.this, "",
+					getResources().getString(R.string.creating_topic), true);
 		default:
 			return super.onCreateDialog(id);
 		}
@@ -520,11 +580,13 @@ public class QuestionActivity extends ServiceActivity {
 	 */
 	private class CommentTextWatcher implements TextWatcher {
 		@Override
-		public void onTextChanged(CharSequence s, int start, int before, int count) {
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
 		}
 
 		@Override
-		public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
 		}
 
 		@Override
@@ -541,17 +603,21 @@ public class QuestionActivity extends ServiceActivity {
 	 * 
 	 * @author Markus Tacker <m@coderbyheart.de>
 	 */
-	private class ChoiceSelectListener implements OnItemSelectedListener, OnItemClickListener {
+	private class ChoiceSelectListener implements OnItemSelectedListener,
+			OnItemClickListener {
 		@Override
-		public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+		public void onItemSelected(AdapterView<?> parent, View view,
+				int position, long id) {
 			Button b = choicesToButton.get(parent);
 			Question q = buttonToQuestion.get(b);
 			ListView lv = (ListView) parent;
 			if (lv.getChoiceMode() == ListView.CHOICE_MODE_SINGLE) {
 				b.setEnabled(true);
 			} else {
-				ArrayList<String> selectedValues = listViewHelper.getSelectedItems(lv);
-				b.setEnabled(selectedValues.size() >= q.getMinChoices() && selectedValues.size() <= q.getMaxChoices());
+				ArrayList<String> selectedValues = listViewHelper
+						.getSelectedItems(lv);
+				b.setEnabled(selectedValues.size() >= q.getMinChoices()
+						&& selectedValues.size() <= q.getMaxChoices());
 			}
 		}
 
@@ -561,7 +627,8 @@ public class QuestionActivity extends ServiceActivity {
 		}
 
 		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
 			onItemSelected(parent, view, position, id);
 		}
 	}
@@ -579,11 +646,14 @@ public class QuestionActivity extends ServiceActivity {
 			b.setEnabled(false);
 			ListView lv = questionState.get(b);
 			Question q = buttonToQuestion.get(b);
-			ArrayList<String> selectedValues = listViewHelper.getSelectedItems(lv);
+			ArrayList<String> selectedValues = listViewHelper
+					.getSelectedItems(lv);
 			if (q.getMaxChoices().equals(1)) {
 				createAnswer(q, selectedValues.get(0));
 			} else {
-				createAnswer(q, selectedValues.toArray(new String[selectedValues.size()]));
+				createAnswer(
+						q,
+						selectedValues.toArray(new String[selectedValues.size()]));
 			}
 			if (q.getMode().equals(Question.MODE_SINGLE)) {
 				// TODO: Die wir aktuell keine Nutzer-Registrierung haben,
@@ -609,11 +679,13 @@ public class QuestionActivity extends ServiceActivity {
 			Bundle b = serviceMessage.getData();
 			b.setClassLoader(getClassLoader());
 			String answer = "";
-			Answer singleAnswer = b.getParcelable(MoodServerService.KEY_ANSWER_MODEL);
+			Answer singleAnswer = b
+					.getParcelable(MoodServerService.KEY_ANSWER_MODEL);
 			if (singleAnswer != null) {
 				answer = singleAnswer.getAnswer();
 			} else {
-				ArrayList<Answer> answers = b.getParcelableArrayList(MoodServerService.KEY_ANSWER_MODEL);
+				ArrayList<Answer> answers = b
+						.getParcelableArrayList(MoodServerService.KEY_ANSWER_MODEL);
 				if (answers != null) {
 					ArrayList<String> answerValues = new ArrayList<String>();
 					for (Answer a : answers) {
@@ -622,9 +694,10 @@ public class QuestionActivity extends ServiceActivity {
 					answer = TextUtils.join(", ", answerValues);
 				}
 			}
-			String text = String.format(getApplicationContext().getResources().getString(R.string.question_answered),
-					answer);
-			Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+			String text = String.format(getApplicationContext().getResources()
+					.getString(R.string.question_answered), answer);
+			Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG)
+					.show();
 		}
 	}
 
@@ -643,9 +716,11 @@ public class QuestionActivity extends ServiceActivity {
 		public void run() {
 			Bundle b = serviceMessage.getData();
 			b.setClassLoader(getClassLoader());
-			ArrayList<Comment> comments = b.getParcelableArrayList(MoodServerService.KEY_COMMENT_MODEL);
+			ArrayList<Comment> comments = b
+					.getParcelableArrayList(MoodServerService.KEY_COMMENT_MODEL);
 			// Finde topic
-			Uri topicUri = Uri.parse(b.getString(MoodServerService.KEY_TOPIC_URI));
+			Uri topicUri = Uri.parse(b
+					.getString(MoodServerService.KEY_TOPIC_URI));
 			Topic theTopic = null;
 
 			for (Topic t : topicGalleryAdapter.getTopics()) {
@@ -653,7 +728,8 @@ public class QuestionActivity extends ServiceActivity {
 					theTopic = t;
 			}
 			if (theTopic == null) {
-				Log.e(getClass().getCanonicalName(), "Topic for comments uri " + topicUri.toString() + " not found.");
+				Log.e(getClass().getCanonicalName(), "Topic for comments uri "
+						+ topicUri.toString() + " not found.");
 				return;
 			}
 
@@ -662,11 +738,14 @@ public class QuestionActivity extends ServiceActivity {
 
 			// Loading ausblenden
 			ViewGroup topicView = createTopicView(theTopic);
-			topicView.findViewById(R.id.groupMood_comments_loading).setVisibility(View.GONE);
+			topicView.findViewById(R.id.groupMood_comments_loading)
+					.setVisibility(View.GONE);
 
 			// Kommentare rendern
-			LinearLayout commentsList = (LinearLayout) topicView.findViewById(R.id.groupMood_comments_list);
-			LinearLayout noComments = (LinearLayout) topicView.findViewById(R.id.groupMood_comments_nocomments);
+			LinearLayout commentsList = (LinearLayout) topicView
+					.findViewById(R.id.groupMood_comments_list);
+			LinearLayout noComments = (LinearLayout) topicView
+					.findViewById(R.id.groupMood_comments_nocomments);
 
 			if (comments.size() > 0) {
 				noComments.setVisibility(View.GONE);
@@ -675,12 +754,20 @@ public class QuestionActivity extends ServiceActivity {
 				LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				commentsList.removeAllViews();
 				for (Comment comment : comments) {
-					ViewGroup view = (ViewGroup) layoutInflater.inflate(R.layout.comment_item, commentsList, false);
-					((TextView) view.findViewById(R.id.groupMood_comment_user_text)).setText(comment.getUser());
-					((TextView) view.findViewById(R.id.groupMood_comment_time_text)).setText(DateUtils
-							.getRelativeDateTimeString(getApplicationContext(), comment.getCreationDate().getTime(),
-									DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0));
-					((TextView) view.findViewById(R.id.groupMood_comment_text)).setText(comment.getComment());
+					ViewGroup view = (ViewGroup) layoutInflater.inflate(
+							R.layout.comment_item, commentsList, false);
+					((TextView) view
+							.findViewById(R.id.groupMood_comment_user_text))
+							.setText(comment.getUser());
+					((TextView) view
+							.findViewById(R.id.groupMood_comment_time_text))
+							.setText(DateUtils.getRelativeDateTimeString(
+									getApplicationContext(), comment
+											.getCreationDate().getTime(),
+									DateUtils.MINUTE_IN_MILLIS,
+									DateUtils.WEEK_IN_MILLIS, 0));
+					((TextView) view.findViewById(R.id.groupMood_comment_text))
+							.setText(comment.getComment());
 					commentsList.addView(view);
 				}
 			} else {
@@ -703,11 +790,14 @@ public class QuestionActivity extends ServiceActivity {
 		@Override
 		public void run() {
 			// Und Bild aus Datei setzen
-			Integer topicId = serviceMessage.getData().getInt(MoodServerService.KEY_TOPIC_ID);
-			Log.d(getClass().getCanonicalName(), "Bekomme neues Bild für Topic: " + topicId);
+			Integer topicId = serviceMessage.getData().getInt(
+					MoodServerService.KEY_TOPIC_ID);
+			Log.d(getClass().getCanonicalName(),
+					"Bekomme neues Bild für Topic: " + topicId);
 			for (Topic t : topicGalleryAdapter.getTopics()) {
 				if (t.getId() == topicId) {
-					t.setImageFile(new File(serviceMessage.getData().getString(MoodServerService.KEY_TOPIC_IMAGE)));
+					t.setImageFile(new File(serviceMessage.getData().getString(
+							MoodServerService.KEY_TOPIC_IMAGE)));
 				}
 			}
 			topicGalleryAdapter.notifyDataSetChanged();
@@ -728,7 +818,8 @@ public class QuestionActivity extends ServiceActivity {
 		public void run() {
 			Bundle b = serviceMessage.getData();
 			b.setClassLoader(getClassLoader());
-			Meeting meetingData = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+			Meeting meetingData = b
+					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 			if (!meetingComplete.getAndSet(true)) {
 				meeting = meetingData;
 				dismissDialog(DIALOG_LOADING);
@@ -760,7 +851,8 @@ public class QuestionActivity extends ServiceActivity {
 		public void run() {
 			Bundle b = serviceMessage.getData();
 			b.setClassLoader(getClassLoader());
-			Meeting meetingData = b.getParcelable(MoodServerService.KEY_MEETING_MODEL);
+			Meeting meetingData = b
+					.getParcelable(MoodServerService.KEY_MEETING_MODEL);
 			topicResultAdapter.setTopics(meetingData.getTopics());
 			topicGalleryAdapter.setTopics(meetingData.getTopics());
 			topicResultAdapter.notifyDataSetChanged();
@@ -800,13 +892,15 @@ public class QuestionActivity extends ServiceActivity {
 		@Override
 		public void onClick(View v) {
 			ViewGroup parent = (ViewGroup) v.getParent();
-			EditText commentText = (EditText) parent.findViewById(R.id.groupMood_newcomment_text);
+			EditText commentText = (EditText) parent
+					.findViewById(R.id.groupMood_newcomment_text);
 			addComment(commentText.getText().toString());
 			commentText.getEditableText().clear();
 			// Keyboard ausblendend
-			InputMethodManager inputManager = (InputMethodManager) getApplicationContext().getSystemService(
-					Context.INPUT_METHOD_SERVICE);
-			inputManager.hideSoftInputFromWindow(v.getApplicationWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+			InputMethodManager inputManager = (InputMethodManager) getApplicationContext()
+					.getSystemService(Context.INPUT_METHOD_SERVICE);
+			inputManager.hideSoftInputFromWindow(v.getApplicationWindowToken(),
+					InputMethodManager.HIDE_NOT_ALWAYS);
 		}
 	}
 
@@ -821,8 +915,10 @@ public class QuestionActivity extends ServiceActivity {
 			if (((Button) v).equals(shareButton)) {
 				Intent sharingIntent = new Intent(Intent.ACTION_SEND);
 				sharingIntent.setType("text/html");
-				sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, Html.fromHtml(meeting.getUri().toString()));
-				startActivity(Intent.createChooser(sharingIntent, "Share using"));
+				sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT,
+						Html.fromHtml(meeting.getUri().toString()));
+				startActivity(Intent
+						.createChooser(sharingIntent, "Share using"));
 
 				Button b = new Button(QuestionActivity.this);
 				switch (actionbarState) {
@@ -854,9 +950,12 @@ public class QuestionActivity extends ServiceActivity {
 		// Die View des aktuellen Topics holen
 		View topicView = createTopicView(getCurrentTopic());
 
-		topicView.findViewById(R.id.groupMood_topicComments).setVisibility(View.GONE);
-		topicView.findViewById(R.id.groupMood_questionsSwipe).setVisibility(View.GONE);
-		topicView.findViewById(R.id.groupMood_questionsActions).setVisibility(View.GONE);
+		topicView.findViewById(R.id.groupMood_topicComments).setVisibility(
+				View.GONE);
+		topicView.findViewById(R.id.groupMood_questionsSwipe).setVisibility(
+				View.GONE);
+		topicView.findViewById(R.id.groupMood_questionsActions).setVisibility(
+				View.GONE);
 		findViewById(R.id.groupMood_topicResult).setVisibility(View.GONE);
 		findViewById(R.id.groupMood_topicFramesLayout).setVisibility(View.GONE);
 
@@ -864,42 +963,54 @@ public class QuestionActivity extends ServiceActivity {
 		if (actionBarActiveButton.equals(questionsButton)) {
 			actionbarState = 0;
 
-			questionsButton.setBackgroundDrawable(res.getDrawable(R.drawable.ic_checkmark_white_tab));
-			topicView.findViewById(R.id.groupMood_questionsSwipe).setVisibility(View.VISIBLE);
-			topicView.findViewById(R.id.groupMood_questionsActions).setVisibility(View.VISIBLE);
-			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(View.VISIBLE);
+			questionsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_checkmark_white_tab));
+			topicView.findViewById(R.id.groupMood_questionsSwipe)
+					.setVisibility(View.VISIBLE);
+			topicView.findViewById(R.id.groupMood_questionsActions)
+					.setVisibility(View.VISIBLE);
+			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
+					View.VISIBLE);
 			if (!fromListView && isServiceBound() && meeting.shouldRefresh()) {
 				updateMeeting();
 			}
 		} else {
-			questionsButton.setBackgroundDrawable(res.getDrawable(R.drawable.ic_tab_checkmark));
+			questionsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_tab_checkmark));
 		}
 		// Comments-Icon
 		if (actionBarActiveButton.equals(commentsButton)) {
 			actionbarState = 1;
 
-			commentsButton.setBackgroundDrawable(res.getDrawable(R.drawable.ic_bubble_white_tab));
-			topicView.findViewById(R.id.groupMood_topicComments).setVisibility(View.VISIBLE);
-			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(View.VISIBLE);
+			commentsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_bubble_white_tab));
+			topicView.findViewById(R.id.groupMood_topicComments).setVisibility(
+					View.VISIBLE);
+			findViewById(R.id.groupMood_topicFramesLayout).setVisibility(
+					View.VISIBLE);
 			if (isServiceBound()) {
 				loadComments();
 			}
 
 		} else {
-			commentsButton.setBackgroundDrawable(res.getDrawable(R.drawable.ic_tab_bubble));
+			commentsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_tab_bubble));
 		}
 		// Results-Icon
 		if (actionBarActiveButton.equals(resultsButton)) {
 			actionbarState = 2;
 
-			resultsButton.setBackgroundDrawable(res.getDrawable(R.drawable.ic_chart_white_tab));
-			findViewById(R.id.groupMood_topicResult).setVisibility(View.VISIBLE);
+			resultsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_chart_white_tab));
+			findViewById(R.id.groupMood_topicResult)
+					.setVisibility(View.VISIBLE);
 			if (!fromListView && isServiceBound()) {
 				subscribeMeeting(meeting);
 				updateMeeting();
 			}
 		} else {
-			resultsButton.setBackgroundDrawable(res.getDrawable(R.drawable.ic_tab_chart));
+			resultsButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.ic_tab_chart));
 			if (!fromListView && isServiceBound())
 				unsubscribeMeeting();
 		}
@@ -910,10 +1021,12 @@ public class QuestionActivity extends ServiceActivity {
 	 * Lädt / aktualisiert die Kommentare des aktuellen Topics
 	 */
 	private void loadComments() {
-		createTopicView(getCurrentTopic()).findViewById(R.id.groupMood_comments_loading).setVisibility(View.VISIBLE);
+		createTopicView(getCurrentTopic()).findViewById(
+				R.id.groupMood_comments_loading).setVisibility(View.VISIBLE);
 		Message m = Message.obtain(null, MoodServerService.MSG_TOPIC_COMMENTS);
 		Bundle data = new Bundle();
-		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic().getUri().toString());
+		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic()
+				.getUri().toString());
 		m.setData(data);
 		sendMessage(m);
 	}
@@ -924,7 +1037,8 @@ public class QuestionActivity extends ServiceActivity {
 	private void updateMeeting() {
 		Message m = Message.obtain(null, MoodServerService.MSG_MEETING_UPDATE);
 		Bundle data = new Bundle();
-		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri().toString());
+		data.putString(MoodServerService.KEY_MEETING_URI, meeting.getUri()
+				.toString());
 		m.setData(data);
 		sendMessage(m);
 	}
@@ -933,10 +1047,12 @@ public class QuestionActivity extends ServiceActivity {
 	 * Erzeugt ein neues Kommentar
 	 */
 	protected void addComment(String comment) {
-		createTopicView(getCurrentTopic()).findViewById(R.id.groupMood_comments_loading).setVisibility(View.VISIBLE);
+		createTopicView(getCurrentTopic()).findViewById(
+				R.id.groupMood_comments_loading).setVisibility(View.VISIBLE);
 		Message m = Message.obtain(null, MoodServerService.MSG_TOPIC_COMMENT);
 		Bundle data = new Bundle();
-		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic().getUri().toString());
+		data.putString(MoodServerService.KEY_TOPIC_URI, getCurrentTopic()
+				.getUri().toString());
 		data.putString(MoodServerService.KEY_COMMENT_COMMENT, comment);
 		m.setData(data);
 		sendMessage(m);
@@ -949,7 +1065,8 @@ public class QuestionActivity extends ServiceActivity {
 	 */
 	private class QuestionSeekBarListener implements OnSeekBarChangeListener {
 		@Override
-		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		public void onProgressChanged(SeekBar seekBar, int progress,
+				boolean fromUser) {
 			Question q = seekbarToQuestion.get(seekBar);
 			// Aktuellen Wert anzeigen
 			TextView currVal = seekbarToCurrentValueTextView.get(seekBar);
@@ -981,9 +1098,12 @@ public class QuestionActivity extends ServiceActivity {
 	private class QuestionSwipeListener implements OnPageChangedListener {
 		@Override
 		public void onPageChanged(int oldPage, int newPage) {
-			questionActionViews.get(getCurrentTopic().getQuestions().get(oldPage)).setVisibility(View.GONE);
+			questionActionViews.get(
+					getCurrentTopic().getQuestions().get(oldPage))
+					.setVisibility(View.GONE);
 			currentQuestion = getCurrentTopic().getQuestions().get(newPage);
-			questionActionViews.get(currentQuestion).setVisibility(View.VISIBLE);
+			questionActionViews.get(currentQuestion)
+					.setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -992,9 +1112,11 @@ public class QuestionActivity extends ServiceActivity {
 	 * 
 	 * @author Markus Tacker <m@coderbyheart.de>
 	 */
-	private class GalleryItemClickListener implements OnItemClickListener, OnItemLongClickListener {
+	private class GalleryItemClickListener implements OnItemClickListener,
+			OnItemLongClickListener {
 		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
 			Topic topic = (Topic) parent.getAdapter().getItem(position);
 			setCurrentTopic(topic);
 			updateTopic();
@@ -1014,7 +1136,8 @@ public class QuestionActivity extends ServiceActivity {
 		}
 
 		@Override
-		public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+		public boolean onItemLongClick(AdapterView<?> parent, View view,
+				int position, long id) {
 			Topic topic = (Topic) parent.getAdapter().getItem(position);
 			Intent intent = new Intent(Intent.ACTION_VIEW);
 			intent.setDataAndType(Uri.fromFile(topic.getImageFile()), "image/*");

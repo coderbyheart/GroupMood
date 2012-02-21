@@ -35,6 +35,7 @@
     <string name="creating_topic">Lege Thema an …</string>
     <string name="topic_create">Thema anlegen</string>
     <string name="fotovote_createtopic">Foto anlegen</string>
+    <string name="no_questions">Keine Fragen hinterlegt.</string>
 
     <plurals name="label_result_numvotes">
         <item quantity="one">1 Stimme</item>
