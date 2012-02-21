@@ -38,6 +38,7 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 				.from(parent.getContext());
 		LinearLayout topicResultLayout = (LinearLayout) layoutInflater.inflate(
 				R.layout.topic_result, parent, false);
+
 		Resources res = parent.getResources();
 		// Icon erzeugen
 		((ViewGroup) topicResultLayout
@@ -92,6 +93,12 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 
 			questionsLayout.addView(questionView);
 		}
+
+		if (topic.getQuestions().size() == 0) {
+			topicResultLayout.setVisibility(View.GONE);
+			topicResultLayout.removeAllViews();
+		}
+
 		return topicResultLayout;
 	}
 
