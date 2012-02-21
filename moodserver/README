@@ -37,6 +37,12 @@ $ python2 manage.py syncdb
 	Installing custom SQL ...
 	Installing indexes ...
 	Installed 1 object(s) from 1 fixture(s)
+	
+## Schreibrechte
+
+Der User, der den Server betreibt, braucht Schreibrechte auf den Ordnern uploads und darunter.
+
+    chown -R www-data: ./uploads 
 
 ## Server starten
 

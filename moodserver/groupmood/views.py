@@ -1,4 +1,16 @@
 # -*- coding: utf8 -*-
+"""
+
+    In dieser Datei sind Funktionen definiert, die mithilfe der 
+    Datei urls.py auf URLs gemappt werden.
+    
+    Die Methoden verwendet dabei entweder die Djano-Templates
+    um eine HTML-Ansicht zu rendern, oder geben, wenn der Accept-Header
+    "json" enthält, die Antwort als JSON-Object aus.
+    
+    @author: Markus Tacker <m@coderbyheart.de>
+
+"""
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
@@ -15,7 +27,16 @@ import re
 import mimetypes
 import sys
 
+"Basis-URL für den Context aller Models"
 contexthref = 'http://groupmood.net/jsonld'
+
+"""
+Hier werden die Beziehung der Models untereinander definiert
+Die Elemente im Set sind
+0: Das Model
+1: ob es sich bei der Beziehung um eine Liste handelt (bis jetzt wird nur dieser Fall unterstützt)
+2: URL-Template (@id wird durch die URL des Entities ersetzt, das diese Bezeihung definiert)
+"""
 modelRelations = {
     Meeting: [(Topic, True, '@id/topics')],
     Topic: [(Question, True, '@id/questions'), (Comment, True, '@id/comments')],
@@ -26,12 +47,18 @@ class NoRelationException(Exception):
     pass
 
 def getModelRelation(modelType, relatedType):
+    "Findet die Relation vom Typ relatedType auf dem Model modelType"
     for relation in modelRelations[modelType]:
         if relation[0] == relatedType:
             return relation
     raise NoRelationException("No relation of " + relatedType + " on " + modelType + " defined ")
 
 def getUser(request):
+    """
+    Gibt den User des aktuellen Request zurück. Dieser wird ggfs. angelegt.
+    In dieser Version des Servers gibt es keine Nutzerregistrierung, also werden
+    Nutzer nur Anhand ihrer IP-Adresse identifiziert.
+    """
     userMatch = User.objects.filter(ip=request.META['REMOTE_ADDR'])
     if userMatch:
         return userMatch[0]
@@ -39,32 +66,36 @@ def getUser(request):
     return user
 
 def getBaseHref(request):
+    "Erzeugt den Basis-Hostnamen mit Schema für diesen Server"
     hostname = request.META['HTTP_HOST'] if 'HTTP_HOST' in request.META else 'localhost'
     return 'http%s://%s' % (('s' if request.is_secure() else ''), hostname)
 
 def getModelUrl(request, model):
+    "Erzeugt die URL zu einem Entity"
     return '%s/groupmood/%s/%d' % (getBaseHref(request), model.context, model.id)
 
 def modelsToJson(request, models):
+    "Erzeugt aus einer Liste von Entities eine Liste"
     data = []
     for model in models:
         data.append(modelToJson(request, model))
     return data
 
 def modelToJson(request, model):
+    "Erzeugt aus einem Entity eine Dictionary zur Verwendung in einer JSON-Nachricht"
     data = model.toJsonDict()
     
-    # Der @content-Parameter identifiziert das Model
+    "Der @content-Parameter identifiziert das Model"
     modelJson = {
         '@context': '%s/%s' % (contexthref, model.context),
     }
-    # ID ist die konkrete URL unter dem dieses Entity abgerufen werden kann
+    "ID ist die konkrete URL unter dem dieses Entity abgerufen werden kann"
     try:
         modelJson['@id'] = getModelUrl(request, model)
     except AttributeError:
         pass
     
-    # Daten des Entities auslesen
+    "Daten des Entities auslesen"
     for k in data:
         if type(data[k]) == list:
             modelJson[k] = []
@@ -76,12 +107,12 @@ def modelToJson(request, model):
             except AttributeError:
                 modelJson[k] = data[k]
     
-    # Bei Topics die Bild-URL erzeugen
+    "Bei Topics die Bild-URL erzeugen"
     if type(model) == Topic:
         if model.image != None:
             modelJson['image'] = "%s/groupmood/topic/%d/image" % (getBaseHref(request), model.id)
     
-    # Infos zu relation hinterlegen
+    "Infos zu relation hinterlegen"
     if type(model) in modelRelations:
         modelJson['@relations'] = []
         for relation in modelRelations[type(model)]:
@@ -92,12 +123,12 @@ def modelToJson(request, model):
                 'list': True if isList else False,
                 'href': href.replace('@id', modelJson['@id'])
             };
-            # Sind Daten zu dieser Relation hinterleg?
+            "Sind Daten zu dieser Relation hinterleg?"
             try:
                 if isList:
                     relationInfo['data'] = modelsToJson(request, model.relatedData[relatedModel])
                 else:
-                    # TODO: Implementieren
+                    "TODO: Implementieren"
                     pass
             except AttributeError:
                 pass
@@ -107,6 +138,7 @@ def modelToJson(request, model):
     return modelJson
 
 def jsonResponse(request, result):
+    "Erzeugt eine JSON-Response"
     resp = {}
     resp['status'] = {
         '@context': '%s/apistatus' % contexthref,
@@ -116,17 +148,20 @@ def jsonResponse(request, result):
     return HttpResponse(content=simplejson.dumps(resp), mimetype="application/json")   
 
 def jsonRequest(request):
+    "Lädt die Daten aus einem JSON-Request"
     jsondata = request.read()
     if not jsondata: 
         return {}
     return simplejson.loads(jsondata)
 
 def meeting_list(request):
+    "Erzeugt eine Liste mit Meetings"
     if request.method != 'GET':
         return HttpResponseBadRequest()
     return render_to_response('groupmood/meeting_list.html', {'latest_meeting_list': Meeting.objects.order_by('-creation_date')[:25]})
 
 def meeting_entry(request, id):
+    "Zeigt ein Meeting an"
     if request.method != 'GET':
         return HttpResponseBadRequest()
     meeting = get_object_or_404(Meeting, pk=id)
@@ -137,6 +172,7 @@ def meeting_entry(request, id):
         return render_to_response('groupmood/meeting_detail.html', {'meeting': meeting, 'attendeeAppURL': attendeeAppURL})
     
 def createFotoVoteTopic(meeting, request):
+    "Legt ein Thema zu einem Foto-Vote-Meeting an "
     numTopics = Topic.objects.filter(meeting=meeting).count()
     voteTopic = Topic.objects.create(meeting=meeting, name="Photo #%d" % (numTopics + 1))
     question = Question.objects.create(topic=voteTopic, name="Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
@@ -167,6 +203,7 @@ def createFotoVoteTopic(meeting, request):
     
 @csrf_exempt
 def meeting_topics(request, id):
+    "Zeigt die Topics eines Meetings an, oder legt ein Topic an."
     if request.method not in ('GET', 'POST'):
         return HttpResponseBadRequest()
     meeting = get_object_or_404(Meeting, pk=id)
@@ -185,10 +222,12 @@ def meeting_topics(request, id):
         return resp
 
 class PresentationWizardForm(forms.Form):
+    "Definiert ein Formular für die Anfragen zum Erzeugen von Meetings aus einer Präsentation"
     name = forms.CharField(max_length=200)
     presentation = forms.FileField()
     
 class FotoVoteWizardForm(forms.Form):
+    "Definiert ein Formular für die Anfragen zum Erzeugen von Foto-Vote-Meetings"
     name = forms.CharField(max_length=200)
     photo = forms.FileField()
 
@@ -202,6 +241,7 @@ def meeting_wizard(request, type):
         return HttpResponseBadRequest("Unknown wizard type %s" % type)
     
     if type == 'test1':
+        "Wird für Unit-Test verwendet"
         meeting = Meeting.objects.create(name="Test-Meeting")
         # Standard-Topic zum Bewerten des Meetings anlegen
         voteTopic = Topic.objects.create(meeting=meeting, name="Wie bewerten Sie dieses Meeting?")
@@ -209,6 +249,7 @@ def meeting_wizard(request, type):
         questionOptionMin = QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
         questionOptionMax = QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
     elif type == 'test2':
+        "Wird für Unit-Test verwendet"
         meeting = Meeting.objects.create(name="Choice-Test")
         # Standard-Topic zum Bewerten des Meetings anlegen
         voteTopic = Topic.objects.create(meeting=meeting, name="Choices")
@@ -219,6 +260,7 @@ def meeting_wizard(request, type):
         Choice.objects.create(question=question, name="Gelb")
         Choice.objects.create(question=question, name="Grün")
     elif type == 'fotovote':
+        "Ein Foto-Vote-Meeting"
         form = FotoVoteWizardForm(request.POST, request.FILES)
         if not form.is_valid():
             return HttpResponseBadRequest('Invalid data.')
@@ -227,6 +269,7 @@ def meeting_wizard(request, type):
         voteTopic = createFotoVoteTopic(meeting, request)
         
     elif type == 'presentation':
+        "Legt eine Präsentation anhand von Folien an"
         form = PresentationWizardForm(request.POST, request.FILES)
         if not form.is_valid():
             print request.POST
@@ -234,9 +277,9 @@ def meeting_wizard(request, type):
             print form.errors
             return HttpResponseBadRequest('Invalid data.')
         
-        # Meeting anlegen
+        "Meeting anlegen"
         meeting = Meeting.objects.create(name=form.cleaned_data['name'])
-        # Standard-Topic zum Bewerten des Meetings anlegen
+        "Standard-Topic zum Bewerten des Meetings anlegen"
         voteTopic = Topic.objects.create(meeting=meeting, name="Wie bewerten Sie dieses Meeting?")
         question = Question.objects.create(topic=voteTopic, name="Allgemeine Bewertung", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
         QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
@@ -259,19 +302,19 @@ def meeting_wizard(request, type):
             return HttpResponseBadRequest("Failed to extra archive.") 
         os.remove(archiveFile)
         
-        # Folie zählen
+        "Folie zählen"
         slides = []
         for file in os.listdir(extractDir):
             slides.append(file)
         if (len(slides) == 0):
             return HttpResponseBadRequest("No slides found.")
         
-        # Topics für alle Folien anlegen
+        "Topics für alle Folien anlegen"
         nslide = 0
         for slide in sorted(slides, key=lambda v: int(re.sub(r'[^0-9]', '', v))):
             nslide = nslide + 1
             slideTopic = Topic.objects.create(meeting=meeting, name="Folie #%d" % nslide, image="%s/%s" % (extractDir, slide))
-            # Fragen für jede Folie
+            "Fragen für jede Folie"
             question = Question.objects.create(topic=slideTopic, name="Wie bewerten Sie die Gestaltung dieser Folie?", type=Question.TYPE_RANGE, mode=Question.MODE_AVERAGE)
             QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MIN_VALUE, value="0")
             QuestionOption.objects.create(question=question, key=Question.OPTION_RANGE_MAX_VALUE, value="100")
@@ -293,6 +336,7 @@ def meeting_wizard(request, type):
     return resp
 
 def topic_questions(request, id):
+    "Gibt die Fragen eines Themas zurück"
     if request.method != 'GET':
         return HttpResponseBadRequest()
     topic = get_object_or_404(Topic, pk=id)
@@ -300,6 +344,7 @@ def topic_questions(request, id):
 
 @csrf_exempt
 def topic_comments(request, id):
+    "Listet die Kommentare zu einem Thema auf, oder legt ein neues Kommentar an"
     if request.method not in ('GET', 'POST'):
         return HttpResponseBadRequest()
     topic = get_object_or_404(Topic, pk=id)
@@ -313,14 +358,16 @@ def topic_comments(request, id):
         return resp        
 
 def topic_image(request, id):
+    "Gibt das Bild zu einem Thema zurück"
     if request.method != 'GET':
         return HttpResponseBadRequest()
     topic = get_object_or_404(Topic, pk=id)
-    if topic.image == None:
+    if topic.image == None or len(topic.image) == 0:
         return HttpResponseNotFound()
     return HttpResponse(content=open(topic.image).read(), mimetype=mimetypes.guess_type(topic.image)[0])
 
 def topic_entry(request, id):
+    "Gibt ein Thema zurück"
     if request.method != 'GET':
         return HttpResponseBadRequest()
     topic = get_object_or_404(Topic, pk=id)
@@ -330,36 +377,38 @@ def topic_entry(request, id):
         return render_to_response('groupmood/topic_detail.html', {'topic': topic, 'comments': Comment.objects.filter(topic=topic).order_by('-creation_date')})
 
 def question_entry(request, id):
-    if request.method == 'GET':
-        question = get_object_or_404(Question, pk=id)
-        if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
-            return jsonResponse(request, modelToJson(request, question))
-        else:
-            return render_to_response('groupmood/question_detail.html', {'question': question})    
-    else:
+    "Gibt eine Frage zurück"
+    if request.method != 'GET':
         return HttpResponseBadRequest()
+    question = get_object_or_404(Question, pk=id)
+    if 'json' in request.META.get("Accept", "") or 'json' in request.META.get("HTTP_ACCEPT", ""):
+        return jsonResponse(request, modelToJson(request, question))
+    else:
+        return render_to_response('groupmood/question_detail.html', {'question': question})    
     
 def question_options(request, id):
+    "Gibt die Optionen einer Frage zurück"
     if request.method != 'GET':
         return HttpResponseBadRequest()
     question = get_object_or_404(Question, pk=id)
     return jsonResponse(request, modelsToJson(request, QuestionOption.objects.filter(question=question)))
     
 def question_choices(request, id):
+    "Gibt die Antwortmöglichkeiten einer Frage zurück"
     if request.method != 'GET':
         return HttpResponseBadRequest()
     question = get_object_or_404(Question, pk=id)
     return jsonResponse(request, modelsToJson(request, Choice.objects.filter(question=question)))
 
 def createSingleAnswerResponse(request, answer):
-    """Gibt einen HTTP-Code 201 mit Daten zu einer Antwort zurück"""
+    "Gibt einen HTTP-Code 201 mit Daten zu einer Antwort zurück"
     resp = jsonResponse(request, modelToJson(request, answer))
     resp['Location'] = getModelUrl(request, answer)
     resp.status_code = 201;
     return resp  
 
 def createMultipleAnswerResponse(request, question, answers):
-    """Gibt einen HTTP-Code 201 mit Daten zu mehreren Antwort zurück"""
+    "Gibt einen HTTP-Code 201 mit Daten zu mehreren Antwort zurück"
     resp = jsonResponse(request, modelsToJson(request, answers))
     relatedModel, isList, href = getModelRelation(Question, Answer)
     resp['Location'] = href.replace('@id', getModelUrl(request, question))
@@ -368,6 +417,7 @@ def createMultipleAnswerResponse(request, question, answers):
 
 @csrf_exempt
 def question_answers(request, id):
+    "Zeigt die Antwort einer Frage an, oder fügt dieser neue Hinzu"
     if request.method not in ('GET', 'POST'):
         return HttpResponseBadRequest()
     question = get_object_or_404(Question, pk=id)
@@ -404,26 +454,6 @@ def question_answers(request, id):
     else:
         return jsonResponse(request, modelsToJson(request, Answer.objects.filter(question=question)))
 
-@csrf_exempt
-def meeting_vote(request, id):
-    if request.method == 'GET':
-        return HttpResponseBadRequest()
-    meeting = get_object_or_404(Meeting, pk=id)
-    if 'json' in request.META['CONTENT_TYPE']:
-        data = jsonRequest(request)
-    else:
-        data = request.POST
-    if not 'vote' in data:
-        return HttpResponseBadRequest("Missing vote")
-    v = Vote()
-    v.vote = int(data['vote'])
-    v.meeting = meeting
-    v.save()
-    if 'json' in request.META['CONTENT_TYPE']:
-        return jsonResponse(request, meeting)
-    else:
-        return HttpResponseRedirect("/groupmood/meeting/%s" % id)
-
 def recursive(request, model, id):
     """Diese View verfolgt alle Child-Elemente und gibt diese 
     als eine große Antwort zurück. Das spart HTTP-Requests."""
@@ -442,6 +472,7 @@ def recursive(request, model, id):
 ignoreInRecursion = [Answer, Comment]
     
 def recursiveFetch(request, entity):
+    "Lädt die zugehörigen Entities eines Objekts"
     if not type(entity) in modelRelations:
         return entity
     entity.relatedData = {} 
