@@ -1,0 +1,11 @@
+/* =============================================================================
+   PLACEHOLDER Media Queries for Responsive Design.
+   These override the primary ('mobile first') styles
+   Modify as content requires.
+   ========================================================================== */
+
+@media screen {
+}
+
+@media screen and (min-width: 700px) {
+}

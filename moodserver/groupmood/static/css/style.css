@@ -1,0 +1,15 @@
+html { font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Sans", Verdana, sans-serif; color: #EFEFEF; background: #0A0A0A; }
+* { box-sizing: border-box; }
+a { color: #55C3DC; text-decoration: none; }
+
+header { background-color: #79004A; padding: 0.5em;  }
+
+.button, button { border-radius: 0.5em; background-color: #55C3DC; color: #333333; padding: 0.5em; border: 0; box-shadow: 0 2px 2px #333; display: inline-block; font-weight: bold; }
+.button:hover, button:hover { background-color: #5DBCF7; }
+.button:visited { color: #333333;  }
+
+#market { position: absolute; top: 0.5em; right: 0.5em; }
+#market a { display: block; float: left; margin-top: auto; }
+
+article { margin: 1em; }
+dt { margin-bottom: 0.5em; margin-top: 1em; font-style: italic; }

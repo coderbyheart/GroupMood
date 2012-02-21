@@ -1,12 +1,12 @@
 {% extends "groupmood/base.html" %}
 {% block content %}
-<h1>Meeting #{{ meeting.id }}</h1>
+<h1>{{ meeting.name }}</h1>
+<p><a class="button" href="{{ attendeeAppURL|iriencode }}">in GroupMood öffnen</a></p>
 <dl>
-	<dt>Name</dt>
-	<dd>{{ meeting.name }}</dd>
-	<dt>URL für die Meeting-Teilnehmer</dt>
+	<dt>URL für die GroupMood-Nutzer</dt>
 	<dd>
 		<a href="{{ attendeeAppURL|iriencode }}">{{ attendeeAppURL|iriencode }}</a>
+		
 	</dd>
 	<dt>Topics</dt>
 	<dd>

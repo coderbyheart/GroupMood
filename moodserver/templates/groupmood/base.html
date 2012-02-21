@@ -1,14 +1,33 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="de">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title>moodserver{% block title %}{% endblock %}</title>
-	<meta name="author" content="Coralie Reuter &amp; Markus Tacker">
-	<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>moodserver{% block title %}{% endblock %}</title>
+<meta name="author" content="Coralie Reuter &amp; Markus Tacker">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" type="text/css"
+	href="{{ STATIC_URL }}/static/css/normalize.css">
+<link rel="stylesheet" type="text/css"
+	href="{{ STATIC_URL }}/static/css/helpers.css">
+<link rel="stylesheet" type="text/css"
+	href="{{ STATIC_URL }}/static/css/style.css">
+<link rel="stylesheet" type="text/css"
+	href="{{ STATIC_URL }}/static/css/media.css">
 </head>
 <body>
-{% block content %}{% endblock %}
+	<header>
+		<img src="{{ STATIC_URL }}/static/img/logo.png" alt="GroupMood">
+		<div id="market">
+			<a
+				href="https://market.android.com/details?id=de.hsrm.mi.mobcomp.y2k11grp04"
+				title="GroupMood im Android Market"> <img
+				src="{{ STATIC_URL }}/static/img/market.png" alt="Android Market"></a>
+		</div>
+	</header>
+	<article>
+	{% block content %}{% endblock %}
+	</article>
 </body>
 </html>
