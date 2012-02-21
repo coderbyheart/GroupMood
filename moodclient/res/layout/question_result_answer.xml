@@ -36,7 +36,7 @@
                 android:gravity="right"
                 android:text="{ Anzahl }"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/sub_text" />
+                android:textColor="@color/sub_text_lesser" />
         </LinearLayout>
 
         <ProgressBar
@@ -46,48 +46,13 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp" />
 
-        <LinearLayout
-            android:id="@+id/groupMood_question_resultLabel_layout"
+        <include
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:orientation="horizontal"
-            android:weightSum="3" >
-
-            <TextView
-                android:id="@+id/groupMood_question_resultMinLabel"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="left"
-                android:text="{minLabel}"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/sub_text_lesser" />
-
-            <TextView
-                android:id="@+id/groupMood_question_resultMidLabel"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="2dp"
-                android:layout_marginRight="2dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="{midLabel}"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/sub_text_lesser" />
-
-            <TextView
-                android:id="@+id/groupMood_question_resultMaxLabel"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:text="{maxLabel}"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/sub_text_lesser" />
-        </LinearLayout>
+            layout="@layout/question_result_answer_labels" />
     </LinearLayout>
 
 </LinearLayout>
