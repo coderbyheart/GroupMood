@@ -3,6 +3,7 @@ package de.hsrm.mi.mobcomp.y2k11grp04.gui;
 import java.util.List;
 
 import android.content.res.Resources;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,11 +61,13 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 					.findViewById(R.id.groupMood_questionResult_answers);
 
 			if (q.getType().equals(Question.TYPE_RANGE)) {
-				int progress = q.getAvg() - q.getMinOption();
-				int maxProgress = q.getMaxOption() - q.getMinOption();
+				float progress = Integer.valueOf(q.getAvg() - q.getMinOption())
+						.floatValue()
+						/ Integer.valueOf(q.getMaxOption() - q.getMinOption())
+								.floatValue();
 				View rangeAnswerView = createAnswerView(layoutInflater, res,
 						String.format(res.getString(R.string.label_result_avg),
-								q.getAvg()), progress, maxProgress,
+								q.getAvg()), (int) (100 * progress),
 						q.getNumAnswers());
 				// Labels
 				TextView minValueLabel = (TextView) rangeAnswerView
@@ -87,7 +90,7 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 			} else {
 				for (AnswerAverage aa : q.getAverageAnswers()) {
 					View choiceAnswerView = createAnswerView(layoutInflater,
-							res, aa.getAnswer(), aa.getAverage(), 100,
+							res, aa.getAnswer(), aa.getAverage(),
 							aa.getNumVotes());
 					choiceAnswerView.findViewById(
 							R.id.groupMood_question_resultLabel_layout)
@@ -108,13 +111,12 @@ public class TopicResultAdapter extends TopicGalleryAdapter {
 	}
 
 	public View createAnswerView(LayoutInflater layoutInflater, Resources res,
-			String answer, int progress, int maxProgress, int numVotes) {
+			String answer, int progress, int numVotes) {
 		LinearLayout answerView = (LinearLayout) layoutInflater.inflate(
 				R.layout.question_result_answer, null);
 
 		ProgressBar p = (ProgressBar) answerView
 				.findViewById(R.id.groupMood_question_resultProgressbar);
-		p.setMax(maxProgress);
 		p.setProgress(progress);
 
 		((TextView) answerView
