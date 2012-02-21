@@ -3,7 +3,6 @@ package de.hsrm.mi.mobcomp.y2k11grp04.gui;
 import java.util.List;
 
 import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
