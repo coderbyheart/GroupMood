@@ -25,11 +25,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="left"
-                android:text="Dies ist ein sehr langer Options-Name der zu einem häßlichen Umbruch führen soll."
+                android:text="@string/label_result_avg"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@color/sub_text" />
-
-            <!-- @string/label_result_avg -->
 
             <TextView
                 android:id="@+id/groupMood_question_resultNumVotes"
