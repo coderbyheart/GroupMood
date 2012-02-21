@@ -394,6 +394,7 @@ public class QuestionActivity extends ServiceActivity {
 			Button b = (Button) view
 					.findViewById(R.id.groupMood_questionActionButton);
 			b.setOnClickListener(cbcl);
+			b.setEnabled(q.getMinChoices().equals(0));
 
 			// ListView zum Button merken
 			questionState.put(b, lv);

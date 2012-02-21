@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:background="@drawable/button_inside"
-        android:enabled="false"
         android:padding="10dp"
         android:text="@string/question_action_answer"
         android:textColor="@color/action_text_inside"
