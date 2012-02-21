@@ -1,4 +1,4 @@
-package de.hsrm.mi.mobcomp.y2k11grp04.view;
+package de.hsrm.mi.mobcomp.y2k11grp04.gui;
 
 import android.content.Context;
 import android.text.Editable;

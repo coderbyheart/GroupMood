@@ -608,7 +608,6 @@ public class MoodServerApi {
 	 * Lädt die Topics eines Meetings
 	 * 
 	 * @param meeting
-	 * @return
 	 * @throws ApiException
 	 */
 	public ArrayList<Topic> getTopics(Meeting meeting) throws ApiException {

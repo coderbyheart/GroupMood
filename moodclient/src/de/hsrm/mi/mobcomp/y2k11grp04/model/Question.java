@@ -151,7 +151,6 @@ public class Question extends BaseModel {
 	 * 
 	 * @param name
 	 * @param defaultValue
-	 * @return
 	 */
 	public String getOption(String name, String defaultValue) {
 		for (QuestionOption o : getOptions()) {
@@ -173,7 +172,6 @@ public class Question extends BaseModel {
 	 * wird null zurück gegeben
 	 * 
 	 * @param name
-	 * @return
 	 */
 	public String getOption(String name) {
 		return getOption(name, null);
@@ -223,8 +221,6 @@ public class Question extends BaseModel {
 
 	/**
 	 * Gibt den Min-Wert zurück, falls vorhanden
-	 * 
-	 * @return
 	 */
 	public Integer getMinChoices() {
 		return Integer.parseInt(getOption(QuestionOption.OPTION_MIN_CHOICES));
@@ -232,8 +228,6 @@ public class Question extends BaseModel {
 
 	/**
 	 * Gibt Max-Wert zurück, falls vorhanden
-	 * 
-	 * @return
 	 */
 	public Integer getMaxChoices() {
 		return Integer.parseInt(getOption(QuestionOption.OPTION_MAX_CHOICES));
@@ -241,8 +235,6 @@ public class Question extends BaseModel {
 
 	/**
 	 * Gibt den Min-Wert zurück, falls vorhanden
-	 * 
-	 * @return
 	 */
 	public Integer getMinOption() {
 		return Integer
@@ -251,8 +243,6 @@ public class Question extends BaseModel {
 
 	/**
 	 * Gibt Max-Wert zurück, falls vorhanden
-	 * 
-	 * @return
 	 */
 	public Integer getMaxOption() {
 		return Integer

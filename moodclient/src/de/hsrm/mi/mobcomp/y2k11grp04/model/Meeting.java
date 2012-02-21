@@ -101,8 +101,6 @@ public class Meeting extends BaseModel {
 	/**
 	 * Gibt an, ob das Meeting aktualisiert werden sollte, weil neue Themen
 	 * hinzukommen könnten.
-	 * 
-	 * @return
 	 */
 	public boolean shouldRefresh() {
 		return hasFlag(FLAG_FOTOVOTE);

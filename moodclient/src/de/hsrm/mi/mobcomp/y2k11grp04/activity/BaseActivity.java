@@ -1,4 +1,4 @@
-package de.hsrm.mi.mobcomp.y2k11grp04;
+package de.hsrm.mi.mobcomp.y2k11grp04.activity;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +18,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
-import de.hsrm.mi.mobcomp.y2k11grp04.view.FotoVoteDialog;
+import de.hsrm.mi.mobcomp.y2k11grp04.R;
+import de.hsrm.mi.mobcomp.y2k11grp04.gui.FotoVoteDialog;
 
 public class BaseActivity extends Activity {
 

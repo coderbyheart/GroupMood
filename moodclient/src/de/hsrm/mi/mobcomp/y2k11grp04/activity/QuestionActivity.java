@@ -1,4 +1,4 @@
-package de.hsrm.mi.mobcomp.y2k11grp04;
+package de.hsrm.mi.mobcomp.y2k11grp04.activity;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,6 +45,12 @@ import android.widget.Toast;
 
 import com.devsmart.android.ui.HorizontalListView;
 
+import de.hsrm.mi.mobcomp.y2k11grp04.R;
+import de.hsrm.mi.mobcomp.y2k11grp04.gui.FotoVoteTopicCreateDialog;
+import de.hsrm.mi.mobcomp.y2k11grp04.gui.ListViewHelper;
+import de.hsrm.mi.mobcomp.y2k11grp04.gui.SeekBarState;
+import de.hsrm.mi.mobcomp.y2k11grp04.gui.TopicGalleryAdapter;
+import de.hsrm.mi.mobcomp.y2k11grp04.gui.TopicResultAdapter;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Answer;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Comment;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Meeting;
@@ -52,11 +58,6 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.Question;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
-import de.hsrm.mi.mobcomp.y2k11grp04.view.FotoVoteTopicCreateDialog;
-import de.hsrm.mi.mobcomp.y2k11grp04.view.ListViewHelper;
-import de.hsrm.mi.mobcomp.y2k11grp04.view.SeekBarState;
-import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicGalleryAdapter;
-import de.hsrm.mi.mobcomp.y2k11grp04.view.TopicResultAdapter;
 
 public class QuestionActivity extends ServiceActivity {
 

@@ -1,4 +1,4 @@
-package de.hsrm.mi.mobcomp.y2k11grp04;
+package de.hsrm.mi.mobcomp.y2k11grp04.activity;
 
 import java.io.File;
 
@@ -166,7 +166,7 @@ abstract public class ServiceActivity extends BaseActivity {
 	/**
 	 * Lädt ein Meeting vollständig mit allen Daten
 	 * 
-	 * @param groupMoodUri
+	 * @param meeting
 	 */
 	protected void loadMeetingComplete(Meeting meeting) {
 		Message m = Message

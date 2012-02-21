@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="GroupMood" default="javadoc">
+	<description>Der Server-Teil des Systems, geschrieben in Java.</description>
+
+	<property name="basedir" value="." />
+	<property name="srcdir" value="${basedir}/src" />
+	<property name="gendir" value="${basedir}/gen" />
+	<property name="libdir" value="${basedir}/libs" />
+	<property name="javadocdir" value="${basedir}/docs" />
+	<property name="sdkdir" value="/opt/android-sdk/platforms/android-7/" />
+
+	<path id="libs">
+		<pathelement path="${libdir}/httpmime-4.1.2.jar" />
+		<pathelement path="${sdkdir}/android.jar" />
+
+	</path>
+
+	<target name="javadoc" description="Erzeugt JavaDoc für das Projekt">
+		<delete dir="${javadocdir}" />
+		<mkdir dir="${javadocdir}" />
+		<javadoc encoding="utf-8" charset="utf-8" docencoding="utf-8" access="protected" author="true" classpathref="libs" destdir="${javadocdir}" doctitle="GroupMood" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" source="1.6" splitindex="true" use="true" version="true">
+			<fileset dir="${srcdir}/" includes="**/*.java" />
+			<fileset dir="${gendir}/" includes="**/*.java" />
+		</javadoc>
+	</target>
+</project>

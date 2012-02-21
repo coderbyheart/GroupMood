@@ -43,7 +43,7 @@ public class HttpToFileLoader implements Callable<File> {
 	}
 
 	/**
-	 * @todo Wir gehen davon aus, dass external Storage verfügbar ist
+	 * TODO: Wir gehen davon aus, dass external Storage verfügbar ist
 	 * @param source
 	 * @throws IOException
 	 */

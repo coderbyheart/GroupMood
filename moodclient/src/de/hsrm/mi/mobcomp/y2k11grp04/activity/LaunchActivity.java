@@ -1,4 +1,4 @@
-package de.hsrm.mi.mobcomp.y2k11grp04;
+package de.hsrm.mi.mobcomp.y2k11grp04.activity;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -26,11 +26,12 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import de.hsrm.mi.mobcomp.y2k11grp04.R;
+import de.hsrm.mi.mobcomp.y2k11grp04.gui.FotoVoteCreateDialog;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.BaseModel;
 import de.hsrm.mi.mobcomp.y2k11grp04.persistence.DbAdapter;
 import de.hsrm.mi.mobcomp.y2k11grp04.persistence.Provider;
 import de.hsrm.mi.mobcomp.y2k11grp04.service.MoodServerService;
-import de.hsrm.mi.mobcomp.y2k11grp04.view.FotoVoteCreateDialog;
 
 public class LaunchActivity extends ServiceActivity {
 	private WifiStateReceiver wsr = new WifiStateReceiver();
