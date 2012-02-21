@@ -1,13 +1,29 @@
-{% extends "groupmood/base.html" %}
-{% block content %}
+{% extends "groupmood/base.html" %} {% block content %}
 <h1>Meetings</h1>
 {% if latest_meeting_list %}
-    <ul>
-    {% for meeting in latest_meeting_list %}
-        <li><a href="/groupmood/meeting/{{ meeting.id }}">{{ meeting.name }}</a></li>
-    {% endfor %}
-    </ul>
+<ul>
+	{% for meeting in latest_meeting_list %}
+	<li><a href="/groupmood/meeting/{{ meeting.id }}">{{ meeting.name }}</a></li> {% endfor %}
+</ul>
 {% else %}
-    <p>No meetings are available.</p>
-{% endif %}
+<p>No meetings are available.</p>
+{% endif %} 
+<form method="post" action="/groupmood/meeting/wizard/presentation" enctype="multipart/form-data">
+	<fieldset>
+		<legend>Neue Präsentation anlegen</legend>
+		<p>
+			<label for="presentation">Präsentation als .tgz-Archiv mit einem PNG pro Folie.</label><br />
+			<input
+				type="file" name="presentation" id="presentation">
+		</p>
+		<p>
+			<label for="name">Name der Präsentation</label><br />
+			<input type="text"
+				name="name" id="name">
+		</p>
+		<p>
+			<button type="submit">absenden</button>
+		</p>
+	</fieldset>
+</form>
 {% endblock %}

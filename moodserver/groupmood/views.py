@@ -10,6 +10,7 @@ from models import *
 from PIL import Image
 import os
 import subprocess
+from subprocess import CalledProcessError
 import re
 import mimetypes
 import sys
@@ -195,7 +196,7 @@ class FotoVoteWizardForm(forms.Form):
 def meeting_wizard(request, type):
     """Mit dem Wizard können Meetings mit vorgegebenen Einstellungen angelegt werden."""
     if request.method != 'POST':
-        return HttpResponseBadRequest()
+        return HttpResponseBadRequest('Invalid method.')
     wizardTypes = ['presentation', 'fotovote', 'test1', 'test2']
     if type not in wizardTypes:
         return HttpResponseBadRequest("Unknown wizard type %s" % type)
@@ -220,7 +221,7 @@ def meeting_wizard(request, type):
     elif type == 'fotovote':
         form = FotoVoteWizardForm(request.POST, request.FILES)
         if not form.is_valid():
-            return HttpResponseBadRequest()
+            return HttpResponseBadRequest('Invalid data.')
         
         meeting = Meeting.objects.create(name=request.POST['name'], flags='fotovote')
         voteTopic = createFotoVoteTopic(meeting, request)
@@ -228,7 +229,10 @@ def meeting_wizard(request, type):
     elif type == 'presentation':
         form = PresentationWizardForm(request.POST, request.FILES)
         if not form.is_valid():
-            return HttpResponseBadRequest()
+            print request.POST
+            print request.FILES
+            print form.errors
+            return HttpResponseBadRequest('Invalid data.')
         
         # Meeting anlegen
         meeting = Meeting.objects.create(name=form.cleaned_data['name'])

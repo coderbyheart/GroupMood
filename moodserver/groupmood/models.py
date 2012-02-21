@@ -95,7 +95,7 @@ class Topic(BaseModel):
     context = 'topic'
     meeting = models.ForeignKey(Meeting)
     name = models.CharField(max_length=200)
-    image = models.URLField(null=True,blank=True)
+    image = models.CharField(max_length=255,null=True,blank=True)
     
     class Meta:
         unique_together = (("meeting", "name"),)
