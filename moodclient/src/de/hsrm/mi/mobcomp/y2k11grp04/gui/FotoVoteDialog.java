@@ -7,6 +7,12 @@ import android.content.Context;
 import android.widget.Button;
 import android.widget.ImageView;
 
+/**
+ * Basisklasse für den {@link FotoVoteCreateDialog} und den
+ * {@link FotoVoteTopicCreateDialog}.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public abstract class FotoVoteDialog extends Dialog {
 
 	public ImageView photo;

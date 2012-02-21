@@ -8,6 +8,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import de.hsrm.mi.mobcomp.y2k11grp04.R;
 
+/**
+ * Hält Referenzen auf die Elemente des Dialoges um ein Topic zu einem
+ * FotoVote-Meeting an zu legen und kümmert sich um das Aktivieren bzw.
+ * Deaktivieren des Buttons.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 public class FotoVoteTopicCreateDialog extends FotoVoteDialog {
 
 	TopicCreateDialogeValidator cdv;

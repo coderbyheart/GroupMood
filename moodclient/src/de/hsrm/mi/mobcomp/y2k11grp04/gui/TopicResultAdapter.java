@@ -16,7 +16,9 @@ import de.hsrm.mi.mobcomp.y2k11grp04.model.QuestionOption;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
 /**
- * @author Markus Tacker
+ * Adapter für die ListView in der die Ergebnisse angezeigt werden.
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
  */
 public class TopicResultAdapter extends TopicGalleryAdapter {
 

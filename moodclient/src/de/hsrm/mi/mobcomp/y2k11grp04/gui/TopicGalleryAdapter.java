@@ -19,14 +19,13 @@ import de.hsrm.mi.mobcomp.y2k11grp04.R;
 import de.hsrm.mi.mobcomp.y2k11grp04.model.Topic;
 
 /**
- * @author Coralie Reuter
- * @author Markus Tacker
+ * Adapter für die Einträge in der ListViews die die Themen anzeigt.
  * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ * @author Coralie Reuter <coralie.reuter@hrcom.de>
  */
 public class TopicGalleryAdapter extends BaseAdapter {
 
-	@SuppressWarnings("unused")
-	private static final String TAG = TopicGalleryAdapter.class.getSimpleName();
 	private List<Topic> topics;
 
 	/**
