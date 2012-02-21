@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 /**
- * Content-Provider für die Bullshit-Bingo-Datenbank
+ * Content-Provider für die {@link MeetingHistory Meeting-History-Datenbank}.
  * 
  * @author Markus Tacker <m@coderbyheart.de>
  */

@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * Datenbank-Adapter für Bullshit-Bingo
+ * Datenbank-Adapter zum Merken der letzten Meetings.
  * 
  * @author Markus Tacker <m@coderbyheart.de>
  */

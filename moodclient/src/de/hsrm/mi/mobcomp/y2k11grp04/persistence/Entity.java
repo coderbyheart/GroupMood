@@ -2,6 +2,11 @@ package de.hsrm.mi.mobcomp.y2k11grp04.persistence;
 
 import java.util.Date;
 
+/**
+ * Basisklasse für Entities in der Datenbank
+ * 
+ * @author Markus Tacker <m@coderbyheart.de>
+ */
 abstract public class Entity {
 
 	private int id;
