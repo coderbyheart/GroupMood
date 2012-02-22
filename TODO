@@ -1,0 +1,34 @@
+Das schöne an Projekten im Studium ist, dass man Dinge, 
+die einen nicht interessieren vernachlässigen kann.
+
+Würde man das Projekt mit kommerziellem Interesse weiter
+entwickeln wollen sind die folgende Punkte aus meiner
+Sicht die wichtigsten:
+
+- User Registrierung
+
+  Aktuell gibt es keine Möglichkeit sicher fest zu stellen
+  wie oft ein User eine Stimme abgegeben hat. Gerade bei
+  Single-Choice-Fragen wäre das aber sehr wichtig.
+  Es fehlt also eine User-Registrierung und ein entsprechendes
+  Account-System in der App und serverseitig.
+
+- Aktive Topics in der Gallery markieren
+
+- Aktuell gibt es keine Begrenzung bei der Anzahl der Kommentare
+  das kann natürlich zur Problemen führen. Ein Pager wäre nicht 
+  schlecht.
+
+- Die Api-Requests aus der App könnten gecached werden. Die Cache-
+  Lebenszeit sollte dabei individuell pro URI festgelegt werden
+  (HTTP-Expires-Header).
+
+- Unit-Testing oder MonkeyRunner in der App. Aktuell wird davon
+  nichts gemacht.
+
+- Es fehlen auf jeden Fall komfortable Funktionen zum Anlegen
+  von Präsentationen, entweder muss der Django-Admin erweitert
+  werden, oder besser die App um entsprechenden Funktionen.
+
+- Generell ist der Django-Admin absolut rudimentär und verwendet
+  nicht einmal die von Django bereitgestellten Komfortfunktionen.
