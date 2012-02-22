@@ -1,0 +1,33 @@
+GroupMood ist eine Anwendung für Android und ermöglich es, eine Gruppen
+von Personen schnell und direkt mit Hilfe ihres Smartphones zu befragen.
+
+Autoren
+  Coralie Reuter <coralie.reuter@hrcom.de>
+  Markus Tacker <m@coderbyheart.de>
+
+Dokumentation
+  Unter documents/GroupMood.pdf findet sich die ausführliche Beschreibung
+  des Projekts.
+  Unter documents/GroupMoodPräsentation.pdf findet sich eine kurze 
+  Vorstellung in Form einer Präsentation.
+  Screenshots der App finden sich im Ordner market
+
+Android-App
+  Unter market/GroupMood.apk findet sich die exportierte Anwendung für 
+  Android (ab Version 2.1, API Level 7).
+  Der Quellcode dafür findet sich unter trunk/moodclient
+
+Server
+  Unter trunk/moodserver findet sich ein auf Django basierter Server
+  der zur Verwendung der Anwendung nötig ist. Unter trunk/moodserver/README
+  findet sich eine Anleitung, wie man den Server startet.
+
+Verwendete Quellen
+  Die Software verwendet zum Teil fremde Inhalte:
+  - Barcode-Scanner-Komponente von ZXing <http://code.google.com/p/zxing/source/browse/trunk/android-integration/src/com/google/zxing/integration/android/>
+  - HorizontalListView und zugehörige Komponente von Jason Fry <https://github.com/fry15/uk.co.jasonfry.android.tools>
+  Die Icons in der ActionBar basieren auf den Icons:
+  - <http://thenounproject.com/noun/check-box/#icon-No876> von Hrag Chanchanian von The Noun Project <http://www.thenounproject.com/>
+  - <http://thenounproject.com/noun/blog/#icon-No460> von The Noun Project <http://www.thenounproject.com/>
+  - <http://thenounproject.com/noun/pie-chart/#icon-No805> von Scott Lewis von The Noun Project <http://www.thenounproject.com/>
+  - <http://thenounproject.com/noun/share/#icon-No253> von The Noun Project <http://www.thenounproject.com/>

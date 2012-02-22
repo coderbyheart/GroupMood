@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage[paper=a4paper,width=14cm,left=35mm,height=22cm]{geometry}
+\usepackage{setspace}
+\usepackage{charter}
+\usepackage{subfig}
+\linespread{1.15}
+\setlength{\parskip}{0.25em}
+\setlength{\parindent}{0em}
+
+\usepackage{color}
+\usepackage{listings}
+\lstset{
+	basicstyle=\sffamily, 
+	columns=[l]flexible, 
+	mathescape=true, 
+  	showstringspaces=false, 
+  	numbers=left, 
+  	numberstyle=\tiny,
+  	keywordstyle=\color[rgb]{0,0,1},
+    commentstyle=\color[rgb]{0.133,0.545,0.133},
+    stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+\lstset{language=java}
+\usepackage{float}
+\newfloat{listing}{htbp}{scl}[section]
+\floatname{listing}{Listing}
+
+\usepackage{wrapfig}
+
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    bookmarks=true,
+    colorlinks=true,
+    linkcolor=NavyBlue,
+    citecolor=NavyBlue,
+    urlcolor=NavyBlue
+}
+
+\usepackage{amsfonts}
+
+\begin{document}
+\author{Coralie Reuter und Markus Tacker}
+\title{\emph{GroupMood}: Mobile Anwendung zur schnellen Erfassung und Auswertung von Stimmungen und Meinungen in einer Gruppe.}
+\begin{center}
+\includegraphics[width=10cm]{media/GroupMood.png}
+
+\begin{huge}GroupMood\end{huge}
+
+\begin{large}Mobile Anwendung zur schnellen Erfassung und Auswertung von Stimmungen und Meinungen in einer Gruppe\end{large}
+
+Coralie Reuter und Markus Tacker
+
+\today
+
+\end{center}
+
+\bigskip 
+
+\input{intro}
+
+\tableofcontents
+
+\input{Projektidee}
+
+\input{technische-umsetzung}
+
+\end{document}

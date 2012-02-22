@@ -1,0 +1,29 @@
+
+digraph G {
+rankdir=LR
+
+node [  shape="rect" fontsize=12 ]
+edge [ fontsize=10 ]
+
+subgraph cluster1 {
+color=grey
+label="Server"
+fontsize=10
+api [ label="REST API" ]
+persistence [ label="Datenbank" ]
+api -> persistence [ dir="both" label="SQL" ]
+}
+
+
+subgraph cluster0 {
+label="App"
+color=grey
+fontsize=10
+service [ label="RemoteService" ]
+client [ label="GUI" ]
+client -> service [ dir=both label=IPC ]
+service -> api [ dir="both" label="JSON via HTTP" ]
+}
+
+
+}
