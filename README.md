@@ -17,7 +17,8 @@ Im [Wiki](https://github.com/tacker/GroupMood/wiki) findet sich die ausführlich
 
 Unter ``market/GroupMood.apk`` findet sich die exportierte Anwendung für Android (ab Version 2.1, API Level 7).
 Sie ist auch [im Android Market verfügbar](https://market.android.com/details?id=de.hsrm.mi.mobcomp.y2k11grp04).
-Der Quellcode dafür findet sich unter ``moodclient``
+Der Quellcode dafür findet sich unter ``moodclient``.  
+Screenshots finden sich im Ordner ``market``.
 
 ## Server
 
