@@ -6,8 +6,8 @@ Die Anwendung ist im Kurs Mobile-Computing im 5. Semester des [Medieninformatik-
 
 ## Autoren
 
-* [Coralie Reuter](http://github.com/CoralBlack) m@coderbyheart.de
-* [Markus Tacker](http://github.com/tacker) coralie.reuter@hrcom.de
+* Coralie Reuter / [@CoralBlack](http://github.com/CoralBlack) / coralie.reuter@hrcom.de
+* Markus Tacker / [@tacker](http://github.com/tacker) / m@coderbyheart.de
 
 ## Dokumentation
 
@@ -15,14 +15,14 @@ Im [Wiki](https://github.com/tacker/GroupMood/wiki) findet sich die ausführlich
 
 ## Android-App
 
-Unter ``market/GroupMood.apk`` findet sich die exportierte Anwendung für Android (ab Version 2.1, API Level 7).
-Sie ist auch [im Android Market verfügbar](https://market.android.com/details?id=de.hsrm.mi.mobcomp.y2k11grp04).
-Der Quellcode dafür findet sich unter ``moodclient``.  
-Screenshots finden sich im Ordner ``market`` oder in [diesem Flickr-Set](http://www.flickr.com/photos/tacker/sets/72157629061730644).
+Unter [market/GroupMood.apk](https://github.com/tacker/GroupMood/raw/master/market/GroupMood.apk) findet sich die exportierte Anwendung für Android (ab Version 2.1, API Level 7).  
+Sie ist auch [im Android Market verfügbar](https://github.com/tacker/GroupMood/wiki/Android-Market).  
+Der Quellcode dafür findet sich unter [moodclient](https://github.com/tacker/GroupMood/tree/master/moodclient).  
+Screenshots finden sich [hier](https://github.com/tacker/GroupMood/wiki/Screenshots).
 
 ## Server
 
-Unter ``moodserver`` findet sich ein auf Django 1.3 basierter Server der zur Verwendung der Anwendung nötig ist. Unter ``moodserver/README`` findet sich eine Anleitung, wie man den Server startet.
+Unter [moodserver](https://github.com/tacker/GroupMood/tree/master/moodserver) findet sich ein auf Django 1.3 basierter Server der zur Verwendung der Anwendung nötig ist. Unter [moodserver/README](https://github.com/tacker/GroupMood/tree/master/moodserver/README) findet sich eine Anleitung, wie man den Server startet.
 
 ## Verwendete Quellen
 
