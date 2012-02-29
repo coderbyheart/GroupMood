@@ -7,7 +7,7 @@ Die Anwendung ist im Kurs Mobile-Computing im 5. Semester des [Medieninformatik-
 ## Autoren
 
 * Coralie Reuter / [@CoralBlack](http://github.com/CoralBlack) / coralie.reuter@hrcom.de
-* Markus Tacker / [@tacker](http://github.com/tacker) / m@coderbyheart.de
+* [Markus Tacker](http://coderbyheart.de/) / [@tacker](http://github.com/tacker) / m@coderbyheart.de
 
 ## Dokumentation
 
